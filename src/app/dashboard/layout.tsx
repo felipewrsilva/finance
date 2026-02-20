@@ -22,6 +22,18 @@ export default async function DashboardLayout({
           <a href="/dashboard/accounts" className="hover:text-gray-900">
             Accounts
           </a>
+          <a href="/dashboard/transactions" className="hover:text-gray-900">
+            Transactions
+          </a>
+          <a href="/dashboard/recurring" className="hover:text-gray-900">
+            Recurring
+          </a>
+          <a href="/dashboard/budgets" className="hover:text-gray-900">
+            Budgets
+          </a>
+          <a href="/dashboard/reports" className="hover:text-gray-900">
+            Reports
+          </a>
         </nav>
         <div className="flex items-center gap-3">
           {session.user.image && (

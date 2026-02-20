@@ -22,6 +22,7 @@ model User {
   categories     Category[]
   transactions   Transaction[]
   recurringRules RecurringRule[]
+  budgets        Budget[]
 
   @@map("users")
 }
@@ -75,6 +76,7 @@ model Category {
   parent       Category?     @relation("CategoryParent", fields: [parentId], references: [id])
   children     Category[]    @relation("CategoryParent")
   transactions Transaction[]
+  budgets      Budget[]
 
   @@map("categories")
 }
@@ -136,4 +138,30 @@ model Transaction {
   @@index([userId, accountId])
   @@index([userId, categoryId])
   @@map("transactions")
+}
+
+// ─── Budget ───────────────────────────────────────────────────────────────────
+
+enum BudgetPeriod {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model Budget {
+  id         String       @id @default(cuid())
+  userId     String
+  categoryId String?
+  name       String
+  amount     Decimal      @db.Decimal(14, 2)
+  period     BudgetPeriod @default(MONTHLY)
+  startDate  DateTime
+  endDate    DateTime?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  @@map("budgets")
 }
