@@ -58,21 +58,25 @@ export function TransactionForm({ accounts, categories, transaction, defaultType
         />
       </div>
 
-      {/* Account */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Account</label>
-        <select
-          name="accountId"
-          defaultValue={transaction?.accountId ?? ""}
-          required
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <option value="">Select an account</option>
-          {accounts.map((a) => (
-            <option key={a.id} value={a.id}>{a.name}</option>
-          ))}
-        </select>
-      </div>
+      {/* Account — hidden when only one exists */}
+      {accounts.length === 1 ? (
+        <input type="hidden" name="accountId" value={accounts[0].id} />
+      ) : (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Account</label>
+          <select
+            name="accountId"
+            defaultValue={transaction?.accountId ?? ""}
+            required
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="">Select an account</option>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>{a.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Category */}
       <div>
