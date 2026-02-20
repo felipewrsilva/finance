@@ -1,5 +1,6 @@
 import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
+import { BottomNav } from "@/components/layout/bottom-nav";
 
 export default async function DashboardLayout({
   children,
@@ -62,7 +63,8 @@ export default async function DashboardLayout({
           </form>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-4 py-8">{children}</main>
+      <main className="mx-auto max-w-3xl px-4 py-8 pb-24 sm:pb-8">{children}</main>
+      <BottomNav />
     </div>
   );
 }
