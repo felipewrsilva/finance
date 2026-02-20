@@ -12,6 +12,7 @@ export const BANK_KEYS = [
   "picpay",
   "caixa",
   "santander",
+  "mercado_pago",
 ] as const;
 
 export type BankKey = (typeof BANK_KEYS)[number];
@@ -33,6 +34,7 @@ export const BANKS: readonly Bank[] = [
   { key: "picpay",         label: "PicPay",          primaryColor: "#21C25E", logoPath: "/banks/picpay.svg" },
   { key: "caixa",          label: "Caixa",           primaryColor: "#006CB5", logoPath: "/banks/caixa.svg" },
   { key: "santander",      label: "Santander",       primaryColor: "#EC0000", logoPath: "/banks/santander.svg" },
+  { key: "mercado_pago",   label: "Mercado Pago",    primaryColor: "#009EE3", logoPath: "/banks/mercado_pago.svg" },
 ];
 
 export const BANKS_BY_KEY = Object.fromEntries(
