@@ -9,7 +9,7 @@ export default async function DashboardPage() {
   const fmt = (value: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(value);
 
-  const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
+  const totalBalance = accounts.reduce((sum: number, a) => sum + Number(a.balance), 0);
 
   return (
     <div className="space-y-6">

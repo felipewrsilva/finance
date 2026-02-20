@@ -6,7 +6,7 @@ export default async function AccountsPage() {
   const [accounts, session] = await Promise.all([getAccounts(), auth()]);
   const currency = session?.user?.currency ?? "BRL";
 
-  const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
+  const totalBalance = accounts.reduce((sum: number, a) => sum + Number(a.balance), 0);
   const formatted = new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency,
