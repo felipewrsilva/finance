@@ -16,11 +16,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/transactions", label: "Transactions" },
   { href: "/dashboard/budgets", label: "Budgets" },
   { href: "/dashboard/reports", label: "Reports" },
-  {
-    href: "/dashboard/settings/categories",
-    label: "Settings",
-    activePrefix: "/dashboard/settings",
-  },
 ];
 
 export function DesktopNav() {
