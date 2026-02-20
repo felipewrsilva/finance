@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getExchangeRate } from "@/lib/exchange-rates";
 import { transactionSchema } from "./schema";
 import { TransactionType, TransactionStatus, type Frequency } from "@prisma/client";
 
@@ -74,8 +75,24 @@ function parseRecurringFromForm(formData: FormData) {
   return { isRecurring, frequency, recurrenceEnd };
 }
 
+async function resolveAmountInDefault(
+  amount: number,
+  currency: string,
+  defaultCurrency: string
+) {
+  if (currency === defaultCurrency) {
+    return { amountInDefaultCurrency: amount, exchangeRateUsed: 1 };
+  }
+  const rate = await getExchangeRate(currency, defaultCurrency);
+  return {
+    amountInDefaultCurrency: Math.round(amount * rate * 100) / 100,
+    exchangeRateUsed: rate,
+  };
+}
+
 export async function createTransaction(formData: FormData) {
   const user = await getUser();
+  const defaultCurrency = user.defaultCurrency ?? "BRL";
 
   const rawAccountId = (formData.get("accountId") as string | null) || null;
   let resolvedAccountId = rawAccountId;
@@ -98,6 +115,7 @@ export async function createTransaction(formData: FormData) {
     categoryId: formData.get("categoryId"),
     type: formData.get("type"),
     amount: formData.get("amount"),
+    currency: (formData.get("currency") as string | null) || defaultCurrency,
     description: formData.get("description") || undefined,
     date: formData.get("date"),
     status: formData.get("status"),
@@ -108,12 +126,27 @@ export async function createTransaction(formData: FormData) {
 
   if (!parsed.success) return;
 
-  const { accountId, type, amount, status, ...rest } = parsed.data;
+  const { accountId, type, amount, currency, status, ...rest } = parsed.data;
   const delta = getDelta(type, amount, status);
+  const { amountInDefaultCurrency, exchangeRateUsed } = await resolveAmountInDefault(
+    amount,
+    currency,
+    defaultCurrency
+  );
 
   await prisma.$transaction([
     prisma.transaction.create({
-      data: { userId: user.id, accountId, type, amount, status, ...rest },
+      data: {
+        userId: user.id,
+        accountId,
+        type,
+        amount,
+        currency,
+        amountInDefaultCurrency,
+        exchangeRateUsed,
+        status,
+        ...rest,
+      },
     }),
     ...(delta !== 0
       ? [
@@ -132,6 +165,7 @@ export async function createTransaction(formData: FormData) {
 
 export async function updateTransaction(id: string, formData: FormData) {
   const user = await getUser();
+  const defaultCurrency = user.defaultCurrency ?? "BRL";
 
   const { isRecurring, frequency, recurrenceEnd } = parseRecurringFromForm(formData);
 
@@ -140,6 +174,7 @@ export async function updateTransaction(id: string, formData: FormData) {
     categoryId: formData.get("categoryId"),
     type: formData.get("type"),
     amount: formData.get("amount"),
+    currency: (formData.get("currency") as string | null) || defaultCurrency,
     description: formData.get("description") || undefined,
     date: formData.get("date"),
     status: formData.get("status"),
@@ -158,12 +193,17 @@ export async function updateTransaction(id: string, formData: FormData) {
   const newDelta = getDelta(parsed.data.type, parsed.data.amount, parsed.data.status);
   const netDelta = newDelta - oldDelta;
 
-  const { accountId, type, amount, status, ...rest } = parsed.data;
+  const { accountId, type, amount, currency, status, ...rest } = parsed.data;
+  const { amountInDefaultCurrency, exchangeRateUsed } = await resolveAmountInDefault(
+    amount,
+    currency,
+    defaultCurrency
+  );
 
   await prisma.$transaction([
     prisma.transaction.updateMany({
       where: { id, userId: user.id },
-      data: { accountId, type, amount, status, ...rest },
+      data: { accountId, type, amount, currency, amountInDefaultCurrency, exchangeRateUsed, status, ...rest },
     }),
     // Reverse old account delta + apply new one
     ...(old.accountId !== accountId

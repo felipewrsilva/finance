@@ -10,20 +10,36 @@ datasource db {
 // ─── User ────────────────────────────────────────────────────────────────────
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  image     String?
-  currency  String   @default("BRL")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String?
+  image           String?
+  defaultCurrency String   @default("BRL")
+  locale          String   @default("pt-BR")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   accounts     Account[]
   categories   Category[]
   transactions Transaction[]
   budgets      Budget[]
+  currencies   UserCurrency[]
 
   @@map("users")
+}
+
+// ─── UserCurrency ────────────────────────────────────────────────────────────
+
+model UserCurrency {
+  id        String   @id @default(cuid())
+  userId    String
+  currency  String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, currency])
+  @@map("user_currencies")
 }
 
 // ─── Account ─────────────────────────────────────────────────────────────────
@@ -42,6 +58,7 @@ model Account {
   name      String
   type      AccountType @default(BANK)
   balance   Decimal     @default(0) @db.Decimal(14, 2)
+  currency  String      @default("BRL")
   color     String?
   icon      String?
   bankKey   String?
@@ -56,8 +73,6 @@ model Account {
 
   @@map("accounts")
 }
-
-// ─── Category ────────────────────────────────────────────────────────────────
 
 enum TransactionType {
   INCOME
@@ -101,22 +116,25 @@ enum TransactionStatus {
 }
 
 model Transaction {
-  id                  String            @id @default(cuid())
-  userId              String
-  accountId           String
-  categoryId          String
-  type                TransactionType
-  amount              Decimal           @db.Decimal(14, 2)
-  description         String?
-  date                DateTime
-  status              TransactionStatus @default(PAID)
-  isRecurring         Boolean           @default(false)
-  frequency           Frequency?
-  recurrenceEnd       DateTime?
-  parentTransactionId String?
-  metadata            Json?
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+  id                      String            @id @default(cuid())
+  userId                  String
+  accountId               String
+  categoryId              String
+  type                    TransactionType
+  amount                  Decimal           @db.Decimal(14, 2)
+  currency                String            @default("BRL")
+  amountInDefaultCurrency Decimal           @default(0) @db.Decimal(14, 2)
+  exchangeRateUsed        Decimal           @default(1) @db.Decimal(14, 6)
+  description             String?
+  date                    DateTime
+  status                  TransactionStatus @default(PAID)
+  isRecurring             Boolean           @default(false)
+  frequency               Frequency?
+  recurrenceEnd           DateTime?
+  parentTransactionId     String?
+  metadata                Json?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
 
   user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   account           Account       @relation(fields: [accountId], references: [id], onDelete: Restrict)

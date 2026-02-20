@@ -14,6 +14,8 @@ interface TransactionFormProps {
   categories: Category[];
   transaction?: Transaction;
   defaultType?: "INCOME" | "EXPENSE";
+  userCurrencies?: string[];
+  defaultCurrency?: string;
 }
 
 export function TransactionForm({
@@ -21,6 +23,8 @@ export function TransactionForm({
   categories,
   transaction,
   defaultType = "EXPENSE",
+  userCurrencies = [],
+  defaultCurrency = "BRL",
 }: TransactionFormProps) {
   const router = useRouter();
 
@@ -33,7 +37,15 @@ export function TransactionForm({
   const [status, setStatus] = useState<"PAID" | "PENDING">(
     transaction?.status ?? "PAID"
   );
+  const [currency, setCurrency] = useState(
+    transaction?.currency ?? defaultCurrency
+  );
   const [locale, setLocale] = useState<string | undefined>(undefined);
+
+  // Derive the effective currency list — always has at least the defaultCurrency.
+  const availableCurrencies =
+    userCurrencies.length > 0 ? userCurrencies : [defaultCurrency];
+  const showCurrencyPicker = availableCurrencies.length > 1;
 
   // Load persisted preferences only for new transactions
   useEffect(() => {
@@ -85,19 +97,37 @@ export function TransactionForm({
       {/* Type — segmented control */}
       <TypeToggle value={type} onChange={handleTypeChange} />
 
-      {/* Amount */}
+      {/* Amount + (optional) currency picker */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-        <input
-          name="amount"
-          type="number"
-          step="0.01"
-          min="0.01"
-          defaultValue={transaction ? String(transaction.amount) : ""}
-          placeholder="0.00"
-          required
-          className={inputCls}
-        />
+        <div className="flex gap-2">
+          <input
+            name="amount"
+            type="number"
+            step="0.01"
+            min="0.01"
+            defaultValue={transaction ? String(transaction.amount) : ""}
+            placeholder="0.00"
+            required
+            className={`${inputCls} flex-1`}
+          />
+          {showCurrencyPicker ? (
+            <select
+              name="currency"
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              {availableCurrencies.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input type="hidden" name="currency" value={currency} />
+          )}
+        </div>
       </div>
 
       {/* Account — only when multiple accounts exist */}

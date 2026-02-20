@@ -37,4 +37,13 @@ body {
   textarea::placeholder {
     color: #9ca3af; /* gray-400 */
   }
+
+  /* Prevent accidental text selection on tappable elements */
+  button,
+  [role="button"],
+  nav a,
+  label {
+    user-select: none;
+    -webkit-user-select: none;
+  }
 }

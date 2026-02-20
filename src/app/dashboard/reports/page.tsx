@@ -1,13 +1,14 @@
 import { auth } from "@/auth";
 import { getMonthlyReport } from "@/modules/dashboard/actions";
+import { formatCurrency } from "@/lib/utils";
 import MonthlyChart from "@/components/reports/monthly-chart";
 
 export default async function ReportsPage() {
   const [session, data] = await Promise.all([auth(), getMonthlyReport(6)]);
-  const currency = session?.user?.currency ?? "BRL";
+  const currency = session?.user?.defaultCurrency ?? "BRL";
+  const locale = session?.user?.locale ?? "pt-BR";
 
-  const fmt = (v: number) =>
-    new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(v);
+  const fmt = (v: number) => formatCurrency(v, currency, locale);
 
   const totalIncome = data.reduce((s, d) => s + d.income, 0);
   const totalExpense = data.reduce((s, d) => s + d.expense, 0);

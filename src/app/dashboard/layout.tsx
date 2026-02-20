@@ -32,6 +32,9 @@ export default async function DashboardLayout({
           <a href="/dashboard/reports" className="hover:text-gray-900">
             Reports
           </a>
+          <a href="/dashboard/settings/currency" className="hover:text-gray-900">
+            Settings
+          </a>
         </nav>
         <div className="flex items-center gap-3">
           {session.user.image && (

@@ -36,15 +36,16 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
     getAccounts(),
   ]);
 
-  const currency = session?.user?.currency ?? "BRL";
+  const currency = session?.user?.defaultCurrency ?? "BRL";
+  const locale = session?.user?.locale ?? "pt-BR";
 
   const income = transactions
     .filter((t) => t.type === "INCOME" && t.status === "PAID")
-    .reduce((s, t) => s + Number(t.amount), 0);
+    .reduce((s, t) => s + Number(t.amountInDefaultCurrency), 0);
 
   const expense = transactions
     .filter((t) => t.type === "EXPENSE" && t.status === "PAID")
-    .reduce((s, t) => s + Number(t.amount), 0);
+    .reduce((s, t) => s + Number(t.amountInDefaultCurrency), 0);
 
   const net = income - expense;
 
@@ -66,19 +67,19 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
         <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Income</p>
           <p className="mt-1 text-lg font-bold text-green-600">
-            {formatCurrency(income, currency)}
+            {formatCurrency(income, currency, locale)}
           </p>
         </div>
         <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Expenses</p>
           <p className="mt-1 text-lg font-bold text-red-500">
-            {formatCurrency(expense, currency)}
+            {formatCurrency(expense, currency, locale)}
           </p>
         </div>
         <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Balance</p>
           <p className={`mt-1 text-lg font-bold ${net >= 0 ? "text-indigo-600" : "text-red-500"}`}>
-            {formatCurrency(net, currency)}
+            {formatCurrency(net, currency, locale)}
           </p>
         </div>
       </div>
@@ -93,7 +94,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
       </Suspense>
 
       {/* List */}
-      <TransactionList transactions={transactions} currency={currency} />
+      <TransactionList transactions={transactions} currency={currency} locale={locale} />
     </div>
   );
 }

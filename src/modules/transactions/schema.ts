@@ -6,6 +6,7 @@ export const transactionSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
   type: z.nativeEnum(TransactionType),
   amount: z.coerce.number({ error: "Amount is required" }).positive("Must be greater than 0"),
+  currency: z.string().min(1).default("BRL"),
   description: z.string().optional(),
   date: z.coerce.date({ error: "Date is required" }),
   status: z.nativeEnum(TransactionStatus).default("PAID"),

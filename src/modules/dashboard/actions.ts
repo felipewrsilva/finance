@@ -55,7 +55,7 @@ export async function getDashboardSummary(month: number, year: number) {
           status: TransactionStatus.PAID,
           date: { gte: start, lt: end },
         },
-        _sum: { amount: true },
+        _sum: { amountInDefaultCurrency: true },
       }),
       // Paid expense
       prisma.transaction.aggregate({
@@ -65,7 +65,7 @@ export async function getDashboardSummary(month: number, year: number) {
           status: TransactionStatus.PAID,
           date: { gte: start, lt: end },
         },
-        _sum: { amount: true },
+        _sum: { amountInDefaultCurrency: true },
       }),
       // Pending income
       prisma.transaction.aggregate({
@@ -75,7 +75,7 @@ export async function getDashboardSummary(month: number, year: number) {
           status: TransactionStatus.PENDING,
           date: { gte: start, lt: end },
         },
-        _sum: { amount: true },
+        _sum: { amountInDefaultCurrency: true },
       }),
       // Pending expense
       prisma.transaction.aggregate({
@@ -85,7 +85,7 @@ export async function getDashboardSummary(month: number, year: number) {
           status: TransactionStatus.PENDING,
           date: { gte: start, lt: end },
         },
-        _sum: { amount: true },
+        _sum: { amountInDefaultCurrency: true },
       }),
       // Recent 5 transactions
       prisma.transaction.findMany({
@@ -103,8 +103,8 @@ export async function getDashboardSummary(month: number, year: number) {
           status: TransactionStatus.PAID,
           date: { gte: start, lt: end },
         },
-        _sum: { amount: true },
-        orderBy: { _sum: { amount: "desc" } },
+        _sum: { amountInDefaultCurrency: true },
+        orderBy: { _sum: { amountInDefaultCurrency: "desc" } },
         take: 6,
       }),
     ]);
@@ -123,17 +123,17 @@ export async function getDashboardSummary(month: number, year: number) {
       categoryId: c.categoryId ?? "uncategorized",
       categoryName: cat?.name ?? "Uncategorized",
       categoryIcon: cat?.icon ?? null,
-      total: Number(c._sum.amount ?? 0),
+      total: Number(c._sum.amountInDefaultCurrency ?? 0),
       type: TransactionType.EXPENSE,
     };
   });
 
   const summary: MonthlySummary = {
-    income: Number(incomeAgg._sum.amount ?? 0),
-    expense: Number(expenseAgg._sum.amount ?? 0),
-    net: Number(incomeAgg._sum.amount ?? 0) - Number(expenseAgg._sum.amount ?? 0),
-    pendingIncome: Number(pendingIncomeAgg._sum.amount ?? 0),
-    pendingExpense: Number(pendingExpenseAgg._sum.amount ?? 0),
+    income: Number(incomeAgg._sum.amountInDefaultCurrency ?? 0),
+    expense: Number(expenseAgg._sum.amountInDefaultCurrency ?? 0),
+    net: Number(incomeAgg._sum.amountInDefaultCurrency ?? 0) - Number(expenseAgg._sum.amountInDefaultCurrency ?? 0),
+    pendingIncome: Number(pendingIncomeAgg._sum.amountInDefaultCurrency ?? 0),
+    pendingExpense: Number(pendingExpenseAgg._sum.amountInDefaultCurrency ?? 0),
   };
 
   const recentTransactions: RecentTransaction[] = recent.map((t) => ({
@@ -171,7 +171,7 @@ export async function getMonthlyReport(months = 6) {
           status: TransactionStatus.PAID,
           date: { gte: start, lt: end },
         },
-        _sum: { amount: true },
+        _sum: { amountInDefaultCurrency: true },
       }),
       prisma.transaction.aggregate({
         where: {
@@ -180,15 +180,15 @@ export async function getMonthlyReport(months = 6) {
           status: TransactionStatus.PAID,
           date: { gte: start, lt: end },
         },
-        _sum: { amount: true },
+        _sum: { amountInDefaultCurrency: true },
       }),
     ]);
 
     results.push({
       month: start.toLocaleString("default", { month: "short" }),
       year: start.getFullYear(),
-      income: Number(inc._sum.amount ?? 0),
-      expense: Number(exp._sum.amount ?? 0),
+      income: Number(inc._sum.amountInDefaultCurrency ?? 0),
+      expense: Number(exp._sum.amountInDefaultCurrency ?? 0),
     });
   }
 

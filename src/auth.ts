@@ -28,7 +28,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user.name ?? null,
           image: user.image ?? null,
         },
-        select: { id: true },
+        select: { id: true, defaultCurrency: true },
+      });
+
+      // Ensure the default currency is registered in the join table.
+      await prisma.userCurrency.upsert({
+        where: { userId_currency: { userId: dbUser.id, currency: dbUser.defaultCurrency } },
+        update: {},
+        create: { userId: dbUser.id, currency: dbUser.defaultCurrency },
       });
 
       const accountCount = await prisma.account.count({
@@ -53,11 +60,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user?.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: session.user.email },
-          select: { id: true, currency: true },
+          select: { id: true, defaultCurrency: true, locale: true },
         });
         if (dbUser) {
           session.user.id = dbUser.id;
-          session.user.currency = dbUser.currency;
+          session.user.defaultCurrency = dbUser.defaultCurrency;
+          session.user.locale = dbUser.locale;
         }
       }
       return session;

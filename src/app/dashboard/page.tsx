@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { getAccounts } from "@/modules/accounts/actions";
 import { ACCOUNT_TYPE_ICONS } from "@/modules/accounts/constants";
 import { getDashboardSummary } from "@/modules/dashboard/actions";
+import { formatCurrency } from "@/lib/utils";
 import type { Account } from "@prisma/client";
 
 export default async function DashboardPage() {
@@ -12,10 +13,10 @@ export default async function DashboardPage() {
   const [session, accounts, { summary, recentTransactions, categoryBreakdown }] =
     await Promise.all([auth(), getAccounts(), getDashboardSummary(month, year)]);
 
-  const currency = session?.user?.currency ?? "BRL";
+  const currency = session?.user?.defaultCurrency ?? "BRL";
+  const locale = session?.user?.locale ?? "pt-BR";
 
-  const fmt = (value: number) =>
-    new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(value);
+  const fmt = (value: number) => formatCurrency(value, currency, locale);
 
   const totalBalance = accounts.reduce((sum: number, a: Account) => sum + Number(a.balance), 0);
 

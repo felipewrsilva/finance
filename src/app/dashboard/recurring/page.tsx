@@ -8,7 +8,7 @@ import type { Account, Category, Transaction } from "@prisma/client";
 
 type TxWithRels = Transaction & { account: Account; category: Category };
 
-function RecurringCard({ tx, currency }: { tx: TxWithRels; currency: string }) {
+function RecurringCard({ tx, currency, locale }: { tx: TxWithRels; currency: string; locale: string }) {
   const nextDate = tx.frequency
     ? getNextOccurrenceDate(
         new Date(tx.date),
@@ -40,7 +40,7 @@ function RecurringCard({ tx, currency }: { tx: TxWithRels; currency: string }) {
             }`}
           >
             {tx.type === "EXPENSE" ? "-" : "+"}
-            {formatCurrency(Number(tx.amount), currency)}
+            {formatCurrency(Number(tx.amount), currency, locale)}
           </p>
           {nextDate && (
             <p className="text-xs text-gray-400 mt-0.5">
@@ -88,7 +88,8 @@ export default async function RecurringPage() {
     getRecurringTransactions(),
   ]);
 
-  const currency = session?.user?.currency ?? "BRL";
+  const currency = session?.user?.defaultCurrency ?? "BRL";
+  const locale = session?.user?.locale ?? "pt-BR";
 
   return (
     <div className="space-y-6">
@@ -122,7 +123,7 @@ export default async function RecurringPage() {
       ) : (
         <div className="space-y-3">
           {transactions.map((tx) => (
-            <RecurringCard key={tx.id} tx={tx} currency={currency} />
+            <RecurringCard key={tx.id} tx={tx} currency={currency} locale={locale} />
           ))}
         </div>
       )}

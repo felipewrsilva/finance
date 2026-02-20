@@ -12,9 +12,10 @@ type TransactionWithRels = Transaction & { account: Account; category: Category 
 interface TransactionListProps {
   transactions: TransactionWithRels[];
   currency?: string;
+  locale?: string;
 }
 
-export function TransactionList({ transactions, currency = "BRL" }: TransactionListProps) {
+export function TransactionList({ transactions, currency = "BRL", locale = "pt-BR" }: TransactionListProps) {
   if (transactions.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-gray-200 py-16 text-center text-gray-400">
@@ -71,7 +72,7 @@ export function TransactionList({ transactions, currency = "BRL" }: TransactionL
               className={`font-semibold shrink-0 ${TRANSACTION_TYPE_COLORS[tx.type]}`}
             >
               {tx.type === "EXPENSE" ? "-" : "+"}
-              {formatCurrency(Number(tx.amount), currency)}
+              {formatCurrency(Number(tx.amount), currency, locale)}
             </span>
           </Link>
 

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getTransaction } from "@/modules/transactions/actions";
 import { getAccounts } from "@/modules/accounts/actions";
 import { getCategories } from "@/modules/categories/actions";
+import { getUserCurrencies } from "@/modules/currencies/actions";
 import { TransactionForm } from "@/components/transactions/transaction-form";
 
 interface PageProps {
@@ -10,10 +11,11 @@ interface PageProps {
 
 export default async function EditTransactionPage({ params }: PageProps) {
   const { id } = await params;
-  const [transaction, accounts, categories] = await Promise.all([
+  const [transaction, accounts, categories, currencyPrefs] = await Promise.all([
     getTransaction(id),
     getAccounts(),
     getCategories(),
+    getUserCurrencies(),
   ]);
 
   if (!transaction) notFound();
@@ -22,7 +24,13 @@ export default async function EditTransactionPage({ params }: PageProps) {
     <div className="mx-auto max-w-lg">
       <h1 className="mb-6 text-2xl font-bold text-gray-900">Edit Transaction</h1>
       <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-        <TransactionForm accounts={accounts} categories={categories} transaction={transaction} />
+        <TransactionForm
+          accounts={accounts}
+          categories={categories}
+          transaction={transaction}
+          userCurrencies={currencyPrefs.currencies}
+          defaultCurrency={currencyPrefs.defaultCurrency}
+        />
       </div>
     </div>
   );

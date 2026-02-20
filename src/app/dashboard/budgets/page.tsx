@@ -9,7 +9,7 @@ export default async function BudgetsPage() {
     getBudgets(now.getMonth() + 1, now.getFullYear()),
   ]);
 
-  const currency = session?.user?.currency ?? "BRL";
+  const currency = session?.user?.defaultCurrency ?? "BRL";
   const monthLabel = now.toLocaleString("default", { month: "long", year: "numeric" });
 
   return (
