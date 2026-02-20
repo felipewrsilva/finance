@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { getAccounts } from "@/modules/accounts/actions";
 import { ACCOUNT_TYPE_ICONS } from "@/modules/accounts/constants";
+import type { Account } from "@prisma/client";
 
 export default async function DashboardPage() {
   const [session, accounts] = await Promise.all([auth(), getAccounts()]);
@@ -9,7 +10,7 @@ export default async function DashboardPage() {
   const fmt = (value: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(value);
 
-  const totalBalance = accounts.reduce((sum: number, a) => sum + Number(a.balance), 0);
+  const totalBalance = accounts.reduce((sum: number, a: Account) => sum + Number(a.balance), 0);
 
   return (
     <div className="space-y-6">

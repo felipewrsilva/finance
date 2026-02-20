@@ -1,12 +1,13 @@
 import { getAccounts } from "@/modules/accounts/actions";
 import { AccountCard } from "@/components/accounts/account-card";
 import { auth } from "@/auth";
+import type { Account } from "@prisma/client";
 
 export default async function AccountsPage() {
   const [accounts, session] = await Promise.all([getAccounts(), auth()]);
   const currency = session?.user?.currency ?? "BRL";
 
-  const totalBalance = accounts.reduce((sum: number, a) => sum + Number(a.balance), 0);
+  const totalBalance = accounts.reduce((sum: number, a: Account) => sum + Number(a.balance), 0);
   const formatted = new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency,
