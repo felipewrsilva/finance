@@ -6,6 +6,7 @@ import { BudgetPeriod } from "@prisma/client";
 import { createBudget, updateBudget } from "@/modules/budgets/actions";
 import { BUDGET_PERIOD_LABELS } from "@/modules/budgets/constants";
 import { CurrencyInput } from "@/components/ui/currency-input";
+import { DatePicker } from "@/components/ui/date-picker";
 import type { Category, Budget } from "@prisma/client";
 
 interface Props {
@@ -22,11 +23,18 @@ export default function BudgetForm({ budget, categories, currency = "BRL", local
     budget?.amount ? Number(budget.amount) : 0
   );
 
+  const fmt = (d: Date) => new Date(d).toISOString().split("T")[0];
+
+  const [startDate, setStartDate] = useState<string>(
+    budget ? fmt(budget.startDate) : fmt(new Date())
+  );
+  const [endDate, setEndDate] = useState<string>(
+    budget?.endDate ? fmt(budget.endDate) : ""
+  );
+
   const action = budget
     ? updateBudget.bind(null, budget.id)
     : createBudget;
-
-  const fmt = (d: Date) => new Date(d).toISOString().split("T")[0];
 
   return (
     <form action={action} className="space-y-4">
@@ -95,11 +103,10 @@ export default function BudgetForm({ budget, categories, currency = "BRL", local
       {/* Start date */}
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700">Start date</label>
-        <input
+        <DatePicker
           name="startDate"
-          type="date"
-          defaultValue={budget ? fmt(budget.startDate) : fmt(new Date())}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          value={startDate}
+          onChange={setStartDate}
           required
         />
       </div>
@@ -109,11 +116,11 @@ export default function BudgetForm({ budget, categories, currency = "BRL", local
         <label className="mb-1 block text-sm font-medium text-gray-700">
           End date <span className="text-gray-400">(optional)</span>
         </label>
-        <input
+        <DatePicker
           name="endDate"
-          type="date"
-          defaultValue={budget?.endDate ? fmt(budget.endDate) : ""}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          value={endDate}
+          onChange={setEndDate}
+          placeholder="No end date"
         />
       </div>
 

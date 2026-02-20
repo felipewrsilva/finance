@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DatePicker } from "@/components/ui/date-picker";
 import type { Frequency } from "@prisma/client";
 
 const FREQUENCY_OPTIONS: { value: Frequency; label: string }[] = [
@@ -27,6 +28,7 @@ export function RecurringSection({
   const defaultEndStr = defaultRecurrenceEnd
     ? new Date(defaultRecurrenceEnd).toISOString().split("T")[0]
     : "";
+  const [recurrenceEnd, setRecurrenceEnd] = useState<string>(defaultEndStr);
 
   return (
     <div className="space-y-3">
@@ -86,11 +88,11 @@ export function RecurringSection({
               End date{" "}
               <span className="text-gray-400 normal-case font-normal">(optional)</span>
             </label>
-            <input
+            <DatePicker
               name="recurrenceEnd"
-              type="date"
-              defaultValue={defaultEndStr}
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              value={recurrenceEnd}
+              onChange={setRecurrenceEnd}
+              placeholder="No end date"
             />
           </div>
         </div>

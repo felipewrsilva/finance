@@ -7,6 +7,7 @@ import { TRANSACTION_STATUS_LABELS } from "@/modules/transactions/constants";
 import { TypeToggle } from "@/components/ui/type-toggle";
 import { RecurringSection } from "@/components/ui/recurring-section";
 import { CurrencyInput } from "@/components/ui/currency-input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { shouldRenderSelector } from "@/lib/utils";
 import type { Account, Category, Transaction } from "@prisma/client";
 
@@ -47,8 +48,11 @@ export function TransactionForm({
   const [amount, setAmount] = useState(
     transaction?.amount ? Number(transaction.amount) : 0
   );
-  // Browser locale used only for the date input lang attribute.
-  const [dateLocale, setDateLocale] = useState<string | undefined>(undefined);
+
+  const txDate = transaction
+    ? new Date(transaction.date).toISOString().split("T")[0]
+    : new Date().toISOString().split("T")[0];
+  const [date, setDate] = useState<string>(txDate);
 
   // Derive the effective currency list — always has at least the defaultCurrency.
   const availableCurrencies =
@@ -56,8 +60,6 @@ export function TransactionForm({
 
   // Load persisted preferences only for new transactions
   useEffect(() => {
-    setDateLocale(navigator.language);
-
     if (!transaction) {
       const savedType = localStorage.getItem("lastTxType") as "INCOME" | "EXPENSE" | null;
       if (savedType === "INCOME" || savedType === "EXPENSE") setType(savedType);
@@ -83,10 +85,6 @@ export function TransactionForm({
   const action = transaction
     ? updateTransaction.bind(null, transaction.id)
     : createTransaction;
-
-  const txDate = transaction
-    ? new Date(transaction.date).toISOString().split("T")[0]
-    : new Date().toISOString().split("T")[0];
 
   const filteredCategories = categories.filter((c) => c.type === type);
   const showAccountSelector = shouldRenderSelector(accounts);
@@ -175,14 +173,7 @@ export function TransactionForm({
       {/* Date */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-        <input
-          name="date"
-          type="date"
-          lang={dateLocale}
-          defaultValue={txDate}
-          required
-          className={inputCls}
-        />
+        <DatePicker name="date" value={date} onChange={setDate} required />
       </div>
 
       {/* Status — segmented control */}
