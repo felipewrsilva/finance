@@ -15,23 +15,25 @@ export default async function CategoriesPage() {
   }) {
     if (items.length === 0) return null;
     return (
-      <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
         {items.map((c, i) => (
           <div
             key={c.id}
-            className={`flex items-center gap-3 px-4 py-3 ${
+            className={`flex items-center overflow-hidden ${
               i !== items.length - 1 ? "border-b border-gray-50" : ""
             }`}
           >
-            <span className="text-xl w-7 text-center">{c.icon ?? "📌"}</span>
-            <span className="flex-1 text-sm font-medium text-gray-900">{c.name}</span>
-            <div className="flex items-center gap-2 shrink-0">
-              <Link
-                href={`/dashboard/settings/categories/${c.id}/edit`}
-                className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-500 hover:bg-gray-50"
-              >
-                Edit
-              </Link>
+            {/* Clickable area — navigates to edit */}
+            <Link
+              href={`/dashboard/settings/categories/${c.id}/edit`}
+              className="flex flex-1 items-center gap-3 px-4 py-3 min-w-0 transition-colors hover:bg-gray-50/60 active:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+            >
+              <span className="text-xl w-7 shrink-0 text-center">{c.icon ?? "📌"}</span>
+              <span className="flex-1 text-sm font-medium text-gray-900 truncate">{c.name}</span>
+            </Link>
+
+            {/* Delete — outside link to avoid nested interactivity */}
+            <div className="pr-4 shrink-0">
               <form
                 action={async () => {
                   "use server";

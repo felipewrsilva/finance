@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { deleteBudget } from "@/modules/budgets/actions";
+import { InlineConfirmButton } from "@/components/ui/inline-confirm-button";
 import type { BudgetWithSpent } from "@/modules/budgets/actions";
 import { BUDGET_PERIOD_LABELS } from "@/modules/budgets/constants";
 
@@ -31,9 +33,13 @@ export default function BudgetList({ budgets, currency }: Props) {
         const over = b.spent > b.amount;
 
         return (
-          <div key={b.id} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div>
+          <div key={b.id} className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden transition-shadow hover:shadow-md">
+            {/* Clickable area — navigates to edit */}
+            <Link
+              href={`/dashboard/budgets/${b.id}/edit`}
+              className="block p-4 transition-colors hover:bg-gray-50/60 active:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+            >
+              <div className="mb-3">
                 <div className="flex items-center gap-2">
                   {b.categoryIcon && <span>{b.categoryIcon}</span>}
                   <span className="font-medium text-gray-900">{b.name}</span>
@@ -45,50 +51,36 @@ export default function BudgetList({ budgets, currency }: Props) {
                   <p className="mt-0.5 text-xs text-gray-400">{b.categoryName}</p>
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <a
-                  href={`/dashboard/budgets/${b.id}/edit`}
-                  className="rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-500 hover:bg-gray-50"
-                >
-                  Edit
-                </a>
-                <form
-                  action={async () => {
-                    await deleteBudget(b.id);
-                  }}
-                >
-                  <button
-                    type="submit"
-                    className="rounded-lg border border-red-100 px-2 py-1 text-xs text-red-500 hover:bg-red-50"
-                    onClick={(e) => {
-                      if (!confirm("Delete this budget?")) e.preventDefault();
-                    }}
-                  >
-                    Delete
-                  </button>
-                </form>
-              </div>
-            </div>
 
-            {/* Progress bar */}
-            <div className="mt-3">
-              <div className="mb-1 flex justify-between text-xs">
-                <span className={over ? "font-medium text-red-600" : "text-gray-500"}>
-                  {fmt(b.spent)} spent
-                </span>
-                <span className="text-gray-400">of {fmt(b.amount)}</span>
+              {/* Progress bar */}
+              <div>
+                <div className="mb-1 flex justify-between text-xs">
+                  <span className={over ? "font-medium text-red-600" : "text-gray-500"}>
+                    {fmt(b.spent)} spent
+                  </span>
+                  <span className="text-gray-400">of {fmt(b.amount)}</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                  <div
+                    className={`h-full rounded-full transition-all ${over ? "bg-red-500" : pct > 80 ? "bg-yellow-400" : "bg-green-500"}`}
+                    style={{ width: `${pct.toFixed(1)}%` }}
+                  />
+                </div>
+                <p className="mt-1 text-right text-xs text-gray-400">
+                  {over
+                    ? `${fmt(b.spent - b.amount)} over budget`
+                    : `${fmt(b.amount - b.spent)} remaining`}
+                </p>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
-                <div
-                  className={`h-full rounded-full transition-all ${over ? "bg-red-500" : pct > 80 ? "bg-yellow-400" : "bg-green-500"}`}
-                  style={{ width: `${pct.toFixed(1)}%` }}
-                />
-              </div>
-              <p className="mt-1 text-right text-xs text-gray-400">
-                {over
-                  ? `${fmt(b.spent - b.amount)} over budget`
-                  : `${fmt(b.amount - b.spent)} remaining`}
-              </p>
+            </Link>
+
+            {/* Footer — delete */}
+            <div className="flex justify-end px-4 pb-3 pt-2 border-t border-gray-50">
+              <InlineConfirmButton
+                onConfirm={() => deleteBudget(b.id)}
+                confirmLabel="Yes, delete"
+                cancelLabel="Keep"
+              />
             </div>
           </div>
         );

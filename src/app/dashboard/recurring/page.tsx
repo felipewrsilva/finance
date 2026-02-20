@@ -18,53 +18,52 @@ function RecurringCard({ tx, currency, locale }: { tx: TxWithRels; currency: str
     : null;
 
   return (
-    <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm space-y-3">
-      {/* Top row */}
-      <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-xl shrink-0">
-          {tx.category?.icon ?? "🔄"}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-medium text-gray-900 truncate">
-            {tx.description || tx.category?.name || "Recurring"}
-          </p>
-          <p className="text-xs text-gray-400">
-            {tx.account.name}
-            {tx.frequency && ` · ${FREQUENCY_LABELS[tx.frequency]}`}
-          </p>
-        </div>
-        <div className="text-right shrink-0">
-          <p
-            className={`font-bold ${
-              tx.type === "INCOME" ? "text-green-600" : "text-red-500"
-            }`}
-          >
-            {tx.type === "EXPENSE" ? "-" : "+"}
-            {formatCurrency(Number(tx.amount), currency, locale)}
-          </p>
-          {nextDate && (
-            <p className="text-xs text-gray-400 mt-0.5">
-              Next:{" "}
-              {nextDate.toLocaleDateString("pt-BR", {
-                day: "2-digit",
-                month: "short",
-              })}
+    <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden transition-shadow hover:shadow-md">
+      {/* Clickable area — navigates to edit */}
+      <a
+        href={`/dashboard/transactions/${tx.id}/edit`}
+        className="block p-4 transition-colors hover:bg-gray-50/60 active:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-xl shrink-0">
+            {tx.category?.icon ?? "🔄"}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-gray-900 truncate">
+              {tx.description || tx.category?.name || "Recurring"}
             </p>
-          )}
-          {!nextDate && tx.recurrenceEnd && (
-            <p className="text-xs text-gray-400 mt-0.5">Ended</p>
-          )}
+            <p className="text-xs text-gray-400">
+              {tx.account.name}
+              {tx.frequency && ` · ${FREQUENCY_LABELS[tx.frequency]}`}
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <p
+              className={`font-bold ${
+                tx.type === "INCOME" ? "text-green-600" : "text-red-500"
+              }`}
+            >
+              {tx.type === "EXPENSE" ? "-" : "+"}
+              {formatCurrency(Number(tx.amount), currency, locale)}
+            </p>
+            {nextDate && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                Next:{" "}
+                {nextDate.toLocaleDateString("pt-BR", {
+                  day: "2-digit",
+                  month: "short",
+                })}
+              </p>
+            )}
+            {!nextDate && tx.recurrenceEnd && (
+              <p className="text-xs text-gray-400 mt-0.5">Ended</p>
+            )}
+          </div>
         </div>
-      </div>
+      </a>
 
-      {/* Footer */}
-      <div className="flex items-center gap-2 pt-1 border-t border-gray-50">
-        <Link
-          href={`/dashboard/transactions/${tx.id}/edit`}
-          className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50"
-        >
-          Edit
-        </Link>
+      {/* Footer — stop recurring */}
+      <div className="flex items-center px-4 pb-4 pt-3 border-t border-gray-50">
         <form
           action={async () => {
             "use server";
