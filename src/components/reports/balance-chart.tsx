@@ -59,7 +59,7 @@ export default function BalanceChart({ accounts, dataPoints, currency }: Props) 
           tickLine={false}
           width={80}
         />
-        <Tooltip formatter={(value: number) => fmt(value)} />
+        <Tooltip formatter={(value) => fmt(Number(value))} />
         <Legend />
         {accounts.map((account, idx) => (
           <Line

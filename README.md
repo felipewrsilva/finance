@@ -1,6 +1,6 @@
 # Finance
 
-A personal financial management application inspired by Mobills, built with a modern, scalable stack. Full control over income, expenses, recurring bills, budgets, multi-currency tracking, and clear reports.
+A personal financial management app built with Next.js. Track income, expenses, transfers, recurring bills, budgets, and multi-currency balances.
 
 **Live:** [finance-seven-plum.vercel.app](https://finance-seven-plum.vercel.app)
 
@@ -22,33 +22,21 @@ A personal financial management application inspired by Mobills, built with a mo
 
 ---
 
-## Current Status
+## Features
 
-| Module | Status | Notes |
-|---|---|---|
-| Google OAuth authentication | ✅ | `/login` |
-| User session with DB persistence | ✅ | id, defaultCurrency, locale in session |
-| Protected dashboard layout | ✅ | Sticky header + responsive nav + bottom nav |
-| Accounts (CRUD + atomic balance) | ✅ | `/dashboard/accounts` |
-| System categories (seeded) | ✅ | 20+ defaults, system + user-owned |
-| Transactions (CRUD + atomic balance) | ✅ | `/dashboard/transactions` |
-| Recurring transactions (inline) | ✅ | Embedded in TransactionForm via toggle |
-| Monthly dashboard metrics | ✅ | Balance hero, income/expense/net, category breakdown |
-| Budget system | ✅ | `/dashboard/budgets`, per-category or global |
-| Reports (6-month bar chart) | ✅ | `/dashboard/reports` |
-| Multi-currency support | ✅ | Per-transaction currency + exchange rate stored |
-| Currency settings (UX refactor) | ✅ | Optimistic list, instant default swap, inline add |
-| Controlled CurrencyInput component | ✅ | Live formatting, locale-aware, all money fields |
-| Custom DatePicker component | ✅ | Unified calendar UI, replaces all native date inputs across forms |
-| Responsive desktop layout | ✅ | lg/xl breakpoints, accessible filters and month nav |
-| Loading states (route-level) | 🔜 | `loading.tsx` files not yet created |
-| Form submit pending states | 🔜 | `useFormStatus` on submit buttons |
-| Transfer transactions | 🔜 | Schema ready (`TRANSFER` type exists) |
-| Custom user categories | 🔜 | Backend ready, no CRUD UI yet |
-| Account balance evolution chart | 🔜 | Line chart per account over time |
-| Export (CSV / PDF) | 🔜 | Transaction history download |
-
-See [docs/roadmap.md](docs/roadmap.md) for the full implementation plan.
+| Module | Route |
+|---|---|
+| Google OAuth login | `/login` |
+| Dashboard — balance hero, income/expense/net, category breakdown, recent transactions | `/dashboard` |
+| Accounts — CRUD, atomic balance updates | `/dashboard/accounts` |
+| Transactions — CRUD, filters, month navigation, mark pending as paid | `/dashboard/transactions` |
+| Transfer transactions — dual-balance debit/credit | transaction form |
+| Recurring transactions — frequency + end date, next occurrence | `/dashboard/recurring` |
+| Budgets — per-category or global spending limits | `/dashboard/budgets` |
+| Reports — 6-month income/expense chart + account balance evolution | `/dashboard/reports` |
+| Custom categories — user-owned, emoji icon picker | `/dashboard/settings/categories` |
+| Multi-currency — per-transaction currency, exchange rates stored at write time | `/dashboard/settings/currency` |
+| Export CSV | `GET /api/export/transactions` |
 
 ---
 
@@ -58,29 +46,29 @@ See [docs/roadmap.md](docs/roadmap.md) for the full implementation plan.
 User
  ├── Account[]          (cash, bank, checking, credit card, investment)
  ├── UserCurrency[]     (enabled currencies per user)
- ├── Category[]         (system defaults nullable userId + user-defined)
+ ├── Category[]         (system defaults + user-defined)
  ├── Transaction[]      (income, expense, transfer — balance updated atomically)
  └── Budget[]           (per-category or global spending limits)
 
 Transaction
- ├── amount             Decimal(14,2) in original currency
- ├── currency           ISO 4217 code
- ├── amountInDefaultCurrency  Decimal(14,2) — for cross-currency aggregation
- ├── exchangeRateUsed   Decimal(14,6)
- ├── isRecurring        Boolean
- ├── frequency          DAILY | WEEKLY | MONTHLY | YEARLY
- ├── recurrenceEnd      DateTime?
- ├── parentTransactionId → self-relation for recurring children
- └── metadata           Json? — tags, attachments, installments (future)
+ ├── amount                    Decimal(14,2) in original currency
+ ├── currency                  ISO 4217 code
+ ├── amountInDefaultCurrency   Decimal(14,2) — for cross-currency aggregation
+ ├── exchangeRateUsed          Decimal(14,6)
+ ├── categoryId                String? — null for transfers
+ ├── isRecurring               Boolean
+ ├── frequency                 DAILY | WEEKLY | MONTHLY | YEARLY
+ ├── recurrenceEnd             DateTime?
+ ├── parentTransactionId       self-relation — links recurring children to origin
+ └── metadata                  Json? — stores destinationAccountId for transfers
 ```
 
-Key design decisions:
-- `Decimal(14,2)` for all money — never `Float`, no floating-point rounding
-- `Account.balance` updated atomically in `prisma.$transaction` on every write
-- Recurring rules are stored directly on `Transaction` (no separate `RecurringRule` table)
-- `Category.userId` is nullable — `null` = system-wide default
-- `amountInDefaultCurrency` stored at write time — aggregations never touch exchange rate APIs at read time
-- `parentTransactionId` self-relation groups recurring children to their origin
+Key decisions:
+- `Decimal(14,2)` for all money — never `Float`
+- `Account.balance` updated in `prisma.$transaction` on every write — atomic, no race conditions
+- `amountInDefaultCurrency` stored at write time — aggregations never hit exchange rate APIs at read time
+- Recurring rules live directly on `Transaction` — no separate table
+- `metadata: Json?` carries transfer destination without a schema migration
 
 ---
 
@@ -110,9 +98,7 @@ AUTH_GOOGLE_SECRET="your_google_client_secret"
 DATABASE_URL="your_neon_connection_string"
 ```
 
-> **Note:** `AUTH_URL` is required in development. Without it, NextAuth v5 rejects the OAuth callback with "Access Denied".
-
-Run migrations, seed categories, and start:
+> `AUTH_URL` is required in development — NextAuth v5 rejects OAuth callbacks without it.
 
 ```bash
 npx prisma migrate dev
@@ -122,7 +108,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### Available scripts
+### Scripts
 
 | Script | Description |
 |---|---|
@@ -139,65 +125,47 @@ Open [http://localhost:3000](http://localhost:3000).
 ```
 src/
 ├── app/
-│   ├── api/auth/              # Auth.js route handler
+│   ├── api/
+│   │   ├── auth/                  # Auth.js route handler
+│   │   └── export/transactions/   # CSV export (GET ?month=&year=)
 │   ├── dashboard/
-│   │   ├── layout.tsx         # Sticky header, responsive nav, session guard
-│   │   ├── page.tsx           # Overview: balance hero, metrics, recent transactions
-│   │   ├── accounts/          # List, new, [id]/edit
-│   │   ├── transactions/      # List (filters + month nav), new, [id]/edit
-│   │   ├── recurring/         # Redirects to transactions (recurring is inline now)
-│   │   ├── budgets/           # List, new, [id]/edit
-│   │   ├── reports/           # 6-month bar chart + monthly breakdown table
-│   │   └── settings/currency/ # Multi-currency preference screen
+│   │   ├── layout.tsx             # Sticky header, session guard, bottom nav
+│   │   ├── page.tsx               # Overview
+│   │   ├── accounts/
+│   │   ├── transactions/
+│   │   ├── recurring/
+│   │   ├── budgets/
+│   │   ├── reports/
+│   │   └── settings/
+│   │       ├── categories/        # Custom category CRUD
+│   │       └── currency/
 │   └── login/
 ├── components/
-│   ├── accounts/              # AccountCard, AccountForm
-│   ├── budgets/               # BudgetForm, BudgetList
-│   ├── layout/                # BottomNav (mobile only)
-│   ├── reports/               # MonthlyChart (Recharts)
-│   ├── settings/              # CurrencyList, CurrencyRow
-│   ├── transactions/          # TransactionForm, TransactionList, TransactionFilters
+│   ├── accounts/
+│   ├── budgets/
+│   ├── layout/                    # BottomNav (mobile)
+│   ├── reports/                   # MonthlyChart, BalanceChart (Recharts)
+│   ├── settings/                  # CurrencyList, CategoryForm
+│   ├── transactions/              # TransactionForm, TransactionList, MarkPaidButton
 │   └── ui/
-│       ├── currency-input.tsx  # Controlled, locale-aware money input
-│       ├── date-picker.tsx     # Custom calendar picker, full keyboard + ARIA
+│       ├── currency-input.tsx     # Controlled, locale-aware money input
+│       ├── date-picker.tsx        # Custom calendar picker, keyboard + ARIA
+│       ├── submit-button.tsx      # useFormStatus pending state
 │       ├── inline-confirm-button.tsx
 │       ├── month-navigator.tsx
 │       ├── recurring-section.tsx
-│       └── type-toggle.tsx
-├── modules/
-│   ├── accounts/              # actions.ts, schema.ts, constants.ts
-│   ├── budgets/               # actions.ts, schema.ts, constants.ts
-│   ├── categories/            # actions.ts
-│   ├── currencies/            # actions.ts, constants.ts (SUPPORTED_CURRENCIES)
-│   ├── dashboard/             # actions.ts (getDashboardSummary, getMonthlyReport)
-│   └── transactions/          # actions.ts, schema.ts, constants.ts
-├── lib/
-│   ├── prisma.ts              # Singleton with PrismaNeon adapter
-│   ├── exchange-rates.ts      # Exchange rate fetching
-│   └── utils.ts               # formatCurrency (memoized), getNextOccurrenceDate, ...
-├── types/
-│   └── next-auth.d.ts         # Extended session types (id, defaultCurrency, locale)
-├── auth.ts                    # Auth.js config (Node.js runtime)
-├── auth.config.ts             # Auth.js config (edge-safe, for proxy)
-└── proxy.ts                   # Route protection (Next.js 16 middleware entry point)
-```
-
----
-
-## Key Architectural Decisions
-
-| Decision | Rationale |
-|---|---|
-| `Decimal(14,2)` for all money | Avoids floating-point rounding. Never use `Float` for currency. |
-| Balance updated in `prisma.$transaction` | Atomic — no race conditions between create and balance update. |
-| `amountInDefaultCurrency` stored at write time | Aggregations are fast SQL — no exchange rate API calls at read time. |
-| All aggregations in SQL via Prisma `groupBy` | Far faster than `reduce` over large JS arrays. |
-| Recurring stored on Transaction (no separate table) | Simpler schema; self-relation `parentTransactionId` links children to origin. |
-| Soft-delete accounts via `isActive` | Preserves transaction history integrity. |
-| `metadata: Json?` on Transaction | Future-proof: tags, attachments, installments without schema migrations. |
-| Module-per-domain structure | Each domain owns its actions, schema, constants — no cross-module DB queries. |
-| `formatCurrency` memoized with Map cache | `Intl.NumberFormat` construction is expensive — one instance per (locale, currency) pair. |
-| `CurrencyInput` controlled component | All money fields share one component: live formatting, locale-aware, mobile `inputMode`. |
+│       └── type-toggle.tsx        # INCOME / EXPENSE / TRANSFER segmented control
+├── modules/                       # One folder per domain: actions, schema, constants
+│   ├── accounts/
+│   ├── budgets/
+│   ├── categories/
+│   ├── currencies/
+│   ├── dashboard/
+│   └── transactions/
+└── lib/
+    ├── prisma.ts                  # Singleton with PrismaNeon adapter
+    ├── exchange-rates.ts
+    └── utils.ts                   # formatCurrency (memoized), getNextOccurrenceDate
 | `DatePicker` controlled component | Native `<input type="date">` is inconsistent across browsers; custom calendar enforces design tokens, `aria-modal` + keyboard navigation. |
 | `proxy.ts` instead of `middleware.ts` | Next.js 16 renamed the middleware entry point. |
 | `prisma generate` in build script | Required for Vercel — Prisma client generated before TypeScript compilation. |
