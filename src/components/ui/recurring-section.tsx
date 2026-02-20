@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import { DatePicker } from "@/components/ui/date-picker";
+import { useTranslations } from "next-intl";
 import type { Frequency } from "@prisma/client";
 
-const FREQUENCY_OPTIONS: { value: Frequency; label: string }[] = [
-  { value: "DAILY", label: "Daily" },
-  { value: "WEEKLY", label: "Weekly" },
-  { value: "MONTHLY", label: "Monthly" },
-  { value: "YEARLY", label: "Yearly" },
+type FrequencyOption = { value: Frequency; labelKey: "daily" | "weekly" | "monthly" | "yearly" };
+
+const FREQUENCY_OPTIONS: FrequencyOption[] = [
+  { value: "DAILY", labelKey: "daily" },
+  { value: "WEEKLY", labelKey: "weekly" },
+  { value: "MONTHLY", labelKey: "monthly" },
+  { value: "YEARLY", labelKey: "yearly" },
 ];
 
 interface RecurringSectionProps {
@@ -22,6 +25,7 @@ export function RecurringSection({
   defaultFrequency = "MONTHLY",
   defaultRecurrenceEnd = null,
 }: RecurringSectionProps) {
+  const t = useTranslations("form");
   const [isRecurring, setIsRecurring] = useState(defaultIsRecurring);
   const [frequency, setFrequency] = useState<Frequency>(defaultFrequency);
 
@@ -53,7 +57,7 @@ export function RecurringSection({
             }`}
           />
         </button>
-        <span className="text-sm font-medium text-gray-700">Repeat this transaction</span>
+        <span className="text-sm font-medium text-gray-700">{t("repeat")}</span>
       </label>
 
       {/* Expanded section */}
@@ -62,10 +66,10 @@ export function RecurringSection({
           {/* Frequency segmented control */}
           <div>
             <p className="mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Frequency
+              {t("frequency")}
             </p>
             <div className="flex rounded-xl bg-white border border-gray-200 p-1 gap-1">
-              {FREQUENCY_OPTIONS.map(({ value, label }) => (
+              {FREQUENCY_OPTIONS.map(({ value, labelKey }) => (
                 <button
                   key={value}
                   type="button"
@@ -76,7 +80,7 @@ export function RecurringSection({
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  {label}
+                  {t(labelKey)}
                 </button>
               ))}
             </div>
@@ -85,14 +89,14 @@ export function RecurringSection({
           {/* End date */}
           <div>
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              End date{" "}
-              <span className="text-gray-400 normal-case font-normal">(optional)</span>
+              {t("endDate")}{" "}
+              <span className="text-gray-400 normal-case font-normal">{t("optional")}</span>
             </label>
             <DatePicker
               name="recurrenceEnd"
               value={recurrenceEnd}
               onChange={setRecurrenceEnd}
-              placeholder="No end date"
+              placeholder={t("noEndDate")}
             />
           </div>
         </div>

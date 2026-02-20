@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createTransaction, updateTransaction } from "@/modules/transactions/actions";
-import { TRANSACTION_STATUS_LABELS } from "@/modules/transactions/constants";
 import { TypeToggle } from "@/components/ui/type-toggle";
 import { RecurringSection } from "@/components/ui/recurring-section";
 import { CurrencyInput } from "@/components/ui/currency-input";
@@ -33,6 +33,7 @@ export function TransactionForm({
   locale: serverLocale = "pt-BR",
 }: TransactionFormProps) {
   const router = useRouter();
+  const t = useTranslations("form");
 
   const [type, setType] = useState<"INCOME" | "EXPENSE" | "TRANSFER">(
     (transaction?.type as "INCOME" | "EXPENSE" | "TRANSFER") ?? defaultType
@@ -112,7 +113,7 @@ export function TransactionForm({
 
       {/* Amount + currency */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t("amount")}</label>
         <CurrencyInput
           name="amount"
           value={amount}
@@ -130,7 +131,7 @@ export function TransactionForm({
       {showAccountSelector && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            {type === "TRANSFER" ? "From account" : "Account"}
+            {type === "TRANSFER" ? t("fromAccount") : t("account")}
           </label>
           <select
             value={accountId}
@@ -138,7 +139,7 @@ export function TransactionForm({
             required
             className={inputCls}
           >
-            <option value="">Select an account</option>
+            <option value="">{t("selectAccount")}</option>
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.name}
@@ -151,14 +152,14 @@ export function TransactionForm({
       {/* Destination account — TRANSFER only */}
       {type === "TRANSFER" && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">To account</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">{t("toAccount")}</label>
           <select
             value={destAccountId}
             onChange={(e) => setDestAccountId(e.target.value)}
             required
             className={inputCls}
           >
-            <option value="">Select destination account</option>
+            <option value="">{t("selectDestAccount")}</option>
             {accounts
               .filter((a) => a.id !== accountId)
               .map((a) => (
@@ -173,7 +174,7 @@ export function TransactionForm({
       {/* Category — hidden for TRANSFER */}
       {type !== "TRANSFER" && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">{t("category")}</label>
           {filteredCategories.length === 1 ? (
             <>
               <input type="hidden" name="categoryId" value={filteredCategories[0].id} />
@@ -182,7 +183,7 @@ export function TransactionForm({
                   <span>{filteredCategories[0].icon}</span>
                 )}
                 <span>{filteredCategories[0].name}</span>
-                <span className="ml-auto text-xs text-gray-400">Auto-selected</span>
+                <span className="ml-auto text-xs text-gray-400">{t("autoSelected")}</span>
               </div>
             </>
           ) : (
@@ -192,7 +193,7 @@ export function TransactionForm({
               required
               className={inputCls}
             >
-              <option value="">Select a category</option>
+              <option value="">{t("selectCategory")}</option>
               {filteredCategories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.icon ? `${c.icon} ` : ""}
@@ -206,14 +207,14 @@ export function TransactionForm({
 
       {/* Date */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t("date")}</label>
         <DatePicker name="date" value={date} onChange={setDate} required />
       </div>
 
       {/* Status — segmented control, hidden for TRANSFER */}
       {type !== "TRANSFER" && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t("status")}</label>
           <div className="flex rounded-xl bg-gray-100 p-1 gap-1">
             {(["PAID", "PENDING"] as const).map((s) => (
               <button
@@ -228,7 +229,7 @@ export function TransactionForm({
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
-                {TRANSACTION_STATUS_LABELS[s]}
+                {s === "PAID" ? t("paid") : t("pending")}
               </button>
             ))}
           </div>
@@ -238,14 +239,14 @@ export function TransactionForm({
       {/* Description */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description{" "}
-          <span className="text-gray-400 font-normal">(optional)</span>
+          {t("description")}{" "}
+          <span className="text-gray-400 font-normal">{t("optional")}</span>
         </label>
         <input
           name="description"
           type="text"
           defaultValue={transaction?.description ?? ""}
-          placeholder="e.g. Netflix subscription"
+          placeholder={t("descriptionPlaceholder")}
           className={inputCls}
         />
       </div>
@@ -264,14 +265,14 @@ export function TransactionForm({
         <SubmitButton
           className="flex-1 rounded-xl bg-indigo-600 py-3 text-base font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800"
         >
-          {transaction ? "Save changes" : "Add transaction"}
+          {transaction ? t("saveChanges") : t("addTransaction")}
         </SubmitButton>
         <button
           type="button"
           onClick={() => router.back()}
           className="flex-1 rounded-xl border border-gray-200 py-3 text-base font-semibold text-gray-700 hover:bg-gray-50 active:bg-gray-100"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>

@@ -7,7 +7,7 @@ import { deleteTransaction } from "@/modules/transactions/actions";
 import { TRANSACTION_TYPE_COLORS } from "@/modules/transactions/constants";
 import { InlineConfirmButton } from "@/components/ui/inline-confirm-button";
 import { MarkPaidButton } from "./mark-paid-button";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Transaction, Account, Category } from "@prisma/client";
 
 type TransactionWithRels = Transaction & { account: Account; category: Category | null };
@@ -52,10 +52,10 @@ export function TransactionList({ transactions, currency = "BRL", locale: locale
       {transactions.map((tx, i) => {
         const isPending = tx.status === "PENDING";
         const sign = tx.type === "EXPENSE" ? "−" : tx.type === "INCOME" ? "+" : "";
-        const dateStr = new Intl.DateTimeFormat(locale, {
+        const dateStr = formatDate(new Date(tx.date), locale, {
           day: "2-digit",
           month: "short",
-        }).format(new Date(tx.date));
+        });
         const label =
           tx.description ||
           tx.category?.name ||

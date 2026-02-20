@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { formatDate } from "@/lib/utils";
 
 interface MonthNavigatorProps {
   month: number; // 1-12
@@ -35,10 +36,10 @@ export function MonthNavigator({ month, year }: MonthNavigatorProps) {
   const isCurrentMonth =
     month === new Date().getMonth() + 1 && year === new Date().getFullYear();
 
-  const monthName = new Intl.DateTimeFormat(locale, {
+  const monthName = formatDate(new Date(year, month - 1, 1), locale, {
     month: "long",
     year: "numeric",
-  }).format(new Date(year, month - 1, 1));
+  });
 
   return (
     <div className="flex items-center justify-center gap-4">
@@ -54,7 +55,7 @@ export function MonthNavigator({ month, year }: MonthNavigatorProps) {
       </button>
 
       <div className="min-w-[160px] text-center" aria-live="polite" aria-atomic="true">
-        <p className="font-medium text-gray-900 capitalize">{monthName}</p>
+        <p className="font-medium text-gray-900">{monthName}</p>
         {!isCurrentMonth && (
           <button
             type="button"

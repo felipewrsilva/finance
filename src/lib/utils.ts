@@ -1,5 +1,23 @@
 import type { Frequency } from "@prisma/client";
 
+// ─── Date ────────────────────────────────────────────────────────────────────
+
+/**
+ * Formats a date using Intl.DateTimeFormat and normalises capitalisation so
+ * that only the very first character is uppercased.  This prevents locale
+ * quirks like "Fevereiro De 2026" (pt-BR) and instead produces
+ * "Fevereiro de 2026".
+ */
+export function formatDate(
+  date: Date,
+  locale: string,
+  options: Intl.DateTimeFormatOptions
+): string {
+  const s = new Intl.DateTimeFormat(locale, options).format(date);
+  const lower = s.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
 // ─── Currency ────────────────────────────────────────────────────────────────
 
 const _currencyFormatterCache = new Map<string, Intl.NumberFormat>();

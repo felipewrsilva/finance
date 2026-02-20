@@ -1,34 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-
-const DAY_NAMES = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+import { useLocale, useTranslations } from "next-intl";
+import { formatDate } from "@/lib/utils";
 
 type ViewMode = "day" | "year";
 
-// Computed once at module load — safe for a "use client" component.
 const TODAY = (() => {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
   return d;
 })();
 const CURRENT_YEAR = TODAY.getFullYear();
-const YEAR_MIN = CURRENT_YEAR - 50;
-const YEAR_MAX = CURRENT_YEAR + 20;
-const YEARS = Array.from(
-  { length: YEAR_MAX - YEAR_MIN + 1 },
-  (_, i) => YEAR_MIN + i
-);
-
-interface DatePickerProps {
-  name: string;
-  /** ISO 8601 date string (YYYY-MM-DD) or empty string for no selection. */
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  required?: boolean;
-  className?: string;
-}
 
 /** Parse an ISO YYYY-MM-DD string into a local Date (no time-zone shift). */
 function parseISO(iso: string): Date | null {
@@ -44,14 +27,38 @@ function toISO(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+/** Get 1-letter weekday names starting from Sunday, localized. */
+function getDayNames(locale: string): string[] {
+  // 2023-01-01 was a Sunday — use as reference anchor.
+  const sunday = new Date(2023, 0, 1);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(sunday);
+    d.setDate(d.getDate() + i);
+    return new Intl.DateTimeFormat(locale, { weekday: "narrow" }).format(d);
+  });
+}
+
+interface DatePickerProps {
+  name: string;
+  /** ISO 8601 date string (YYYY-MM-DD) or empty string for no selection. */
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  required?: boolean;
+  className?: string;
+}
+
 export function DatePicker({
   name,
   value,
   onChange,
-  placeholder = "Select date",
+  placeholder,
   required,
   className,
 }: DatePickerProps) {
+  const locale = useLocale();
+  const t = useTranslations("datePicker");
+
   const selectedDate = value ? parseISO(value) : null;
 
   const [isOpen, setIsOpen] = useState(false);
@@ -66,7 +73,15 @@ export function DatePicker({
   );
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const yearGridRef = useRef<HTMLDivElement>(null);
+
+  // ~11 years centred on current year.
+  const years = useMemo(
+    () => Array.from({ length: 11 }, (_, i) => CURRENT_YEAR - 5 + i),
+    []
+  );
+
+  // Locale-aware single-letter day names.
+  const dayNames = useMemo(() => getDayNames(locale), [locale]);
 
   // Keep draft/view in sync when `value` is changed externally.
   useEffect(() => {
@@ -98,26 +113,13 @@ export function DatePicker({
     if (!isOpen) return;
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        if (viewMode === "year") {
-          setViewMode("day");
-        } else {
-          setIsOpen(false);
-        }
+        if (viewMode === "year") setViewMode("day");
+        else setIsOpen(false);
       }
     }
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
   }, [isOpen, viewMode]);
-
-  // Scroll to the highlighted year whenever the year grid opens.
-  useEffect(() => {
-    if (viewMode !== "year" || !yearGridRef.current) return;
-    const targetYear = draft ? draft.getFullYear() : CURRENT_YEAR;
-    const el = yearGridRef.current.querySelector<HTMLElement>(
-      `[data-year="${targetYear}"]`
-    );
-    if (el) el.scrollIntoView({ block: "center", behavior: "instant" });
-  }, [viewMode, draft]);
 
   function openPicker() {
     const d = value ? parseISO(value) : null;
@@ -143,22 +145,21 @@ export function DatePicker({
     setIsOpen(false);
   }
 
+  function goToToday() {
+    setViewYear(TODAY.getFullYear());
+    setViewMonth(TODAY.getMonth());
+    setDraft(new Date(TODAY));
+    setViewMode("day");
+  }
+
   function prevMonth() {
-    if (viewMonth === 0) {
-      setViewMonth(11);
-      setViewYear((y) => y - 1);
-    } else {
-      setViewMonth((m) => m - 1);
-    }
+    if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
+    else setViewMonth((m) => m - 1);
   }
 
   function nextMonth() {
-    if (viewMonth === 11) {
-      setViewMonth(0);
-      setViewYear((y) => y + 1);
-    } else {
-      setViewMonth((m) => m + 1);
-    }
+    if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
+    else setViewMonth((m) => m + 1);
   }
 
   function selectYear(year: number) {
@@ -184,31 +185,27 @@ export function DatePicker({
   }, [viewYear, viewMonth]);
 
   const monthLabel = useMemo(
-    () =>
-      new Intl.DateTimeFormat("en", { month: "long" }).format(
-        new Date(viewYear, viewMonth, 1)
-      ),
-    [viewYear, viewMonth]
+    () => formatDate(new Date(viewYear, viewMonth, 1), locale, { month: "long" }),
+    [locale, viewYear, viewMonth]
   );
 
-  // ── Header display ───────────────────────────────────────────────────────
-  const headerYear = draft ? draft.getFullYear() : viewYear;
-  const headerFormatted = draft
-    ? new Intl.DateTimeFormat("en", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      }).format(draft)
-    : `${monthLabel} ${viewYear}`;
-
-  // ── Trigger label ────────────────────────────────────────────────────────
+  // Trigger label
   const triggerLabel = selectedDate
-    ? new Intl.DateTimeFormat("en", {
+    ? formatDate(selectedDate, locale, {
         year: "numeric",
         month: "long",
         day: "numeric",
-      }).format(selectedDate)
-    : placeholder;
+      })
+    : (placeholder ?? t("selectDate"));
+
+  // "Selected: Sep 24, 2026" footer label
+  const selectedLabel = draft
+    ? formatDate(draft, locale, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
 
   return (
     <div
@@ -229,7 +226,6 @@ export function DatePicker({
         }`}
       >
         <span>{triggerLabel}</span>
-        {/* Calendar icon */}
         <svg
           className="h-4 w-4 shrink-0 text-gray-400"
           fill="none"
@@ -251,76 +247,69 @@ export function DatePicker({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Choose date"
+          aria-label={t("selectDate")}
           className="absolute left-0 top-full z-50 mt-2 w-full min-w-72 max-w-sm rounded-2xl border border-gray-100 bg-white shadow-xl"
         >
-          {/* ── Header — clicking year toggles year-selection mode ───────── */}
-          <div className="border-b border-gray-100 px-5 pb-4 pt-5">
+          {/* ── Compact header: [ Year ▼ ] ···············  [ Today ] ────── */}
+          <div className="flex items-center justify-between px-4 pt-4 pb-2">
             <button
               type="button"
-              onClick={() =>
-                setViewMode(viewMode === "year" ? "day" : "year")
-              }
+              onClick={() => setViewMode(viewMode === "year" ? "day" : "year")}
               aria-label={
                 viewMode === "year"
-                  ? "Back to day view"
-                  : `Select year, currently ${headerYear}`
+                  ? "Back to calendar"
+                  : `Change year, current: ${viewYear}`
               }
-              className="group flex flex-col gap-0.5 text-left focus-visible:outline-none"
+              className="flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
-              <span className="flex items-center gap-1 text-xs font-medium uppercase tracking-widest text-gray-400 transition-colors group-hover:text-indigo-500">
-                {headerYear}
-                <svg
-                  className={`h-3 w-3 transition-transform duration-150 ${
-                    viewMode === "year" ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </span>
-              <span className="text-xl font-semibold leading-tight text-gray-900">
-                {headerFormatted}
-              </span>
+              {viewYear}
+              <svg
+                className={`h-3.5 w-3.5 text-gray-500 transition-transform duration-150 ${
+                  viewMode === "year" ? "rotate-180" : ""
+                }`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={goToToday}
+              className="rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >
+              {t("today")}
             </button>
           </div>
 
           {viewMode === "year" ? (
-            /* ── Year selection grid ──────────────────────────────────────── */
+            /* ── Compact year panel: 3-column grid, ~11 years ───────────── */
             <div
-              ref={yearGridRef}
               role="listbox"
               aria-label="Select year"
-              className="h-64 overflow-y-auto px-4 py-3"
+              className="px-4 pb-4"
             >
-              <div className="grid grid-cols-4 gap-1">
-                {YEARS.map((year) => {
-                  const isSelectedYear = draft
-                    ? draft.getFullYear() === year
-                    : false;
-                  const isCurrentYear = year === CURRENT_YEAR;
-
+              <div className="grid grid-cols-3 gap-1.5">
+                {years.map((year) => {
+                  const isSelected = draft ? draft.getFullYear() === year : false;
+                  const isCurrent = year === CURRENT_YEAR;
                   return (
                     <button
                       key={year}
                       type="button"
                       role="option"
                       data-year={year}
-                      aria-selected={isSelectedYear}
+                      aria-selected={isSelected}
                       onClick={() => selectYear(year)}
-                      className={`w-full rounded-lg py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 ${
-                        isSelectedYear
+                      className={`w-full rounded-lg py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 ${
+                        isSelected
                           ? "bg-indigo-600 text-white"
-                          : isCurrentYear
-                          ? "border border-indigo-300 text-indigo-600 hover:bg-indigo-50"
+                          : isCurrent
+                          ? "border border-indigo-200 text-indigo-600 hover:bg-indigo-50"
                           : "text-gray-700 hover:bg-gray-100"
                       }`}
                     >
@@ -334,7 +323,7 @@ export function DatePicker({
             /* ── Day view ─────────────────────────────────────────────────── */
             <>
               {/* Month navigation */}
-              <div className="flex items-center justify-between px-5 py-3">
+              <div className="flex items-center justify-between px-4 py-2">
                 <button
                   type="button"
                   onClick={prevMonth}
@@ -349,15 +338,11 @@ export function DatePicker({
                     strokeWidth={2}
                     aria-hidden="true"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 19l-7-7 7-7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
 
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-semibold capitalize text-gray-900">
                   {monthLabel} {viewYear}
                 </span>
 
@@ -375,27 +360,18 @@ export function DatePicker({
                     strokeWidth={2}
                     aria-hidden="true"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
               </div>
 
               {/* Calendar grid */}
-              <div className="px-4 pb-3">
+              <div className="px-4 pb-2">
                 {/* Day-name header row */}
                 <div className="grid grid-cols-7 mb-1">
-                  {DAY_NAMES.map((d) => (
-                    <div
-                      key={d}
-                      className="flex items-center justify-center py-1"
-                    >
-                      <span className="text-xs font-medium text-gray-400">
-                        {d}
-                      </span>
+                  {dayNames.map((d, i) => (
+                    <div key={i} className="flex items-center justify-center py-1">
+                      <span className="text-xs font-medium text-gray-400">{d}</span>
                     </div>
                   ))}
                 </div>
@@ -427,14 +403,8 @@ export function DatePicker({
                       <div key={day} role="gridcell">
                         <button
                           type="button"
-                          onClick={() =>
-                            setDraft(new Date(viewYear, viewMonth, day))
-                          }
-                          aria-label={new Date(
-                            viewYear,
-                            viewMonth,
-                            day
-                          ).toDateString()}
+                          onClick={() => setDraft(new Date(viewYear, viewMonth, day))}
+                          aria-label={new Date(viewYear, viewMonth, day).toDateString()}
                           aria-pressed={isSelected}
                           className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 ${
                             isSelected
@@ -451,33 +421,40 @@ export function DatePicker({
                   })}
                 </div>
               </div>
+
+              {/* "Selected: Sep 24, 2026" — subtle footer, no duplication */}
+              {selectedLabel && (
+                <p className="px-4 pb-3 text-center text-xs text-gray-400">
+                  {t("selected", { date: selectedLabel })}
+                </p>
+              )}
             </>
           )}
 
-          {/* Footer */}
-          <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
+          {/* ── Footer actions: [ Clear ]  ···  [ Cancel ] [ Set ] ──────── */}
+          <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3">
             <button
               type="button"
               onClick={handleClear}
-              className="rounded text-sm text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
-              Clear
+              {t("clear")}
             </button>
 
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 type="button"
                 onClick={handleSet}
                 className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
-                Set
+                {t("set")}
               </button>
             </div>
           </div>
