@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getUserCurrencies } from "@/modules/currencies/actions";
 import { AccountForm } from "@/components/accounts/account-form";
 
 type Props = { params: Promise<{ id: string }> };
@@ -10,9 +11,12 @@ export default async function EditAccountPage({ params }: Props) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const account = await prisma.account.findFirst({
-    where: { id, userId: session.user.id, isActive: true },
-  });
+  const [account, currencyPrefs] = await Promise.all([
+    prisma.account.findFirst({
+      where: { id, userId: session.user.id, isActive: true },
+    }),
+    getUserCurrencies(),
+  ]);
 
   if (!account) notFound();
 
@@ -22,6 +26,8 @@ export default async function EditAccountPage({ params }: Props) {
       <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
         <AccountForm
           account={{ ...account, balance: account.balance.toString() }}
+          currency={currencyPrefs.defaultCurrency}
+          locale={currencyPrefs.locale}
         />
       </div>
     </div>

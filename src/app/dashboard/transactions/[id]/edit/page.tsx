@@ -30,6 +30,7 @@ export default async function EditTransactionPage({ params }: PageProps) {
           transaction={transaction}
           userCurrencies={currencyPrefs.currencies}
           defaultCurrency={currencyPrefs.defaultCurrency}
+          locale={currencyPrefs.locale}
         />
       </div>
     </div>

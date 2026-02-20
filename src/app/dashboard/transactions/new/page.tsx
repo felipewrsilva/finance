@@ -19,6 +19,7 @@ export default async function NewTransactionPage() {
           categories={categories}
           userCurrencies={currencyPrefs.currencies}
           defaultCurrency={currencyPrefs.defaultCurrency}
+          locale={currencyPrefs.locale}
         />
       </div>
     </div>

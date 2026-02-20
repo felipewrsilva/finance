@@ -2,12 +2,20 @@ import type { Frequency } from "@prisma/client";
 
 // ─── Currency ────────────────────────────────────────────────────────────────
 
+const _currencyFormatterCache = new Map<string, Intl.NumberFormat>();
+
 export function formatCurrency(
   amount: number,
   currency = "BRL",
   locale = "pt-BR"
 ): string {
-  return new Intl.NumberFormat(locale, { style: "currency", currency }).format(amount);
+  const key = `${locale}:${currency}`;
+  let formatter = _currencyFormatterCache.get(key);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, { style: "currency", currency });
+    _currencyFormatterCache.set(key, formatter);
+  }
+  return formatter.format(amount);
 }
 
 // ─── Selectors ───────────────────────────────────────────────────────────────

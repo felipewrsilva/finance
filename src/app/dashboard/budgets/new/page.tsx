@@ -1,8 +1,12 @@
 import { getCategories } from "@/modules/categories/actions";
+import { getUserCurrencies } from "@/modules/currencies/actions";
 import BudgetForm from "@/components/budgets/budget-form";
 
 export default async function NewBudgetPage() {
-  const categories = await getCategories();
+  const [categories, currencyPrefs] = await Promise.all([
+    getCategories(),
+    getUserCurrencies(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -11,7 +15,11 @@ export default async function NewBudgetPage() {
         <p className="text-sm text-gray-500">Set a spending limit for a category or overall.</p>
       </div>
       <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-        <BudgetForm categories={categories} />
+        <BudgetForm
+          categories={categories}
+          currency={currencyPrefs.defaultCurrency}
+          locale={currencyPrefs.locale}
+        />
       </div>
     </div>
   );

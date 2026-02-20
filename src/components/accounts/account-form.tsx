@@ -10,6 +10,7 @@ import {
   BANKS,
   type BankKey,
 } from "@/modules/accounts/constants";
+import { CurrencyInput } from "@/components/ui/currency-input";
 
 type Account = {
   id: string;
@@ -23,12 +24,18 @@ type Account = {
 
 type Props = {
   account?: Account;
+  currency?: string;
+  locale?: string;
 };
 
-export function AccountForm({ account }: Props) {
+export function AccountForm({ account, currency = "BRL", locale = "pt-BR" }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const isEdit = !!account;
+
+  const [balance, setBalance] = useState(
+    account ? Number(account.balance) : 0
+  );
 
   const [selectedBank, setSelectedBank] = useState<BankKey | null>(
     (account?.bankKey as BankKey | null) ?? null,
@@ -135,12 +142,12 @@ export function AccountForm({ account }: Props) {
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Current balance
         </label>
-        <input
+        <CurrencyInput
           name="balance"
-          type="number"
-          step="0.01"
-          defaultValue={account ? Number(account.balance) : 0}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          value={balance}
+          currency={currency}
+          locale={locale}
+          onChange={setBalance}
         />
       </div>
 
