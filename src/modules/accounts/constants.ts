@@ -25,7 +25,7 @@ export type Bank = {
 
 export const BANKS: readonly Bank[] = [
   { key: "nubank",         label: "Nubank",          primaryColor: "#8A05BE", logoPath: "/banks/nubank.svg" },
-  { key: "itau",           label: "Itaú",            primaryColor: "#FF6600", logoPath: "/banks/itau.svg" },
+  { key: "itau",           label: "Itaú",            primaryColor: "#EC7000", logoPath: "/banks/itau.svg" },
   { key: "bradesco",       label: "Bradesco",        primaryColor: "#CC092F", logoPath: "/banks/bradesco.svg" },
   { key: "banco_do_brasil",label: "Banco do Brasil", primaryColor: "#FFCC00", logoPath: "/banks/banco_do_brasil.svg" },
   { key: "inter",          label: "Inter",           primaryColor: "#FF6D00", logoPath: "/banks/inter.svg" },
