@@ -25,8 +25,8 @@ export default async function ReportsPage() {
   return (
     <div className="space-y-6 lg:space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 lg:text-3xl">Reports</h1>
-        <p className="text-sm text-gray-500">Last 6 months overview</p>
+        <h1 className="text-2xl font-semibold text-gray-900">Reports</h1>
+        <p className="mt-0.5 text-sm text-gray-400">Last 6 months</p>
       </div>
 
       {/* Summary cards */}
@@ -59,7 +59,7 @@ export default async function ReportsPage() {
 
       {/* Income vs Expenses chart */}
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-6">
-        <p className="mb-4 text-sm font-semibold text-gray-700">Income vs Expenses</p>
+        <p className="mb-4 text-sm font-medium text-gray-500">Income vs Expenses</p>
         {data.some((d) => d.income > 0 || d.expense > 0) ? (
           <MonthlyChart data={data} currency={currency} />
         ) : (
@@ -72,7 +72,7 @@ export default async function ReportsPage() {
       {/* Account balance evolution chart */}
       {balanceHistory.accounts.length > 0 && (
         <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-6">
-          <p className="mb-4 text-sm font-semibold text-gray-700">Account balance evolution</p>
+          <p className="mb-4 text-sm font-medium text-gray-500">Account balance evolution</p>
           <BalanceChart
             accounts={balanceHistory.accounts}
             dataPoints={balanceHistory.dataPoints}
@@ -84,7 +84,7 @@ export default async function ReportsPage() {
       {/* Monthly breakdown table */}
       <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
         <div className="border-b border-gray-50 px-4 py-3 lg:px-6">
-          <p className="text-sm font-semibold text-gray-700">Monthly breakdown</p>
+          <p className="text-sm font-medium text-gray-500">Monthly breakdown</p>
         </div>
         {data.map((d, i) => {
           const net = d.income - d.expense;

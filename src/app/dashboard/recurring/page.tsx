@@ -93,30 +93,21 @@ export default async function RecurringPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">Recurring transactions</h1>
-        <p className="text-sm text-gray-500">
-          Transactions set to repeat automatically.{" "}
-          <Link
-            href="/dashboard/transactions/new"
-            className="text-indigo-600 hover:underline font-medium"
-          >
-            Add new →
-          </Link>
-        </p>
+        <h1 className="text-2xl font-semibold text-gray-900">Recurring</h1>
+        <p className="mt-0.5 text-sm text-gray-400">Transactions set to repeat automatically.</p>
       </div>
 
       {transactions.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-200 py-16 text-center text-gray-400">
-          <p className="text-4xl mb-2">🔄</p>
-          <p className="font-medium">No recurring transactions</p>
-          <p className="text-sm mt-1">
+        <div className="rounded-xl border border-dashed border-gray-200 py-16 text-center">
+          <p className="text-sm font-medium text-gray-500">No recurring transactions</p>
+          <p className="mt-1 text-sm text-gray-400">
             Toggle &ldquo;Repeat this transaction&rdquo; when adding a transaction.
           </p>
           <Link
             href="/dashboard/transactions/new"
-            className="mt-4 inline-block rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+            className="mt-5 inline-block rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
-            + Add transaction
+            Add transaction
           </Link>
         </div>
       ) : (

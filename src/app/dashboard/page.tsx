@@ -26,18 +26,18 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">
-          Hi, {session?.user?.name?.split(" ")[0]} 👋
+        <h1 className="text-2xl font-semibold text-gray-900">
+          {session?.user?.name?.split(" ")[0]}
         </h1>
-        <p className="text-sm text-gray-500">Here&apos;s your financial overview for {monthLabel}.</p>
+        <p className="mt-0.5 text-sm text-gray-400">{monthLabel}</p>
       </div>
 
       {/* Total balance */}
-      <div className="rounded-xl bg-indigo-600 p-6 text-white shadow lg:p-8">
-        <p className="text-sm font-medium opacity-80">Total balance</p>
-        <p className="mt-1 text-3xl font-bold lg:text-4xl">{fmt(totalBalance)}</p>
-        <p className="mt-1 text-xs opacity-60">
-          Across {accounts.length} account{accounts.length !== 1 ? "s" : ""}
+      <div className="rounded-xl border border-gray-200 bg-white p-6 lg:p-8">
+        <p className="text-xs font-medium uppercase tracking-wider text-gray-400">Total balance</p>
+        <p className="mt-2 text-3xl font-semibold text-gray-900 lg:text-4xl">{fmt(totalBalance)}</p>
+        <p className="mt-1 text-xs text-gray-400">
+          {accounts.length} account{accounts.length !== 1 ? "s" : ""}
         </p>
       </div>
 
@@ -73,9 +73,9 @@ export default async function DashboardPage() {
       {categoryBreakdown.length > 0 && (
         <div>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-700">Top expense categories</h2>
-            <a href="/dashboard/transactions" className="text-xs text-indigo-600 hover:underline">
-              View all →
+            <h2 className="text-sm font-medium text-gray-500">Spending by category</h2>
+            <a href="/dashboard/transactions" className="text-xs text-gray-400 transition-colors hover:text-gray-600">
+              View all
             </a>
           </div>
           <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
@@ -116,9 +116,9 @@ export default async function DashboardPage() {
       {recentTransactions.length > 0 && (
         <div>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-700">Recent transactions</h2>
-            <a href="/dashboard/transactions" className="text-xs text-indigo-600 hover:underline">
-              View all →
+            <h2 className="text-sm font-medium text-gray-500">Recent transactions</h2>
+            <a href="/dashboard/transactions" className="text-xs text-gray-400 transition-colors hover:text-gray-600">
+              View all
             </a>
           </div>
           <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
@@ -165,23 +165,23 @@ export default async function DashboardPage() {
       {/* Accounts summary */}
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-700">Accounts</h2>
+          <h2 className="text-sm font-medium text-gray-500">Accounts</h2>
           <a
             href="/dashboard/accounts"
-            className="text-xs text-indigo-600 hover:underline"
+            className="text-xs text-gray-400 transition-colors hover:text-gray-600"
           >
-            Manage →
+            Manage
           </a>
         </div>
 
         {accounts.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-500">
-            No accounts yet.{" "}
+          <div className="rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center">
+            <p className="text-sm text-gray-400">No accounts yet.</p>
             <a
               href="/dashboard/accounts/new"
-              className="font-medium text-indigo-600 hover:underline"
+              className="mt-2 inline-block text-sm font-medium text-indigo-600 hover:underline"
             >
-              Create one →
+              Add account
             </a>
           </div>
         ) : (

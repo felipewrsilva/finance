@@ -52,7 +52,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-6 lg:space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 lg:text-3xl">Transactions</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Transactions</h1>
         <div className="flex items-center gap-2">
           <a
             href={`/api/export/transactions?month=${month}&year=${year}`}
@@ -72,19 +72,19 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
       {/* Summary cards */}
       <section aria-label="Monthly summary" className="grid grid-cols-3 gap-3 lg:gap-4">
         <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Income</p>
+          <p className="text-xs font-medium text-gray-400">Income</p>
           <p className="mt-1 text-lg font-bold text-green-600 lg:text-xl">
             {formatCurrency(income, currency, locale)}
           </p>
         </div>
         <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Expenses</p>
+          <p className="text-xs font-medium text-gray-400">Expenses</p>
           <p className="mt-1 text-lg font-bold text-red-500 lg:text-xl">
             {formatCurrency(expense, currency, locale)}
           </p>
         </div>
         <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Balance</p>
+          <p className="text-xs font-medium text-gray-400">Balance</p>
           <p className={`mt-1 text-lg font-bold lg:text-xl ${net >= 0 ? "text-indigo-600" : "text-red-500"}`}>
             {formatCurrency(net, currency, locale)}
           </p>
