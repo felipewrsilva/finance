@@ -1,10 +1,17 @@
 import { auth } from "@/auth";
 import { getAccounts } from "@/modules/accounts/actions";
 import { ACCOUNT_TYPE_ICONS } from "@/modules/accounts/constants";
+import { getDashboardSummary } from "@/modules/dashboard/actions";
 import type { Account } from "@prisma/client";
 
 export default async function DashboardPage() {
-  const [session, accounts] = await Promise.all([auth(), getAccounts()]);
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+
+  const [session, accounts, { summary, recentTransactions, categoryBreakdown }] =
+    await Promise.all([auth(), getAccounts(), getDashboardSummary(month, year)]);
+
   const currency = session?.user?.currency ?? "BRL";
 
   const fmt = (value: number) =>
@@ -12,13 +19,15 @@ export default async function DashboardPage() {
 
   const totalBalance = accounts.reduce((sum: number, a: Account) => sum + Number(a.balance), 0);
 
+  const monthLabel = now.toLocaleString("default", { month: "long", year: "numeric" });
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-gray-900">
           Hi, {session?.user?.name?.split(" ")[0]} 👋
         </h1>
-        <p className="text-sm text-gray-500">Here&apos;s your financial overview.</p>
+        <p className="text-sm text-gray-500">Here&apos;s your financial overview for {monthLabel}.</p>
       </div>
 
       {/* Total balance */}
@@ -29,6 +38,126 @@ export default async function DashboardPage() {
           Across {accounts.length} account{accounts.length !== 1 ? "s" : ""}
         </p>
       </div>
+
+      {/* Monthly summary cards */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+          <p className="text-xs font-medium text-gray-500">Income</p>
+          <p className="mt-1 text-lg font-bold text-green-600">{fmt(summary.income)}</p>
+          {summary.pendingIncome > 0 && (
+            <p className="mt-0.5 text-xs text-gray-400">+{fmt(summary.pendingIncome)} pending</p>
+          )}
+        </div>
+        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+          <p className="text-xs font-medium text-gray-500">Expenses</p>
+          <p className="mt-1 text-lg font-bold text-red-500">{fmt(summary.expense)}</p>
+          {summary.pendingExpense > 0 && (
+            <p className="mt-0.5 text-xs text-gray-400">+{fmt(summary.pendingExpense)} pending</p>
+          )}
+        </div>
+        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+          <p className="text-xs font-medium text-gray-500">Net</p>
+          <p
+            className={`mt-1 text-lg font-bold ${
+              summary.net >= 0 ? "text-indigo-600" : "text-red-600"
+            }`}
+          >
+            {fmt(summary.net)}
+          </p>
+        </div>
+      </div>
+
+      {/* Category breakdown */}
+      {categoryBreakdown.length > 0 && (
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-gray-700">Top expense categories</h2>
+            <a href="/dashboard/transactions" className="text-xs text-indigo-600 hover:underline">
+              View all →
+            </a>
+          </div>
+          <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+            {categoryBreakdown.map((c, i) => {
+              const pct = summary.expense > 0 ? (c.total / summary.expense) * 100 : 0;
+              return (
+                <div
+                  key={c.categoryId}
+                  className={`flex items-center gap-3 px-4 py-3 ${
+                    i !== categoryBreakdown.length - 1 ? "border-b border-gray-50" : ""
+                  }`}
+                >
+                  <span className="text-base">{c.categoryIcon ?? "📦"}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="truncate text-sm font-medium text-gray-800">
+                        {c.categoryName}
+                      </span>
+                      <span className="ml-2 text-sm font-semibold text-gray-900">
+                        {fmt(c.total)}
+                      </span>
+                    </div>
+                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                      <div
+                        className="h-full rounded-full bg-red-400"
+                        style={{ width: `${Math.min(pct, 100).toFixed(1)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Recent transactions */}
+      {recentTransactions.length > 0 && (
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-gray-700">Recent transactions</h2>
+            <a href="/dashboard/transactions" className="text-xs text-indigo-600 hover:underline">
+              View all →
+            </a>
+          </div>
+          <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+            {recentTransactions.map((t, i) => (
+              <div
+                key={t.id}
+                className={`flex items-center gap-3 px-4 py-3 ${
+                  i !== recentTransactions.length - 1 ? "border-b border-gray-50" : ""
+                }`}
+              >
+                <span className="text-base">{t.categoryIcon ?? "💸"}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-gray-800">
+                    {t.description ?? t.categoryName ?? "Transaction"}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {t.accountName} ·{" "}
+                    {new Date(t.date).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "short",
+                    })}
+                    {t.status === "PENDING" && (
+                      <span className="ml-1 rounded bg-yellow-100 px-1 py-0.5 text-yellow-700">
+                        pending
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <span
+                  className={`text-sm font-semibold ${
+                    t.type === "INCOME" ? "text-green-600" : "text-red-500"
+                  }`}
+                >
+                  {t.type === "INCOME" ? "+" : "-"}
+                  {fmt(t.amount)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Accounts summary */}
       <div>
