@@ -33,9 +33,12 @@ export function TransactionForm({
   const [status, setStatus] = useState<"PAID" | "PENDING">(
     transaction?.status ?? "PAID"
   );
+  const [locale, setLocale] = useState<string | undefined>(undefined);
 
   // Load persisted preferences only for new transactions
   useEffect(() => {
+    setLocale(navigator.language);
+
     if (!transaction) {
       const savedType = localStorage.getItem("lastTxType") as "INCOME" | "EXPENSE" | null;
       if (savedType === "INCOME" || savedType === "EXPENSE") setType(savedType);
@@ -155,6 +158,7 @@ export function TransactionForm({
         <input
           name="date"
           type="date"
+          lang={locale}
           defaultValue={txDate}
           required
           className={inputCls}
