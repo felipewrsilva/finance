@@ -34,69 +34,79 @@ export function TransactionList({ transactions, currency = "BRL", locale = "pt-B
   }
 
   return (
-    <ul className="space-y-2 lg:space-y-3" aria-label="Transactions">
-      {transactions.map((tx) => (
-        <li
-          key={tx.id}
-          className="flex items-center rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden transition-shadow hover:shadow-md"
-        >
-          {/* Clickable row — takes up all space except delete button */}
-          <Link
-            href={`/dashboard/transactions/${tx.id}/edit`}
-            className="flex flex-1 items-center gap-3 p-4 min-w-0 transition-colors hover:bg-gray-50/60 active:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 lg:gap-4 lg:px-5"
+    <ul
+      className="grid grid-cols-1 gap-2 lg:grid-cols-2 lg:gap-3"
+      aria-label="Transactions"
+      role="list"
+    >
+      {transactions.map((tx) => {
+        const isPending = tx.status === "PENDING";
+
+        return (
+          <li
+            key={tx.id}
+            className="group flex items-center rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden transition-shadow hover:shadow-md"
           >
-            {/* Category icon */}
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-xl shrink-0 lg:h-11 lg:w-11">
-              {tx.type === "TRANSFER" ? "↔️" : (tx.category?.icon ?? "📌")}
-            </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5">
-                <p className="font-medium text-gray-900 truncate">
-                  {tx.description || tx.category?.name || (tx.type === "TRANSFER" ? "Transfer" : "Transaction")}
-                </p>
-                {tx.isRecurring && (
-                  <span
-                    title="Recurring"
-                    className="text-xs shrink-0 rounded-full bg-indigo-50 px-1.5 py-0.5 text-indigo-500 font-medium"
-                  >
-                    🔄
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-gray-400 truncate">
-                {tx.account.name} ·{" "}
-                {new Date(tx.date).toLocaleDateString("pt-BR")} ·{" "}
-                <span className={tx.status === "PENDING" ? "text-amber-500" : ""}>
-                  {tx.status === "PENDING" ? "Pending" : "Paid"}
-                </span>
-              </p>
-            </div>
-
-            {/* Amount */}
-            <span
-              className={`font-semibold tabular-nums shrink-0 lg:text-base ${TRANSACTION_TYPE_COLORS[tx.type]}`}
+            {/* Clickable row */}
+            <Link
+              href={`/dashboard/transactions/${tx.id}/edit`}
+              className="flex flex-1 items-center gap-3 p-4 min-w-0 transition-colors hover:bg-gray-50/60 active:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
             >
-              {tx.type === "EXPENSE" ? "-" : tx.type === "INCOME" ? "+" : ""}
-              {formatCurrency(Number(tx.amount), currency, locale)}
-            </span>
-          </Link>
+              {/* Category icon */}
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-lg">
+                {tx.type === "TRANSFER" ? "↔️" : (tx.category?.icon ?? "📌")}
+              </div>
 
-          {/* Mark paid — outside Link */}
-          {tx.status === "PENDING" && (
-            <div className="shrink-0 pr-1">
-              <MarkPaidButton id={tx.id} />
+              {/* Info */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="truncate font-medium text-gray-900">
+                    {tx.description || tx.category?.name || (tx.type === "TRANSFER" ? "Transfer" : "Transaction")}
+                  </p>
+                  {tx.isRecurring && (
+                    <span
+                      title="Recurring"
+                      className="shrink-0 rounded-full bg-indigo-50 px-1.5 py-0.5 text-[11px] font-medium text-indigo-500"
+                    >
+                      🔄
+                    </span>
+                  )}
+                </div>
+                <div className="mt-0.5 flex items-center gap-1.5 text-xs text-gray-400">
+                  <span className="truncate">
+                    {tx.account.name} · {new Date(tx.date).toLocaleDateString("pt-BR")}
+                  </span>
+                  {isPending && (
+                    <span className="shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-600">
+                      Pending
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Amount — fixed width keeps all values right-aligned regardless of length */}
+              <span
+                className={`w-24 shrink-0 text-right text-sm font-semibold tabular-nums sm:w-28 ${TRANSACTION_TYPE_COLORS[tx.type]}`}
+              >
+                {tx.type === "EXPENSE" ? "−" : tx.type === "INCOME" ? "+" : ""}
+                {formatCurrency(Number(tx.amount), currency, locale)}
+              </span>
+            </Link>
+
+            {/* Mark paid — outside Link, always visible when pending */}
+            {isPending && (
+              <div className="shrink-0 pr-1">
+                <MarkPaidButton id={tx.id} />
+              </div>
+            )}
+
+            {/* Delete — icon-only, full opacity on mobile; fade in on desktop hover/focus */}
+            <div className="shrink-0 pr-2 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+              <InlineConfirmButton onConfirm={() => deleteTransaction(tx.id)} />
             </div>
-          )}
-
-          {/* Delete — outside Link to avoid click propagation */}
-          <div className="pr-3 lg:pr-4 shrink-0">
-            <InlineConfirmButton onConfirm={() => deleteTransaction(tx.id)} />
-          </div>
-        </li>
-      ))}
+          </li>
+        );
+      })}
     </ul>
   );
 }
-

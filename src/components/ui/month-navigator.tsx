@@ -34,7 +34,7 @@ export function MonthNavigator({ month, year }: MonthNavigatorProps) {
     month === new Date().getMonth() + 1 && year === new Date().getFullYear();
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-4 sm:max-w-xs">
       <button
         type="button"
         onClick={prev}

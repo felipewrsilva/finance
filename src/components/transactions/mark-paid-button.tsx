@@ -15,7 +15,7 @@ export function MarkPaidButton({ id }: { id: string }) {
           markTransactionPaid(id);
         })
       }
-      className="shrink-0 rounded-lg bg-green-50 px-2 py-1 text-xs font-semibold text-green-700 transition-colors hover:bg-green-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+      className="min-h-[44px] shrink-0 rounded-lg bg-green-50 px-3 py-1 text-xs font-semibold text-green-700 transition-colors hover:bg-green-100 active:bg-green-200 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1"
     >
       {isPending ? "…" : "✓ Pay"}
     </button>
