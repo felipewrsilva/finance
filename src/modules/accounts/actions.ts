@@ -20,6 +20,12 @@ export async function getAccounts() {
   });
 }
 
+export async function getDefaultAccount(userId: string) {
+  return prisma.account.findFirst({
+    where: { userId, isDefault: true, isActive: true },
+  });
+}
+
 export async function createAccount(formData: FormData) {
   const user = await getUser();
 
@@ -29,12 +35,21 @@ export async function createAccount(formData: FormData) {
     balance: formData.get("balance"),
     color: formData.get("color") || undefined,
     icon: formData.get("icon") || undefined,
+    isDefault: formData.get("isDefault") === "true",
   });
 
   if (!parsed.success) return;
 
-  await prisma.account.create({
-    data: { ...parsed.data, userId: user.id },
+  await prisma.$transaction(async (tx) => {
+    if (parsed.data.isDefault) {
+      await tx.account.updateMany({
+        where: { userId: user.id, isDefault: true },
+        data: { isDefault: false },
+      });
+    }
+    await tx.account.create({
+      data: { ...parsed.data, userId: user.id },
+    });
   });
 
   revalidatePath("/dashboard/accounts");
@@ -50,13 +65,22 @@ export async function updateAccount(id: string, formData: FormData) {
     balance: formData.get("balance"),
     color: formData.get("color") || undefined,
     icon: formData.get("icon") || undefined,
+    isDefault: formData.get("isDefault") === "true",
   });
 
   if (!parsed.success) return;
 
-  await prisma.account.updateMany({
-    where: { id, userId: user.id },
-    data: parsed.data,
+  await prisma.$transaction(async (tx) => {
+    if (parsed.data.isDefault) {
+      await tx.account.updateMany({
+        where: { userId: user.id, isDefault: true, NOT: { id } },
+        data: { isDefault: false },
+      });
+    }
+    await tx.account.updateMany({
+      where: { id, userId: user.id },
+      data: parsed.data,
+    });
   });
 
   revalidatePath("/dashboard/accounts");

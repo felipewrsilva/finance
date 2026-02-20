@@ -14,6 +14,7 @@ type Account = {
   type: AccountType;
   balance: string | number;
   color: string | null;
+  isDefault: boolean;
 };
 
 type Props = {
@@ -101,6 +102,21 @@ export function AccountForm({ account }: Props) {
             </label>
           ))}
         </div>
+      </div>
+
+      {/* Default account */}
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="isDefault"
+          name="isDefault"
+          value="true"
+          defaultChecked={account?.isDefault ?? false}
+          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        />
+        <label htmlFor="isDefault" className="text-sm font-medium text-gray-700">
+          Set as default account
+        </label>
       </div>
 
       {/* Actions */}

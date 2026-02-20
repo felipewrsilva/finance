@@ -2,6 +2,7 @@ import { AccountType } from "@prisma/client";
 
 export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
   CASH: "Cash",
+  CHECKING: "Checking Account",
   BANK: "Bank Account",
   CREDIT_CARD: "Credit Card",
   INVESTMENT: "Investment",
@@ -9,6 +10,7 @@ export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
 
 export const ACCOUNT_TYPE_ICONS: Record<AccountType, string> = {
   CASH: "💵",
+  CHECKING: "🏧",
   BANK: "🏦",
   CREDIT_CARD: "💳",
   INVESTMENT: "📈",

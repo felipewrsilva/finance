@@ -7,6 +7,7 @@ export const accountSchema = z.object({
   balance: z.coerce.number({ error: "Invalid amount" }),
   color: z.string().optional(),
   icon: z.string().optional(),
+  isDefault: z.boolean().default(false),
 });
 
 export type AccountFormData = z.infer<typeof accountSchema>;

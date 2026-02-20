@@ -57,8 +57,22 @@ export async function getTransaction(id: string) {
 export async function createTransaction(formData: FormData) {
   const user = await getUser();
 
+  const rawAccountId = (formData.get("accountId") as string | null) || null;
+  let resolvedAccountId = rawAccountId;
+
+  if (!resolvedAccountId) {
+    const defaultAccount = await prisma.account.findFirst({
+      where: { userId: user.id, isDefault: true, isActive: true },
+      select: { id: true },
+    });
+    if (!defaultAccount) {
+      throw new Error("NO_DEFAULT_ACCOUNT");
+    }
+    resolvedAccountId = defaultAccount.id;
+  }
+
   const parsed = transactionSchema.safeParse({
-    accountId: formData.get("accountId"),
+    accountId: resolvedAccountId,
     categoryId: formData.get("categoryId"),
     type: formData.get("type"),
     amount: formData.get("amount"),
