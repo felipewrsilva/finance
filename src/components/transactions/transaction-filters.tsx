@@ -1,14 +1,38 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { MONTHS } from "@/modules/transactions/constants";
-import { TRANSACTION_TYPE_LABELS } from "@/modules/transactions/constants";
-import type { Account, TransactionType } from "@prisma/client";
+import { MonthNavigator } from "@/components/ui/month-navigator";
+import { shouldRenderSelector } from "@/lib/utils";
+import type { Account } from "@prisma/client";
 
 interface TransactionFiltersProps {
   accounts: Account[];
   currentMonth: number;
   currentYear: number;
+}
+
+function Chip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-3 py-1.5 text-sm font-medium transition-all active:scale-95 ${
+        active
+          ? "bg-indigo-600 text-white shadow-sm"
+          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+      }`}
+    >
+      {label}
+    </button>
+  );
 }
 
 export function TransactionFilters({
@@ -27,66 +51,63 @@ export function TransactionFilters({
     router.push(`${pathname}?${next.toString()}`);
   }
 
-  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+  const activeType = params.get("type") ?? "";
+  const activeStatus = params.get("status") ?? "";
+  const activeAccount = params.get("accountId") ?? "";
 
   return (
-    <div className="flex flex-wrap gap-3">
-      {/* Month */}
-      <select
-        value={currentMonth}
-        onChange={(e) => update("month", e.target.value)}
-        className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      >
-        {MONTHS.map((m, i) => (
-          <option key={m} value={i + 1}>{m}</option>
-        ))}
-      </select>
+    <div className="space-y-4">
+      {/* Month navigation */}
+      <MonthNavigator month={currentMonth} year={currentYear} />
 
-      {/* Year */}
-      <select
-        value={currentYear}
-        onChange={(e) => update("year", e.target.value)}
-        className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      >
-        {years.map((y) => (
-          <option key={y} value={y}>{y}</option>
-        ))}
-      </select>
+      {/* Type chips */}
+      <div className="flex flex-wrap gap-2">
+        <Chip label="All" active={activeType === ""} onClick={() => update("type", "")} />
+        <Chip
+          label="Expense"
+          active={activeType === "EXPENSE"}
+          onClick={() => update("type", activeType === "EXPENSE" ? "" : "EXPENSE")}
+        />
+        <Chip
+          label="Income"
+          active={activeType === "INCOME"}
+          onClick={() => update("type", activeType === "INCOME" ? "" : "INCOME")}
+        />
+      </div>
 
-      {/* Type */}
-      <select
-        value={params.get("type") ?? ""}
-        onChange={(e) => update("type", e.target.value)}
-        className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      >
-        <option value="">All types</option>
-        {(["INCOME", "EXPENSE"] as TransactionType[]).map((t) => (
-          <option key={t} value={t}>{TRANSACTION_TYPE_LABELS[t]}</option>
-        ))}
-      </select>
+      {/* Status chips */}
+      <div className="flex flex-wrap gap-2">
+        <Chip
+          label="Paid"
+          active={activeStatus === "PAID"}
+          onClick={() => update("status", activeStatus === "PAID" ? "" : "PAID")}
+        />
+        <Chip
+          label="Pending"
+          active={activeStatus === "PENDING"}
+          onClick={() => update("status", activeStatus === "PENDING" ? "" : "PENDING")}
+        />
+      </div>
 
-      {/* Account */}
-      <select
-        value={params.get("accountId") ?? ""}
-        onChange={(e) => update("accountId", e.target.value)}
-        className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      >
-        <option value="">All accounts</option>
-        {accounts.map((a) => (
-          <option key={a.id} value={a.id}>{a.name}</option>
-        ))}
-      </select>
-
-      {/* Status */}
-      <select
-        value={params.get("status") ?? ""}
-        onChange={(e) => update("status", e.target.value)}
-        className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      >
-        <option value="">All statuses</option>
-        <option value="PAID">Paid</option>
-        <option value="PENDING">Pending</option>
-      </select>
+      {/* Account chips — only when multiple accounts */}
+      {shouldRenderSelector(accounts) && (
+        <div className="flex flex-wrap gap-2">
+          <Chip
+            label="All accounts"
+            active={activeAccount === ""}
+            onClick={() => update("accountId", "")}
+          />
+          {accounts.map((a) => (
+            <Chip
+              key={a.id}
+              label={a.name}
+              active={activeAccount === a.id}
+              onClick={() => update("accountId", activeAccount === a.id ? "" : a.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
+

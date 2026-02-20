@@ -26,9 +26,6 @@ export default async function DashboardLayout({
           <a href="/dashboard/transactions" className="hover:text-gray-900">
             Transactions
           </a>
-          <a href="/dashboard/recurring" className="hover:text-gray-900">
-            Recurring
-          </a>
           <a href="/dashboard/budgets" className="hover:text-gray-900">
             Budgets
           </a>
