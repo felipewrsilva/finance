@@ -17,17 +17,7 @@ function getCachedFormatter(
   return formatterCache.get(key)!;
 }
 
-// ─── Locale Helpers ───────────────────────────────────────────────────────────
-
-function getDecimalSeparator(locale: string): string {
-  const parts = new Intl.NumberFormat(locale).formatToParts(1.1);
-  return parts.find((p) => p.type === "decimal")?.value ?? ".";
-}
-
-function getGroupingSeparator(locale: string): string {
-  const parts = new Intl.NumberFormat(locale).formatToParts(1000);
-  return parts.find((p) => p.type === "group")?.value ?? ",";
-}
+// ─── Currency Symbol ──────────────────────────────────────────────────────────
 
 function getCurrencySymbol(currency: string, locale: string): string {
   const parts = new Intl.NumberFormat(locale, {
@@ -37,94 +27,24 @@ function getCurrencySymbol(currency: string, locale: string): string {
   return parts.find((p) => p.type === "currency")?.value ?? currency;
 }
 
-function escapeRegex(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-// ─── Parsing ──────────────────────────────────────────────────────────────────
-
-function parseSignificant(
-  significant: string,
-  decimalSep: string,
-  groupSep: string,
-): number {
-  if (!significant) return 0;
-  const withoutGroup = significant.split(groupSep).join("");
-  const normalized =
-    decimalSep !== "." ? withoutGroup.replace(decimalSep, ".") : withoutGroup;
-  const n = parseFloat(normalized);
-  return isNaN(n) ? 0 : n;
-}
-
-// ─── Display Formatting ───────────────────────────────────────────────────────
-
-/** Format the "significant" string (digits + at most one decimal sep) for display.
- *  Integer part gets locale grouping; decimal part is preserved as-is (up to 2 digits). */
-function formatSignificant(
-  significant: string,
-  decimalSep: string,
-  locale: string,
-): string {
-  if (!significant) return "";
-  const hasDec = significant.includes(decimalSep);
-  const [intPart, decPart = ""] = significant.split(decimalSep);
-  const intNum = parseInt(intPart || "0", 10);
-  const intFormatter = getCachedFormatter(locale, {
-    style: "decimal",
-    maximumFractionDigits: 0,
-  });
-  const intFormatted = intFormatter.format(isNaN(intNum) ? 0 : intNum);
-  if (!hasDec) return intFormatted;
-  return `${intFormatted}${decimalSep}${decPart.slice(0, 2)}`;
-}
-
-/** Convert a raw number to a fully formatted display string. Returns "" for 0. */
-function numericToDisplay(value: number, locale: string): string {
-  if (value === 0) return "";
-  return getCachedFormatter(locale, {
-    style: "decimal",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-// ─── Cursor Tracking ──────────────────────────────────────────────────────────
-
-/** After reformatting, find the new cursor position by counting significant
- *  characters (digits + decimal sep) up to sigCountBefore. */
-function getNewCursorPosition(
-  formatted: string,
-  sigCountBefore: number,
-  decimalSep: string,
-): number {
-  let sigCount = 0;
-  for (let i = 0; i < formatted.length; i++) {
-    const ch = formatted[i];
-    if (/\d/.test(ch) || ch === decimalSep) {
-      sigCount++;
-      if (sigCount === sigCountBefore) return i + 1;
-    }
-  }
-  return formatted.length;
-}
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export interface CurrencyInputProps {
   /** Name for the hidden numeric form field. */
   name: string;
-  /** Controlled numeric value (use 0 for empty / new). */
+  /** Controlled decimal value, e.g. 12.34. Use 0 for empty / new. */
   value: number;
   /** ISO 4217 currency code, e.g. "BRL", "USD". */
   currency: string;
   /** BCP 47 locale string, e.g. "pt-BR", "en-US". */
   locale: string;
-  /** Called with the new raw numeric value on every change. */
+  /** Called with the new decimal value on every change. */
   onChange: (value: number) => void;
   /** When provided and has >1 entry, an inline currency selector is shown. */
   availableCurrencies?: string[];
   /** Called when the user picks a different currency in the inline selector. */
   onCurrencyChange?: (currency: string) => void;
+  /** Kept for API compatibility. The formatted "0,00" acts as the implicit placeholder. */
   placeholder?: string;
   required?: boolean;
   className?: string;
@@ -138,111 +58,81 @@ export function CurrencyInput({
   onChange,
   availableCurrencies,
   onCurrencyChange,
-  placeholder,
   required,
   className,
 }: CurrencyInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const pendingCursorRef = useRef<number | null>(null);
   const [isFocused, setIsFocused] = useState(false);
 
-  const decimalSep = useMemo(() => getDecimalSeparator(locale), [locale]);
-  const groupSep = useMemo(() => getGroupingSeparator(locale), [locale]);
   const symbol = useMemo(
     () => getCurrencySymbol(currency, locale),
     [currency, locale],
   );
   const showSelector = (availableCurrencies?.length ?? 0) > 1;
 
-  const defaultPlaceholder = useMemo(
-    () => `0${decimalSep}00`,
-    [decimalSep],
-  );
+  // ── Internal state: integer cents ───────────────────────────────────────────────
+  // Value is stored as integer cents (e.g. 12.34 → 1234). The display string
+  // is always rebuilt from that buffer — no decimal-string parsing, no cursor
+  // arithmetic. Typing feels like an ATM: digits shift in from the right,
+  // two decimal places are always visible, and input never blocks.
+  const [cents, setCents] = useState(() => Math.round((value || 0) * 100));
 
-  const [displayValue, setDisplayValue] = useState(() =>
-    numericToDisplay(value, locale),
-  );
-
-  // Sync display when value / locale / currency changes while not focused
-  // (e.g., parent loads data or user switches currency).
+  // Sync when the parent value changes while the field is not focused.
   useEffect(() => {
     if (!isFocused) {
-      setDisplayValue(numericToDisplay(value, locale));
+      setCents(Math.round((value || 0) * 100));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, locale, currency]);
+  }, [value, isFocused]);
 
-  // Restore cursor position after React updates the input value.
+  // Always show exactly 2 decimal places.
+  const displayValue = useMemo(
+    () =>
+      getCachedFormatter(locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(cents / 100),
+    [cents, locale],
+  );
+
+  // Keep cursor at the end whenever the displayed value changes while focused.
   useEffect(() => {
-    if (pendingCursorRef.current !== null && inputRef.current) {
-      const pos = pendingCursorRef.current;
-      pendingCursorRef.current = null;
-      inputRef.current.setSelectionRange(pos, pos);
+    if (isFocused && inputRef.current) {
+      const len = inputRef.current.value.length;
+      inputRef.current.setSelectionRange(len, len);
     }
-  });
+  }, [displayValue, isFocused]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const input = e.target;
-    const rawValue = input.value;
-    const cursorPos = input.selectionStart ?? rawValue.length;
+    // Strip everything except digits — the decimal separator is implicit.
+    const digits = e.target.value.replace(/\D/g, "");
+    const newCents = digits ? parseInt(digits, 10) : 0;
 
-    // Count significant chars (digits + decimal sep) before the cursor.
-    const beforeCursor = rawValue.slice(0, cursorPos);
-    let sigBefore = 0;
-    for (const ch of beforeCursor) {
-      if (/\d/.test(ch) || ch === decimalSep) sigBefore++;
-    }
-
-    // Strip grouping separators and anything else except digits + decimal sep.
-    const stripped = rawValue.replace(
-      new RegExp(`[^\\d${escapeRegex(decimalSep)}]`, "g"),
-      "",
-    );
-
-    // Prevent multiple decimal separators.
-    const parts = stripped.split(decimalSep);
-    if (parts.length > 2) return;
-
-    // Cap decimal part to 2 digits.
-    const significant =
-      parts.length === 2
-        ? `${parts[0]}${decimalSep}${parts[1].slice(0, 2)}`
-        : stripped;
-
-    // Format for display and compute numeric value.
-    const formatted = formatSignificant(significant, decimalSep, locale);
-    const numeric = parseSignificant(significant, decimalSep, groupSep);
-
-    const newCursor = formatted
-      ? getNewCursorPosition(formatted, sigBefore, decimalSep)
-      : 0;
-
-    onChange(numeric);
-
-    // When the formatted result equals the current display (e.g. the user typed
-    // a 3rd decimal digit that was capped away), React won't trigger a re-render
-    // because the state hasn't changed — leaving the DOM input out of sync.
-    // Manually reset the DOM value and cursor in that case.
-    if (formatted === displayValue) {
-      input.value = formatted;
-      input.setSelectionRange(newCursor, newCursor);
+    // If the new value equals the current state (e.g. backspace on "0,00"),
+    // React won’t re-render. Manually reset the DOM to stay in sync.
+    if (newCents === cents) {
+      e.target.value = displayValue;
+      e.target.setSelectionRange(displayValue.length, displayValue.length);
       return;
     }
 
-    // Queue cursor restoration after next render.
-    pendingCursorRef.current = newCursor;
-
-    setDisplayValue(formatted);
+    setCents(newCents);
+    onChange(newCents / 100);
   }
 
   function handleFocus() {
     setIsFocused(true);
+    // Position cursor at the end so digits accumulate naturally from the right.
+    requestAnimationFrame(() => {
+      if (inputRef.current) {
+        const len = inputRef.current.value.length;
+        inputRef.current.setSelectionRange(len, len);
+      }
+    });
   }
 
   function handleBlur() {
     setIsFocused(false);
-    // On blur, fully format with 2 decimal places.
-    setDisplayValue(numericToDisplay(value, locale));
   }
 
   return (
@@ -288,12 +178,11 @@ export function CurrencyInput({
           <input
             ref={inputRef}
             type="text"
-            inputMode="decimal"
+            inputMode="numeric"
             value={displayValue}
             onChange={handleChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            placeholder={placeholder ?? defaultPlaceholder}
             required={required}
             className="min-w-0 flex-1 bg-transparent px-4 py-3 text-base focus:outline-none"
           />
@@ -307,20 +196,19 @@ export function CurrencyInput({
           <input
             ref={inputRef}
             type="text"
-            inputMode="decimal"
+            inputMode="numeric"
             value={displayValue}
             onChange={handleChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            placeholder={placeholder ?? defaultPlaceholder}
             required={required}
             className="min-w-0 flex-1 bg-transparent py-3 pl-2 pr-4 text-base focus:outline-none"
           />
         </>
       )}
 
-      {/* Hidden input carries the raw numeric value for server-action form submission. */}
-      <input type="hidden" name={name} value={value > 0 ? value : ""} />
+      {/* Hidden input carries the decimal value for server-action form submission. */}
+      <input type="hidden" name={name} value={cents > 0 ? (cents / 100).toFixed(2) : ""} />
     </div>
   );
 }
