@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { AccountType } from "@prisma/client";
 import { deleteAccount } from "@/modules/accounts/actions";
 import {
@@ -13,6 +14,7 @@ type Account = {
   type: AccountType;
   balance: string | number;
   color: string | null;
+  bankKey: string | null;
 };
 
 type Props = {
@@ -31,10 +33,21 @@ export function AccountCard({ account, currency }: Props) {
     <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
       <div className="flex items-center gap-3">
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-full text-lg"
-          style={{ backgroundColor: account.color ?? "#6366f1" + "20" }}
+          className="flex h-10 w-10 items-center justify-center rounded-full overflow-hidden"
+          style={{ backgroundColor: account.color ? account.color + "20" : "#6366f120" }}
         >
-          {ACCOUNT_TYPE_ICONS[account.type]}
+          {account.bankKey ? (
+            <div className="relative h-6 w-6">
+              <Image
+                src={`/banks/${account.bankKey}.svg`}
+                alt={account.name}
+                fill
+                className="object-contain"
+              />
+            </div>
+          ) : (
+            <span className="text-lg">{ACCOUNT_TYPE_ICONS[account.type]}</span>
+          )}
         </div>
         <div>
           <p className="text-sm font-medium text-gray-900">{account.name}</p>

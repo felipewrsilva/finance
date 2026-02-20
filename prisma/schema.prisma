@@ -45,6 +45,8 @@ model Account {
   balance   Decimal     @default(0) @db.Decimal(14, 2)
   color     String?
   icon      String?
+  bankKey   String?
+  bankName  String?
   isActive  Boolean     @default(true)
   isDefault Boolean     @default(false)
   createdAt DateTime    @default(now())

@@ -1,11 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import { AccountType } from "@prisma/client";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { createAccount, updateAccount } from "@/modules/accounts/actions";
 import {
   ACCOUNT_TYPE_LABELS,
   ACCOUNT_COLORS,
+  BANKS,
+  type BankKey,
 } from "@/modules/accounts/constants";
 
 type Account = {
@@ -15,6 +18,7 @@ type Account = {
   balance: string | number;
   color: string | null;
   isDefault: boolean;
+  bankKey: string | null;
 };
 
 type Props = {
@@ -23,20 +27,83 @@ type Props = {
 
 export function AccountForm({ account }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
   const isEdit = !!account;
+
+  const [selectedBank, setSelectedBank] = useState<BankKey | null>(
+    (account?.bankKey as BankKey | null) ?? null,
+  );
 
   const action = isEdit
     ? updateAccount.bind(null, account.id)
     : createAccount;
 
+  function handleBankClick(key: BankKey, label: string) {
+    if (selectedBank === key) {
+      setSelectedBank(null);
+      return;
+    }
+    setSelectedBank(key);
+    // Auto-fill name only when the field is blank
+    if (nameRef.current && nameRef.current.value.trim() === "") {
+      nameRef.current.value = label;
+    }
+  }
+
   return (
     <form ref={formRef} action={action} className="space-y-5">
+      {/* Hidden bank fields */}
+      <input type="hidden" name="bankKey" value={selectedBank ?? ""} />
+      <input
+        type="hidden"
+        name="bankName"
+        value={selectedBank ? (BANKS.find((b) => b.key === selectedBank)?.label ?? "") : ""}
+      />
+
+      {/* Bank selector */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Bank <span className="text-gray-400 font-normal">(optional)</span>
+        </label>
+        <div className="grid grid-cols-5 gap-2">
+          {BANKS.map((bank) => {
+            const isSelected = selectedBank === bank.key;
+            return (
+              <button
+                key={bank.key}
+                type="button"
+                onClick={() => handleBankClick(bank.key, bank.label)}
+                title={bank.label}
+                className={`flex flex-col items-center gap-1 rounded-lg border-2 p-2 transition ${
+                  isSelected
+                    ? "border-indigo-600 bg-indigo-50"
+                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                <div className="relative h-8 w-8">
+                  <Image
+                    src={bank.logoPath}
+                    alt={bank.label}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <span className="text-[10px] text-gray-600 leading-tight text-center">
+                  {bank.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Name */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Account name
         </label>
         <input
+          ref={nameRef}
           name="name"
           defaultValue={account?.name}
           required

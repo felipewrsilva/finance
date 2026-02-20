@@ -36,6 +36,8 @@ export async function createAccount(formData: FormData) {
     color: formData.get("color") || undefined,
     icon: formData.get("icon") || undefined,
     isDefault: formData.get("isDefault") === "true",
+    bankKey: formData.get("bankKey") || undefined,
+    bankName: formData.get("bankName") || undefined,
   });
 
   if (!parsed.success) return;
@@ -66,6 +68,8 @@ export async function updateAccount(id: string, formData: FormData) {
     color: formData.get("color") || undefined,
     icon: formData.get("icon") || undefined,
     isDefault: formData.get("isDefault") === "true",
+    bankKey: formData.get("bankKey") || undefined,
+    bankName: formData.get("bankName") || undefined,
   });
 
   if (!parsed.success) return;
