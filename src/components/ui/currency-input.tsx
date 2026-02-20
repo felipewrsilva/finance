@@ -213,12 +213,24 @@ export function CurrencyInput({
     const formatted = formatSignificant(significant, decimalSep, locale);
     const numeric = parseSignificant(significant, decimalSep, groupSep);
 
-    onChange(numeric);
-
-    // Queue cursor restoration after next render.
-    pendingCursorRef.current = formatted
+    const newCursor = formatted
       ? getNewCursorPosition(formatted, sigBefore, decimalSep)
       : 0;
+
+    onChange(numeric);
+
+    // When the formatted result equals the current display (e.g. the user typed
+    // a 3rd decimal digit that was capped away), React won't trigger a re-render
+    // because the state hasn't changed — leaving the DOM input out of sync.
+    // Manually reset the DOM value and cursor in that case.
+    if (formatted === displayValue) {
+      input.value = formatted;
+      input.setSelectionRange(newCursor, newCursor);
+      return;
+    }
+
+    // Queue cursor restoration after next render.
+    pendingCursorRef.current = newCursor;
 
     setDisplayValue(formatted);
   }
