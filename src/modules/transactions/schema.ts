@@ -3,7 +3,8 @@ import { TransactionType, TransactionStatus, Frequency } from "@prisma/client";
 
 export const transactionSchema = z.object({
   accountId: z.string().min(1, "Account is required"),
-  categoryId: z.string().min(1, "Category is required"),
+  categoryId: z.string().optional(),
+  destinationAccountId: z.string().optional(),
   type: z.nativeEnum(TransactionType),
   amount: z.coerce.number({ error: "Amount is required" }).positive("Must be greater than 0"),
   currency: z.string().min(1).default("BRL"),

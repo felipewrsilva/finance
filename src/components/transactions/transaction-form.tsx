@@ -8,6 +8,7 @@ import { TypeToggle } from "@/components/ui/type-toggle";
 import { RecurringSection } from "@/components/ui/recurring-section";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { DatePicker } from "@/components/ui/date-picker";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { shouldRenderSelector } from "@/lib/utils";
 import type { Account, Category, Transaction } from "@prisma/client";
 
@@ -33,8 +34,8 @@ export function TransactionForm({
 }: TransactionFormProps) {
   const router = useRouter();
 
-  const [type, setType] = useState<"INCOME" | "EXPENSE">(
-    (transaction?.type as "INCOME" | "EXPENSE") ?? defaultType
+  const [type, setType] = useState<"INCOME" | "EXPENSE" | "TRANSFER">(
+    (transaction?.type as "INCOME" | "EXPENSE" | "TRANSFER") ?? defaultType
   );
   const [accountId, setAccountId] = useState(
     transaction?.accountId ?? (accounts.length === 1 ? accounts[0].id : "")
@@ -47,6 +48,10 @@ export function TransactionForm({
   );
   const [amount, setAmount] = useState(
     transaction?.amount ? Number(transaction.amount) : 0
+  );
+  const [destAccountId, setDestAccountId] = useState<string>(
+    (transaction?.metadata as { destinationAccountId?: string } | null)
+      ?.destinationAccountId ?? ""
   );
 
   const txDate = transaction
@@ -72,9 +77,9 @@ export function TransactionForm({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function handleTypeChange(newType: "INCOME" | "EXPENSE") {
+  function handleTypeChange(newType: "INCOME" | "EXPENSE" | "TRANSFER") {
     setType(newType);
-    localStorage.setItem("lastTxType", newType);
+    if (newType !== "TRANSFER") localStorage.setItem("lastTxType", newType);
   }
 
   function handleAccountChange(id: string) {
@@ -97,7 +102,10 @@ export function TransactionForm({
       {/* Controlled hidden inputs for server action */}
       <input type="hidden" name="type" value={type} />
       <input type="hidden" name="accountId" value={accountId || (accounts[0]?.id ?? "")} />
-      <input type="hidden" name="status" value={status} />
+      <input type="hidden" name="status" value={type === "TRANSFER" ? "PAID" : status} />
+      {type === "TRANSFER" && destAccountId && (
+        <input type="hidden" name="destinationAccountId" value={destAccountId} />
+      )}
 
       {/* Type — segmented control */}
       <TypeToggle value={type} onChange={handleTypeChange} />
@@ -121,7 +129,9 @@ export function TransactionForm({
       {/* Account — only when multiple accounts exist */}
       {showAccountSelector && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Account</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {type === "TRANSFER" ? "From account" : "Account"}
+          </label>
           <select
             value={accountId}
             onChange={(e) => handleAccountChange(e.target.value)}
@@ -138,37 +148,61 @@ export function TransactionForm({
         </div>
       )}
 
-      {/* Category — auto-select when only one option */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-        {filteredCategories.length === 1 ? (
-          <>
-            <input type="hidden" name="categoryId" value={filteredCategories[0].id} />
-            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
-              {filteredCategories[0].icon && (
-                <span>{filteredCategories[0].icon}</span>
-              )}
-              <span>{filteredCategories[0].name}</span>
-              <span className="ml-auto text-xs text-gray-400">Auto-selected</span>
-            </div>
-          </>
-        ) : (
+      {/* Destination account — TRANSFER only */}
+      {type === "TRANSFER" && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">To account</label>
           <select
-            name="categoryId"
-            defaultValue={transaction?.categoryId ?? ""}
+            value={destAccountId}
+            onChange={(e) => setDestAccountId(e.target.value)}
             required
             className={inputCls}
           >
-            <option value="">Select a category</option>
-            {filteredCategories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.icon ? `${c.icon} ` : ""}
-                {c.name}
-              </option>
-            ))}
+            <option value="">Select destination account</option>
+            {accounts
+              .filter((a) => a.id !== accountId)
+              .map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
           </select>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Category — hidden for TRANSFER */}
+      {type !== "TRANSFER" && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          {filteredCategories.length === 1 ? (
+            <>
+              <input type="hidden" name="categoryId" value={filteredCategories[0].id} />
+              <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                {filteredCategories[0].icon && (
+                  <span>{filteredCategories[0].icon}</span>
+                )}
+                <span>{filteredCategories[0].name}</span>
+                <span className="ml-auto text-xs text-gray-400">Auto-selected</span>
+              </div>
+            </>
+          ) : (
+            <select
+              name="categoryId"
+              defaultValue={transaction?.categoryId ?? ""}
+              required
+              className={inputCls}
+            >
+              <option value="">Select a category</option>
+              {filteredCategories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.icon ? `${c.icon} ` : ""}
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
 
       {/* Date */}
       <div>
@@ -176,28 +210,30 @@ export function TransactionForm({
         <DatePicker name="date" value={date} onChange={setDate} required />
       </div>
 
-      {/* Status — segmented control */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-        <div className="flex rounded-xl bg-gray-100 p-1 gap-1">
-          {(["PAID", "PENDING"] as const).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setStatus(s)}
-              className={`flex-1 rounded-lg py-3 text-sm font-semibold transition-all ${
-                status === s
-                  ? s === "PAID"
-                    ? "bg-white shadow-sm text-green-600"
-                    : "bg-white shadow-sm text-amber-600"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {TRANSACTION_STATUS_LABELS[s]}
-            </button>
-          ))}
+      {/* Status — segmented control, hidden for TRANSFER */}
+      {type !== "TRANSFER" && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <div className="flex rounded-xl bg-gray-100 p-1 gap-1">
+            {(["PAID", "PENDING"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStatus(s)}
+                className={`flex-1 rounded-lg py-3 text-sm font-semibold transition-all ${
+                  status === s
+                    ? s === "PAID"
+                      ? "bg-white shadow-sm text-green-600"
+                      : "bg-white shadow-sm text-amber-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {TRANSACTION_STATUS_LABELS[s]}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Description */}
       <div>
@@ -214,21 +250,22 @@ export function TransactionForm({
         />
       </div>
 
-      {/* Recurring section */}
-      <RecurringSection
-        defaultIsRecurring={transaction?.isRecurring ?? false}
-        defaultFrequency={transaction?.frequency ?? "MONTHLY"}
-        defaultRecurrenceEnd={transaction?.recurrenceEnd ?? null}
-      />
+      {/* Recurring section — hidden for TRANSFER */}
+      {type !== "TRANSFER" && (
+        <RecurringSection
+          defaultIsRecurring={transaction?.isRecurring ?? false}
+          defaultFrequency={transaction?.frequency ?? "MONTHLY"}
+          defaultRecurrenceEnd={transaction?.recurrenceEnd ?? null}
+        />
+      )}
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">
-        <button
-          type="submit"
+        <SubmitButton
           className="flex-1 rounded-xl bg-indigo-600 py-3 text-base font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800"
         >
           {transaction ? "Save changes" : "Add transaction"}
-        </button>
+        </SubmitButton>
         <button
           type="button"
           onClick={() => router.back()}

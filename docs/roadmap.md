@@ -6,6 +6,24 @@ This document tracks every planned feature and improvement not yet implemented. 
 
 ---
 
+## ✅ Recently Completed
+
+These items were implemented and verified with a clean `npm run build`:
+
+| Feature | Key files |
+|---|---|
+| Google OAuth + session persistence | `auth.ts`, `auth.config.ts`, `proxy.ts` |
+| Accounts, Transactions, Budgets, Recurring CRUD | `src/modules/*/actions.ts`, all form/list components |
+| Monthly dashboard metrics | `src/modules/dashboard/actions.ts`, `src/app/dashboard/page.tsx` |
+| Reports (6-month bar chart) | `src/components/reports/monthly-chart.tsx` |
+| Multi-currency support | `prisma/schema.prisma`, `src/modules/currencies/` |
+| `CurrencyInput` controlled component | `src/components/ui/currency-input.tsx` |
+| Currency settings UX (optimistic list) | `src/components/settings/currency-list.tsx`, `currency-row.tsx` |
+| `DatePicker` controlled component | `src/components/ui/date-picker.tsx` — replaces native `<input type="date">` in all 4 forms |
+| Transactions page responsive desktop | `transaction-filters.tsx`, `transaction-list.tsx`, `month-navigator.tsx` |
+
+---
+
 ## 1. Loading States
 
 **Impact:** High — every page currently shows a blank screen while data fetches.
