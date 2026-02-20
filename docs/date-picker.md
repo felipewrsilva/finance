@@ -1,102 +1,198 @@
-# 🎯 Desktop DatePicker Must Match Mobile (Next.js + Tailwind v4)
+# 🎯 Upgrade DatePicker to Professional-Grade (Month + Year Navigation)
 
-Refactor the **Desktop DatePicker** so that it is visually identical to the **Mobile DatePicker**.
+Refactor the custom `date-picker.tsx` to behave like a professional financial product (Stripe, Notion, Linear, Apple, modern banking apps).
 
-The mobile implementation is the single source of truth for layout and visual hierarchy.
+Current issue:
+
+* You can only navigate months.
+* Year navigation is limited and not ergonomic.
+* The interaction does not feel “enterprise-grade”.
+
+We need full month + year navigation with smooth UX and clean hierarchy.
 
 ---
 
-## 🔒 Non-Negotiable Rules
+# 🔥 Target UX (Professional Pattern)
+
+The DatePicker must support:
+
+### 1️⃣ Month Navigation
+
+* Left / right arrows navigate months.
+* Smooth state transition.
+* Maintain current selected day when possible.
+
+### 2️⃣ Year Navigation (Required Upgrade)
+
+Implement one of these professional patterns:
+
+### Preferred Pattern (Best UX)
+
+Header becomes interactive:
+
+Current structure:
+Small year
+Large date
+
+New behavior:
+
+* Clicking the year switches to “Year Selection Mode”.
+* Displays a scrollable grid/list of years (e.g., 2000–2035).
+* Selecting a year returns to month view.
+* Month remains selected.
+* Day preserved if valid.
+
+This is how modern SaaS products do it.
+
+---
+
+# 🧠 Interaction Modes
+
+### Mode 1 — Day View (default)
+
+* Shows month grid.
+* Standard 7-column layout.
+* Current selected date highlighted.
+
+### Mode 2 — Year View
+
+* Grid of years (3–4 columns).
+* Scrollable container.
+* Current year highlighted.
+* Selected year highlighted.
+* Clicking year returns to month view.
+
+Optional (advanced):
+Mode 3 — Month Selection view (year + 12 months grid)
+
+---
+
+# 🧱 Structural Requirements (Tailwind v4)
 
 * No hardcoded hex colors.
-* No arbitrary pixel values outside the Tailwind scale.
-* Preserve typography scale from the design system.
-* Preserve spacing scale (`gap-*`, `p-*`, `space-*`).
-* Preserve border radius and shadow tokens.
-* Maintain strict TypeScript types (no `any`).
+* Use CSS variables from design system.
+* Preserve spacing scale.
+* Preserve border radius tokens.
+* Preserve shadow tokens.
+* Maintain strict TypeScript.
 
 ---
 
-## 🧱 Structural Requirements
+# 🧩 Component Architecture
 
-The Desktop component must replicate the **same DOM structure and hierarchy** as mobile.
+Refactor `date-picker.tsx`:
 
-### Header
+Use explicit state:
 
-* Small year displayed above.
-* Large formatted date below.
-* Same typography scale.
-* Same spacing relationship.
-* Same alignment.
+```ts
+type ViewMode = "day" | "year"
+```
 
-### Month Navigation
+State:
 
-* Icons aligned exactly as mobile.
-* Same spacing and hit area.
-* Same button structure.
+```ts
+const [viewMode, setViewMode] = useState<ViewMode>("day")
+const [displayedMonth, setDisplayedMonth] = useState<Date>()
+```
 
-### Calendar Grid
-
-* 7-column grid (`grid-cols-7`).
-* Identical gap between days.
-* Same day cell size.
-* Same selected-day emphasis (size, weight, background).
-* Same hover + focus states.
-
-### Footer Actions
-
-* Clear, Cancel, Set
-* Same layout and alignment.
-* Same spacing between buttons.
-* Same visual hierarchy.
+Never mutate selected date directly when navigating.
 
 ---
 
-## 🖥 Desktop Adjustments (Allowed)
+# 📅 Year Grid Implementation
 
-You may adjust:
+* Range: currentYear - 50 → currentYear + 20
+* Scroll to current year on open.
+* Highlight:
 
-* Container width
-* Modal max-width
-* Responsive breakpoints
-
----
-
-## 🧩 Implementation Rules (Tailwind v4 Specific)
-
-* Use utility-first Tailwind classes.
-* Use CSS variables from the theme (e.g. `bg-[var(--color-surface)]`).
-* Do NOT introduce conflicting responsive overrides.
-* Remove legacy desktop-specific hacks.
-* Prefer refactoring over patching.
-* Avoid duplicated layout wrappers.
-
-If needed:
-
-* Extract shared subcomponents to eliminate divergence between mobile and desktop.
-* Ensure no conflicting conditional rendering changes layout structure.
+  * Today’s year
+  * Selected date year
+* Use Tailwind grid layout.
+* Ensure keyboard navigation works.
 
 ---
 
-## 🧠 Architecture Constraints (Next.js 16 App Router)
+# 🎯 Accessibility (Professional Standard)
 
-* Keep component as a Client Component only if necessary.
-* Do not introduce unnecessary re-renders.
-* Preserve current state management.
-* Ensure no hydration mismatches.
-* Maintain accessibility (ARIA roles, keyboard navigation).
+* ARIA roles for grid and gridcell.
+* Arrow key navigation.
+* Enter to select.
+* Escape closes.
+* Focus trapping inside modal.
+* No hydration mismatch.
 
 ---
 
-## ✅ Expected Result
+# 🖥 Desktop + Mobile Consistency
 
-The Desktop DatePicker must be visually indistinguishable from the Mobile version in:
+* Keep layout identical.
+* Year selection must not feel like a separate page.
+* Smooth transition (opacity/scale) optional.
+* Do not break mobile behavior.
 
-* Layout
-* Proportion
-* Spacing
-* Hierarchy
-* Interaction
-* Grid structure
+---
 
-The ONLY acceptable difference is responsiveness to desktop viewport constraints — while fully preserving visual fidelity and theme tokens.
+# 🧼 Visual Hierarchy Improvements
+
+Header:
+
+Small year (muted)
+Large formatted date (bold)
+Clickable year indicator (cursor-pointer)
+Subtle hover state
+
+Month navigation:
+
+Centered month label
+Arrows balanced left/right
+
+Selected day:
+
+Strong but not aggressive
+Consistent with theme tokens
+
+---
+
+# ⚡ Performance
+
+* Avoid recalculating month grid unnecessarily.
+* Memoize computed days.
+* Avoid recreating date objects excessively.
+* No unnecessary re-renders.
+
+---
+
+# 🧠 Financial App Standard
+
+This is a finance application.
+
+The DatePicker must feel:
+
+* Precise
+* Intentional
+* Predictable
+* Stable
+* Enterprise-grade
+* Not playful
+* Not Material default
+
+No bouncing animations.
+No playful transitions.
+Minimal, serious.
+
+---
+
+# ✅ Expected Result
+
+After refactor:
+
+* User can navigate month-by-month.
+* User can jump years instantly.
+* UX feels like Stripe / banking dashboards.
+* No layout inconsistencies.
+* Clean Tailwind structure.
+* Strict TypeScript.
+* No regressions in mobile.
+
+Refactor structurally if necessary.
+Do not patch the existing code with small adjustments.
