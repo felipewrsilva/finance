@@ -1,0 +1,137 @@
+{
+  "nav": {
+    "overview": "Overview",
+    "accounts": "Accounts",
+    "transactions": "Transactions",
+    "budgets": "Budgets",
+    "reports": "Reports",
+    "recurring": "Recurring"
+  },
+  "profile": {
+    "language": "Language",
+    "portuguese": "Português (Brasil)",
+    "english": "English (US)",
+    "categories": "Categories",
+    "currency": "Currency",
+    "signOut": "Sign out"
+  },
+  "common": {
+    "pending": "Pending",
+    "paid": "Paid",
+    "transfer": "Transfer",
+    "transaction": "Transaction",
+    "recurring": "Recurring",
+    "delete": "Delete",
+    "yes_delete": "Yes, delete",
+    "keep": "Keep",
+    "all": "All",
+    "income": "Income",
+    "expense": "Expense",
+    "yes_stop": "Yes, stop",
+    "stop_recurring": "Stop recurring",
+    "ended": "Ended"
+  },
+  "transactions": {
+    "title": "Transactions",
+    "export": "Export",
+    "add": "+ Add",
+    "income": "Income",
+    "expenses": "Expenses",
+    "balance": "Balance",
+    "type": "Type",
+    "status": "Status",
+    "account": "Account",
+    "noTransactions": "No transactions this month",
+    "addFirst": "Add your first transaction to get started.",
+    "addTransaction": "+ Add transaction",
+    "backToToday": "Back to today",
+    "newTitle": "New Transaction",
+    "editTitle": "Edit Transaction"
+  },
+  "dashboard": {
+    "totalBalance": "Total balance",
+    "spendingByCategory": "Spending by category",
+    "recentTransactions": "Recent transactions",
+    "viewAll": "View all",
+    "manage": "Manage",
+    "noAccounts": "No accounts yet.",
+    "addAccount": "Add account",
+    "income": "Income",
+    "expenses": "Expenses",
+    "net": "Net",
+    "pendingAmount": "+{amount} pending",
+    "accounts_one": "{count} account",
+    "accounts_other": "{count} accounts"
+  },
+  "accounts": {
+    "title": "Accounts",
+    "totalBalance": "Total balance: {amount}",
+    "newAccount": "+ New account",
+    "noAccounts": "No accounts yet.",
+    "addAccount": "Add account",
+    "editTitle": "Edit account",
+    "newTitle": "New account"
+  },
+  "budgets": {
+    "title": "Budgets",
+    "newBudget": "+ New budget",
+    "newTitle": "New budget",
+    "newSubtitle": "Set a spending limit for a category or overall.",
+    "editTitle": "Edit budget"
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "Last 6 months",
+    "totalIncome": "Total income (6 mo)",
+    "totalExpenses": "Total expenses (6 mo)",
+    "netSavings": "Net savings (6 mo)",
+    "savingsRate": "Savings rate",
+    "ofTotalIncome": "of total income",
+    "incomeVsExpenses": "Income vs Expenses",
+    "noData": "No data yet. Add some transactions to see your report.",
+    "accountBalance": "Account balance evolution",
+    "monthlyBreakdown": "Monthly breakdown",
+    "avg": "avg {amount} / mo",
+    "income": "Income",
+    "expenses": "Expenses",
+    "net": "Net"
+  },
+  "settings": {
+    "categoriesTitle": "Categories",
+    "categoriesSubtitle": "Manage your spending categories",
+    "newCategory": "+ New",
+    "newCategoryTitle": "New category",
+    "newCategorySubtitle": "Create a custom category",
+    "editCategoryTitle": "Edit category",
+    "defaultLabel": "Default",
+    "defaultCategories": "Default",
+    "customCategories": "Custom",
+    "expenseLabel": "Expense",
+    "incomeLabel": "Income",
+    "noCustomCategories": "No custom categories yet.",
+    "createFirst": "Create your first category",
+    "currencyTitle": "Currency",
+    "currencySubtitle": "Manage your enabled currencies and default"
+  },
+  "recurring": {
+    "title": "Recurring",
+    "subtitle": "Transactions set to repeat automatically.",
+    "noRecurring": "No recurring transactions",
+    "noRecurringHint": "Toggle \"Repeat this transaction\" when adding a transaction.",
+    "addTransaction": "Add transaction",
+    "next": "Next:",
+    "stopRecurring": "Stop recurring",
+    "yesStop": "Yes, stop"
+  },
+  "frequency": {
+    "DAILY": "Daily",
+    "WEEKLY": "Weekly",
+    "MONTHLY": "Monthly",
+    "YEARLY": "Yearly"
+  },
+  "login": {
+    "title": "Finance",
+    "subtitle": "Sign in to manage your finances",
+    "continueWith": "Continue with Google"
+  }
+}

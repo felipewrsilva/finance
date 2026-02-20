@@ -17,13 +17,14 @@ export const metadata: Metadata = {
   description: "Personal finance management",
 };
 
+// Root layout: minimal wrapper. Locale-aware content lives in [locale]/layout.tsx
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

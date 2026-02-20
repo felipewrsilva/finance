@@ -1,0 +1,137 @@
+{
+  "nav": {
+    "overview": "Visão Geral",
+    "accounts": "Contas",
+    "transactions": "Transações",
+    "budgets": "Orçamentos",
+    "reports": "Relatórios",
+    "recurring": "Recorrentes"
+  },
+  "profile": {
+    "language": "Idioma",
+    "portuguese": "Português (Brasil)",
+    "english": "English (US)",
+    "categories": "Categorias",
+    "currency": "Moeda",
+    "signOut": "Sair"
+  },
+  "common": {
+    "pending": "Pendente",
+    "paid": "Pago",
+    "transfer": "Transferência",
+    "transaction": "Transação",
+    "recurring": "Recorrente",
+    "delete": "Excluir",
+    "yes_delete": "Sim, excluir",
+    "keep": "Manter",
+    "all": "Todos",
+    "income": "Receita",
+    "expense": "Despesa",
+    "yes_stop": "Sim, parar",
+    "stop_recurring": "Parar recorrência",
+    "ended": "Encerrado"
+  },
+  "transactions": {
+    "title": "Transações",
+    "export": "Exportar",
+    "add": "+ Adicionar",
+    "income": "Receitas",
+    "expenses": "Despesas",
+    "balance": "Saldo",
+    "type": "Tipo",
+    "status": "Status",
+    "account": "Conta",
+    "noTransactions": "Sem transações este mês",
+    "addFirst": "Adicione sua primeira transação para começar.",
+    "addTransaction": "+ Adicionar transação",
+    "backToToday": "Voltar para hoje",
+    "newTitle": "Nova Transação",
+    "editTitle": "Editar Transação"
+  },
+  "dashboard": {
+    "totalBalance": "Saldo total",
+    "spendingByCategory": "Gastos por categoria",
+    "recentTransactions": "Transações recentes",
+    "viewAll": "Ver tudo",
+    "manage": "Gerenciar",
+    "noAccounts": "Sem contas ainda.",
+    "addAccount": "Adicionar conta",
+    "income": "Receitas",
+    "expenses": "Despesas",
+    "net": "Saldo",
+    "pendingAmount": "+{amount} pendente",
+    "accounts_one": "{count} conta",
+    "accounts_other": "{count} contas"
+  },
+  "accounts": {
+    "title": "Contas",
+    "totalBalance": "Saldo total: {amount}",
+    "newAccount": "+ Nova conta",
+    "noAccounts": "Sem contas ainda.",
+    "addAccount": "Adicionar conta",
+    "editTitle": "Editar conta",
+    "newTitle": "Nova conta"
+  },
+  "budgets": {
+    "title": "Orçamentos",
+    "newBudget": "+ Novo orçamento",
+    "newTitle": "Novo orçamento",
+    "newSubtitle": "Defina um limite de gastos para uma categoria ou total.",
+    "editTitle": "Editar orçamento"
+  },
+  "reports": {
+    "title": "Relatórios",
+    "subtitle": "Últimos 6 meses",
+    "totalIncome": "Receita total (6 m)",
+    "totalExpenses": "Despesas totais (6 m)",
+    "netSavings": "Poupança líquida (6 m)",
+    "savingsRate": "Taxa de poupança",
+    "ofTotalIncome": "da receita total",
+    "incomeVsExpenses": "Receitas vs Despesas",
+    "noData": "Sem dados ainda. Adicione transações para ver seu relatório.",
+    "accountBalance": "Evolução do saldo",
+    "monthlyBreakdown": "Detalhamento mensal",
+    "avg": "méd {amount} / mês",
+    "income": "Receitas",
+    "expenses": "Despesas",
+    "net": "Saldo"
+  },
+  "settings": {
+    "categoriesTitle": "Categorias",
+    "categoriesSubtitle": "Gerencie suas categorias de gastos",
+    "newCategory": "+ Nova",
+    "newCategoryTitle": "Nova categoria",
+    "newCategorySubtitle": "Criar uma categoria personalizada",
+    "editCategoryTitle": "Editar categoria",
+    "defaultLabel": "Padrão",
+    "defaultCategories": "Padrão",
+    "customCategories": "Personalizado",
+    "expenseLabel": "Despesa",
+    "incomeLabel": "Receita",
+    "noCustomCategories": "Sem categorias personalizadas ainda.",
+    "createFirst": "Criar primeira categoria",
+    "currencyTitle": "Moeda",
+    "currencySubtitle": "Gerencie suas moedas habilitadas e padrão"
+  },
+  "recurring": {
+    "title": "Recorrentes",
+    "subtitle": "Transações configuradas para repetir automaticamente.",
+    "noRecurring": "Sem transações recorrentes",
+    "noRecurringHint": "Ative \"Repetir esta transação\" ao adicionar uma transação.",
+    "addTransaction": "Adicionar transação",
+    "next": "Próximo:",
+    "stopRecurring": "Parar recorrência",
+    "yesStop": "Sim, parar"
+  },
+  "frequency": {
+    "DAILY": "Diário",
+    "WEEKLY": "Semanal",
+    "MONTHLY": "Mensal",
+    "YEARLY": "Anual"
+  },
+  "login": {
+    "title": "Finance",
+    "subtitle": "Gerencie suas finanças pessoais",
+    "continueWith": "Continuar com Google"
+  }
+}

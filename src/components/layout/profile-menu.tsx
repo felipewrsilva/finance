@@ -2,6 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+import { routing } from "@/i18n/routing";
 
 interface ProfileMenuProps {
   user: {
@@ -10,16 +13,23 @@ interface ProfileMenuProps {
     image?: string | null;
   };
   signOutAction: () => Promise<void>;
+  locale: string;
 }
 
-export function ProfileMenu({ user, signOutAction }: ProfileMenuProps) {
+export function ProfileMenu({ user, signOutAction, locale }: ProfileMenuProps) {
   const [open, setOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const router = useRouter();
+  const t = useTranslations("profile");
+  const currentLocale = useLocale();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
+        setLangOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -28,11 +38,23 @@ export function ProfileMenu({ user, signOutAction }: ProfileMenuProps) {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        setLangOpen(false);
+      }
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  function switchLocale(newLocale: string) {
+    // Replace locale segment in path: /pt-BR/... → /en-US/...
+    const segments = pathname.split("/");
+    segments[1] = newLocale;
+    router.push(segments.join("/"));
+    setOpen(false);
+    setLangOpen(false);
+  }
 
   const initials = user.name
     ? user.name
@@ -80,21 +102,59 @@ export function ProfileMenu({ user, signOutAction }: ProfileMenuProps) {
           </div>
 
           <div className="py-1">
+            {/* Language submenu */}
+            <div className="relative">
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => setLangOpen((o) => !o)}
+                className="flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+              >
+                <span>{t("language")}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-3.5 w-3.5 text-gray-400">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
+              {langOpen && (
+                <div className="border-t border-gray-50">
+                  {routing.locales.map((loc) => (
+                    <button
+                      key={loc}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => switchLocale(loc)}
+                      className={`flex w-full items-center gap-2 px-6 py-2 text-sm transition-colors hover:bg-gray-50 ${
+                        currentLocale === loc ? "text-indigo-600 font-medium" : "text-gray-600"
+                      }`}
+                    >
+                      {currentLocale === loc && (
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-3.5 w-3.5 shrink-0">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                      )}
+                      {currentLocale !== loc && <span className="w-3.5" />}
+                      {loc === "pt-BR" ? t("portuguese") : t("english")}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <Link
-              href="/dashboard/settings/categories"
+              href={`/${locale}/dashboard/settings/categories`}
               role="menuitem"
               className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
               onClick={() => setOpen(false)}
             >
-              Categories
+              {t("categories")}
             </Link>
             <Link
-              href="/dashboard/settings/currency"
+              href={`/${locale}/dashboard/settings/currency`}
               role="menuitem"
               className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
               onClick={() => setOpen(false)}
             >
-              Currency
+              {t("currency")}
             </Link>
           </div>
 
@@ -105,7 +165,7 @@ export function ProfileMenu({ user, signOutAction }: ProfileMenuProps) {
                 role="menuitem"
                 className="w-full px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-gray-50"
               >
-                Sign out
+                {t("signOut")}
               </button>
             </form>
           </div>

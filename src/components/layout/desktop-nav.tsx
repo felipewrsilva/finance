@@ -1,45 +1,49 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 type NavItem = {
-  href: string;
-  label: string;
+  key: string;
+  path: string;
   exact?: boolean;
-  /** Match by this prefix instead of href (used when href includes sub-path). */
-  activePrefix?: string;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Overview", exact: true },
-  { href: "/dashboard/accounts", label: "Accounts" },
-  { href: "/dashboard/transactions", label: "Transactions" },
-  { href: "/dashboard/budgets", label: "Budgets" },
-  { href: "/dashboard/reports", label: "Reports" },
+  { key: "overview", path: "/dashboard", exact: true },
+  { key: "accounts", path: "/dashboard/accounts" },
+  { key: "transactions", path: "/dashboard/transactions" },
+  { key: "budgets", path: "/dashboard/budgets" },
+  { key: "reports", path: "/dashboard/reports" },
 ];
 
-export function DesktopNav() {
-  const pathname = usePathname();
+interface DesktopNavProps {
+  locale: string;
+}
 
-  function isActive({ href, exact, activePrefix }: NavItem): boolean {
-    const target = activePrefix ?? href;
-    if (exact) return pathname === href;
-    return pathname === target || pathname.startsWith(target + "/");
+export function DesktopNav({ locale }: DesktopNavProps) {
+  const pathname = usePathname();
+  const t = useTranslations("nav");
+
+  function isActive({ path, exact }: NavItem): boolean {
+    const full = `/${locale}${path}`;
+    if (exact) return pathname === full;
+    return pathname === full || pathname.startsWith(full + "/");
   }
 
   return (
     <nav className="hidden items-center gap-6 text-sm font-medium sm:flex">
       {NAV_ITEMS.map((item) => (
         <a
-          key={item.href}
-          href={item.href}
+          key={item.key}
+          href={`/${locale}${item.path}`}
           className={`transition-colors ${
             isActive(item)
               ? "text-gray-900"
               : "text-gray-500 hover:text-gray-900"
           }`}
         >
-          {item.label}
+          {t(item.key)}
         </a>
       ))}
     </nav>

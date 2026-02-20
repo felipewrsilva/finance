@@ -1,14 +1,14 @@
-import NextAuth from "next-auth";
-import { authConfig } from "./auth.config";
+import createMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
 import type { NextRequest } from "next/server";
 
-const { auth } = NextAuth(authConfig);
+const intlMiddleware = createMiddleware(routing);
 
-export async function proxy(request: NextRequest) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (auth as any)(request);
+export function proxy(request: NextRequest) {
+  return intlMiddleware(request);
 }
 
 export const config = {
-  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
+  // Match all paths except API routes, Next.js internals, and static files
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { MONTHS } from "@/modules/transactions/constants";
+import { useLocale, useTranslations } from "next-intl";
 
 interface MonthNavigatorProps {
   month: number; // 1-12
@@ -12,6 +12,8 @@ export function MonthNavigator({ month, year }: MonthNavigatorProps) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const locale = useLocale();
+  const t = useTranslations("transactions");
 
   function navigate(newMonth: number, newYear: number) {
     const next = new URLSearchParams(params.toString());
@@ -33,21 +35,26 @@ export function MonthNavigator({ month, year }: MonthNavigatorProps) {
   const isCurrentMonth =
     month === new Date().getMonth() + 1 && year === new Date().getFullYear();
 
+  const monthName = new Intl.DateTimeFormat(locale, {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(year, month - 1, 1));
+
   return (
-    <div className="flex items-center justify-between gap-4 sm:max-w-xs">
+    <div className="flex items-center justify-center gap-4">
       <button
         type="button"
         onClick={prev}
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 text-xl font-light"
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
         aria-label="Previous month"
       >
-        ‹
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
       </button>
 
-      <div className="text-center" aria-live="polite" aria-atomic="true">
-        <p className="font-semibold text-gray-900">
-          {MONTHS[month - 1]} {year}
-        </p>
+      <div className="min-w-[160px] text-center" aria-live="polite" aria-atomic="true">
+        <p className="font-medium text-gray-900 capitalize">{monthName}</p>
         {!isCurrentMonth && (
           <button
             type="button"
@@ -55,9 +62,9 @@ export function MonthNavigator({ month, year }: MonthNavigatorProps) {
               const now = new Date();
               navigate(now.getMonth() + 1, now.getFullYear());
             }}
-            className="text-xs text-indigo-500 hover:underline"
+            className="mt-0.5 text-xs text-indigo-500 hover:underline"
           >
-            Back to today
+            {t("backToToday")}
           </button>
         )}
       </div>
@@ -65,10 +72,12 @@ export function MonthNavigator({ month, year }: MonthNavigatorProps) {
       <button
         type="button"
         onClick={next}
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 text-xl font-light"
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
         aria-label="Next month"
       >
-        ›
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
       </button>
     </div>
   );
