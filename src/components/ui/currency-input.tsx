@@ -235,34 +235,78 @@ export function CurrencyInput({
 
   return (
     <div
-      className={`flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-3 focus-within:ring-2 focus-within:ring-indigo-500 ${className ?? ""}`}
+      className={`flex items-center overflow-hidden rounded-xl border border-gray-200 bg-white focus-within:ring-2 focus-within:ring-indigo-500 ${className ?? ""}`}
     >
-      <span className="shrink-0 select-none text-sm text-gray-400">{symbol}</span>
-      <input
-        ref={inputRef}
-        type="text"
-        inputMode="decimal"
-        value={displayValue}
-        onChange={handleChange}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        placeholder={placeholder ?? defaultPlaceholder}
-        required={required}
-        className="min-w-0 flex-1 bg-transparent text-base focus:outline-none"
-      />
-      {showSelector && (
-        <select
-          value={currency}
-          onChange={(e) => onCurrencyChange?.(e.target.value)}
-          className="shrink-0 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 text-sm font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          {availableCurrencies!.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+      {showSelector ? (
+        <>
+          {/* Currency selector — left section of compound input */}
+          <div className="relative shrink-0">
+            <select
+              value={currency}
+              onChange={(e) => onCurrencyChange?.(e.target.value)}
+              aria-label="Currency"
+              className="h-full cursor-pointer appearance-none bg-transparent py-3 pl-4 pr-7 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50/60 focus:outline-none"
+            >
+              {availableCurrencies!.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            {/* Dropdown chevron */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+
+          {/* Vertical divider */}
+          <div className="w-px self-stretch bg-gray-900/10" aria-hidden="true" />
+
+          {/* Numeric input — right section */}
+          <input
+            ref={inputRef}
+            type="text"
+            inputMode="decimal"
+            value={displayValue}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            placeholder={placeholder ?? defaultPlaceholder}
+            required={required}
+            className="min-w-0 flex-1 bg-transparent px-4 py-3 text-base focus:outline-none"
+          />
+        </>
+      ) : (
+        <>
+          {/* Currency symbol — single-currency mode */}
+          <span className="shrink-0 select-none pl-4 text-sm text-gray-400">
+            {symbol}
+          </span>
+          <input
+            ref={inputRef}
+            type="text"
+            inputMode="decimal"
+            value={displayValue}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            placeholder={placeholder ?? defaultPlaceholder}
+            required={required}
+            className="min-w-0 flex-1 bg-transparent py-3 pl-2 pr-4 text-base focus:outline-none"
+          />
+        </>
       )}
+
       {/* Hidden input carries the raw numeric value for server-action form submission. */}
       <input type="hidden" name={name} value={value > 0 ? value : ""} />
     </div>
