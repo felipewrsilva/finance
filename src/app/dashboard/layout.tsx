@@ -23,13 +23,13 @@ export default async function DashboardLayout({
         <a href="/dashboard" className="text-sm font-semibold tracking-tight text-gray-900">
           Finance
         </a>
-        <DesktopNav />
-        <ProfileMenu user={session.user} signOutAction={signOutAction} />
+        <DesktopNav locale="pt-BR" />
+        <ProfileMenu user={session.user} signOutAction={signOutAction} locale="pt-BR" />
       </header>
       <main className="mx-auto w-full max-w-screen-lg px-4 py-6 pb-24 sm:px-6 sm:pb-8 lg:px-8 lg:py-8">
         {children}
       </main>
-      <BottomNav />
+      <BottomNav locale="pt-BR" />
     </div>
   );
 }

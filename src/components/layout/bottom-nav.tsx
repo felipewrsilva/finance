@@ -3,12 +3,12 @@
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-const NAV_HREFS = [
+const NAV_HREFS: { key: string; path: string; exact?: boolean }[] = [
   { key: "overview", path: "/dashboard", exact: true },
   { key: "accounts", path: "/dashboard/accounts" },
   { key: "transactions", path: "/dashboard/transactions" },
   { key: "budgets", path: "/dashboard/budgets" },
-] as const;
+] as { key: string; path: string; exact?: boolean }[];
 
 const ICONS: Record<string, React.ReactNode> = {
   overview: (
