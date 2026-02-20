@@ -56,13 +56,13 @@ export function RecurringSection({
 
       {/* Expanded section */}
       {isRecurring && (
-        <div className="ml-14 space-y-3">
+        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-4">
           {/* Frequency segmented control */}
           <div>
-            <p className="mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <p className="mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
               Frequency
             </p>
-            <div className="flex rounded-xl bg-gray-100 p-1 gap-1">
+            <div className="flex rounded-xl bg-white border border-gray-200 p-1 gap-1">
               {FREQUENCY_OPTIONS.map(({ value, label }) => (
                 <button
                   key={value}
@@ -70,7 +70,7 @@ export function RecurringSection({
                   onClick={() => setFrequency(value)}
                   className={`flex-1 rounded-lg py-2 text-xs font-semibold transition-all ${
                     frequency === value
-                      ? "bg-white shadow-sm text-indigo-600"
+                      ? "bg-indigo-600 text-white shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
@@ -82,7 +82,7 @@ export function RecurringSection({
 
           {/* End date */}
           <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
               End date{" "}
               <span className="text-gray-400 normal-case font-normal">(optional)</span>
             </label>
@@ -90,7 +90,7 @@ export function RecurringSection({
               name="recurrenceEnd"
               type="date"
               defaultValue={defaultEndStr}
-              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </div>
