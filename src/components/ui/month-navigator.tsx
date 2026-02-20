@@ -38,13 +38,13 @@ export function MonthNavigator({ month, year }: MonthNavigatorProps) {
       <button
         type="button"
         onClick={prev}
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 active:bg-gray-100 text-xl font-light"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 text-xl font-light"
         aria-label="Previous month"
       >
         ‹
       </button>
 
-      <div className="text-center">
+      <div className="text-center" aria-live="polite" aria-atomic="true">
         <p className="font-semibold text-gray-900">
           {MONTHS[month - 1]} {year}
         </p>
@@ -65,7 +65,7 @@ export function MonthNavigator({ month, year }: MonthNavigatorProps) {
       <button
         type="button"
         onClick={next}
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 active:bg-gray-100 text-xl font-light"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 text-xl font-light"
         aria-label="Next month"
       >
         ›

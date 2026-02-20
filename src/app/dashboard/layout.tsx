@@ -63,7 +63,7 @@ export default async function DashboardLayout({
           </form>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-4 py-8 pb-24 sm:pb-8">{children}</main>
+      <main className="mx-auto max-w-3xl px-4 py-6 pb-24 sm:px-6 sm:pb-8 lg:max-w-5xl lg:px-8 lg:py-8 xl:max-w-6xl">{children}</main>
       <BottomNav />
     </div>
   );

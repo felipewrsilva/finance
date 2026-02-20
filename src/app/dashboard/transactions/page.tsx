@@ -50,39 +50,38 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   const net = income - expense;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-6 lg:space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
+        <h1 className="text-2xl font-bold text-gray-900 lg:text-3xl">Transactions</h1>
         <Link
           href="/dashboard/transactions/new"
-          className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800"
+          className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 active:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 lg:px-5 lg:py-3"
         >
           + Add
         </Link>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+      <section aria-label="Monthly summary" className="grid grid-cols-3 gap-3 lg:gap-4">
+        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Income</p>
-          <p className="mt-1 text-lg font-bold text-green-600">
+          <p className="mt-1 text-lg font-bold text-green-600 lg:text-xl">
             {formatCurrency(income, currency, locale)}
           </p>
         </div>
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Expenses</p>
-          <p className="mt-1 text-lg font-bold text-red-500">
+          <p className="mt-1 text-lg font-bold text-red-500 lg:text-xl">
             {formatCurrency(expense, currency, locale)}
           </p>
         </div>
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Balance</p>
-          <p className={`mt-1 text-lg font-bold ${net >= 0 ? "text-indigo-600" : "text-red-500"}`}>
+          <p className={`mt-1 text-lg font-bold lg:text-xl ${net >= 0 ? "text-indigo-600" : "text-red-500"}`}>
             {formatCurrency(net, currency, locale)}
           </p>
         </div>
-      </div>
+      </section>
 
       {/* Filters */}
       <Suspense>
