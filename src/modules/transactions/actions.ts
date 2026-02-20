@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { transactionSchema } from "./schema";
-import { TransactionType, TransactionStatus } from "@prisma/client";
+import { TransactionType, TransactionStatus, type Frequency } from "@prisma/client";
 
 async function getUser() {
   const session = await auth();
@@ -52,7 +52,27 @@ export async function getTransaction(id: string) {
   });
 }
 
+export async function getRecurringTransactions() {
+  const user = await getUser();
+  return prisma.transaction.findMany({
+    where: { userId: user.id, isRecurring: true },
+    include: { category: true, account: true },
+    orderBy: { date: "desc" },
+  });
+}
+
 // ─── Mutations ────────────────────────────────────────────────────────────────
+
+function parseRecurringFromForm(formData: FormData) {
+  const isRecurring = formData.get("isRecurring") === "true";
+  const frequency = isRecurring
+    ? (formData.get("frequency") as Frequency | null)
+    : null;
+  const recurrenceEndRaw = formData.get("recurrenceEnd");
+  const recurrenceEnd =
+    isRecurring && recurrenceEndRaw ? new Date(recurrenceEndRaw as string) : null;
+  return { isRecurring, frequency, recurrenceEnd };
+}
 
 export async function createTransaction(formData: FormData) {
   const user = await getUser();
@@ -71,6 +91,8 @@ export async function createTransaction(formData: FormData) {
     resolvedAccountId = defaultAccount.id;
   }
 
+  const { isRecurring, frequency, recurrenceEnd } = parseRecurringFromForm(formData);
+
   const parsed = transactionSchema.safeParse({
     accountId: resolvedAccountId,
     categoryId: formData.get("categoryId"),
@@ -79,6 +101,9 @@ export async function createTransaction(formData: FormData) {
     description: formData.get("description") || undefined,
     date: formData.get("date"),
     status: formData.get("status"),
+    isRecurring: String(isRecurring),
+    frequency,
+    recurrenceEnd,
   });
 
   if (!parsed.success) return;
@@ -108,6 +133,8 @@ export async function createTransaction(formData: FormData) {
 export async function updateTransaction(id: string, formData: FormData) {
   const user = await getUser();
 
+  const { isRecurring, frequency, recurrenceEnd } = parseRecurringFromForm(formData);
+
   const parsed = transactionSchema.safeParse({
     accountId: formData.get("accountId"),
     categoryId: formData.get("categoryId"),
@@ -116,6 +143,9 @@ export async function updateTransaction(id: string, formData: FormData) {
     description: formData.get("description") || undefined,
     date: formData.get("date"),
     status: formData.get("status"),
+    isRecurring: String(isRecurring),
+    frequency,
+    recurrenceEnd,
   });
 
   if (!parsed.success) return;
@@ -193,6 +223,20 @@ export async function deleteTransaction(id: string) {
 
   revalidatePath("/dashboard/transactions");
   revalidatePath("/dashboard");
+}
+
+/**
+ * Stop a recurring series — sets isRecurring=false and clears recurring fields.
+ * The original transaction data is preserved; only future virtual occurrences stop.
+ */
+export async function cancelRecurring(id: string) {
+  const user = await getUser();
+  await prisma.transaction.updateMany({
+    where: { id, userId: user.id },
+    data: { isRecurring: false, frequency: null, recurrenceEnd: null },
+  });
+  revalidatePath("/dashboard/recurring");
+  revalidatePath("/dashboard/transactions");
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

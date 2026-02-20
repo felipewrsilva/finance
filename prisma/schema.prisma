@@ -18,11 +18,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  accounts       Account[]
-  categories     Category[]
-  transactions   Transaction[]
-  recurringRules RecurringRule[]
-  budgets        Budget[]
+  accounts     Account[]
+  categories   Category[]
+  transactions Transaction[]
+  budgets      Budget[]
 
   @@map("users")
 }
@@ -85,30 +84,13 @@ model Category {
   @@map("categories")
 }
 
-// ─── RecurringRule ───────────────────────────────────────────────────────────
+// ─── Frequency ───────────────────────────────────────────────────────────────
 
 enum Frequency {
   DAILY
   WEEKLY
   MONTHLY
   YEARLY
-}
-
-model RecurringRule {
-  id           String    @id @default(cuid())
-  userId       String
-  templateData Json
-  frequency    Frequency @default(MONTHLY)
-  startDate    DateTime
-  endDate      DateTime?
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions Transaction[]
-
-  @@map("recurring_rules")
 }
 
 // ─── Transaction ─────────────────────────────────────────────────────────────
@@ -119,28 +101,33 @@ enum TransactionStatus {
 }
 
 model Transaction {
-  id              String            @id @default(cuid())
-  userId          String
-  accountId       String
-  categoryId      String
-  type            TransactionType
-  amount          Decimal           @db.Decimal(14, 2)
-  description     String?
-  date            DateTime
-  status          TransactionStatus @default(PAID)
-  recurringRuleId String?
-  metadata        Json?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id                  String            @id @default(cuid())
+  userId              String
+  accountId           String
+  categoryId          String
+  type                TransactionType
+  amount              Decimal           @db.Decimal(14, 2)
+  description         String?
+  date                DateTime
+  status              TransactionStatus @default(PAID)
+  isRecurring         Boolean           @default(false)
+  frequency           Frequency?
+  recurrenceEnd       DateTime?
+  parentTransactionId String?
+  metadata            Json?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  account       Account        @relation(fields: [accountId], references: [id], onDelete: Restrict)
-  category      Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  recurringRule RecurringRule? @relation(fields: [recurringRuleId], references: [id], onDelete: SetNull)
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account           Account       @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  category          Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  parentTransaction Transaction?  @relation("TransactionChildren", fields: [parentTransactionId], references: [id], onDelete: SetNull)
+  childTransactions Transaction[] @relation("TransactionChildren")
 
   @@index([userId, date])
   @@index([userId, accountId])
   @@index([userId, categoryId])
+  @@index([userId, isRecurring])
   @@map("transactions")
 }
 
