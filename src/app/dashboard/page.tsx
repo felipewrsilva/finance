@@ -3,6 +3,8 @@ import { getAccounts } from "@/modules/accounts/actions";
 import { ACCOUNT_TYPE_ICONS } from "@/modules/accounts/constants";
 import { getDashboardSummary } from "@/modules/dashboard/actions";
 import { MarkPaidButton } from "@/components/transactions/mark-paid-button";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import type { Account } from "@prisma/client";
 
@@ -25,48 +27,39 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">
-          {session?.user?.name?.split(" ")[0]}
-        </h1>
-        <p className="mt-0.5 text-sm text-gray-400">{monthLabel}</p>
-      </div>
+      <PageHeader
+        title={session?.user?.name?.split(" ")[0] ?? "Dashboard"}
+        subtitle={monthLabel}
+      />
 
       {/* Total balance */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 lg:p-8">
         <p className="text-xs font-medium uppercase tracking-wider text-gray-400">Total balance</p>
-        <p className="mt-2 text-3xl font-semibold text-gray-900 lg:text-4xl">{fmt(totalBalance)}</p>
+        <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-gray-900 sm:text-4xl">{fmt(totalBalance)}</p>
         <p className="mt-1 text-xs text-gray-400">
           {accounts.length} account{accounts.length !== 1 ? "s" : ""}
         </p>
       </div>
 
-      {/* Monthly summary cards */}
-      <div className="grid grid-cols-3 gap-3 lg:gap-4">
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-500">Income</p>
-          <p className="mt-1 text-lg font-bold text-green-600 lg:text-xl">{fmt(summary.income)}</p>
-          {summary.pendingIncome > 0 && (
-            <p className="mt-0.5 text-xs text-gray-400">+{fmt(summary.pendingIncome)} pending</p>
-          )}
-        </div>
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-500">Expenses</p>
-          <p className="mt-1 text-lg font-bold text-red-500 lg:text-xl">{fmt(summary.expense)}</p>
-          {summary.pendingExpense > 0 && (
-            <p className="mt-0.5 text-xs text-gray-400">+{fmt(summary.pendingExpense)} pending</p>
-          )}
-        </div>
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-500">Net</p>
-          <p
-            className={`mt-1 text-lg font-bold lg:text-xl ${
-              summary.net >= 0 ? "text-indigo-600" : "text-red-600"
-            }`}
-          >
-            {fmt(summary.net)}
-          </p>
-        </div>
+      {/* Monthly summary */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:gap-4">
+        <StatCard
+          label="Income"
+          value={fmt(summary.income)}
+          subtext={summary.pendingIncome > 0 ? `+${fmt(summary.pendingIncome)} pending` : undefined}
+          valueClassName="text-green-600"
+        />
+        <StatCard
+          label="Expenses"
+          value={fmt(summary.expense)}
+          subtext={summary.pendingExpense > 0 ? `+${fmt(summary.pendingExpense)} pending` : undefined}
+          valueClassName="text-red-500"
+        />
+        <StatCard
+          label="Net"
+          value={fmt(summary.net)}
+          valueClassName={summary.net >= 0 ? "text-indigo-600" : "text-red-600"}
+        />
       </div>
 
       {/* Category breakdown */}
@@ -94,7 +87,7 @@ export default async function DashboardPage() {
                       <span className="truncate text-sm font-medium text-gray-800">
                         {c.categoryName}
                       </span>
-                      <span className="ml-2 text-sm font-semibold text-gray-900">
+                      <span className="ml-2 text-sm font-semibold tabular-nums text-gray-900">
                         {fmt(c.total)}
                       </span>
                     </div>
@@ -149,7 +142,7 @@ export default async function DashboardPage() {
                 </div>
                 {t.status === "PENDING" && <MarkPaidButton id={t.id} />}
                 <span
-                  className={`text-sm font-semibold ${
+                  className={`text-sm font-semibold tabular-nums ${
                     t.type === "INCOME" ? "text-green-600" : t.type === "EXPENSE" ? "text-red-500" : "text-indigo-600"
                   }`}
                 >
@@ -198,7 +191,7 @@ export default async function DashboardPage() {
                   </span>
                 </div>
                 <span
-                  className={`text-sm font-semibold ${
+                  className={`text-sm font-semibold tabular-nums ${
                     Number(a.balance) >= 0 ? "text-gray-900" : "text-red-600"
                   }`}
                 >

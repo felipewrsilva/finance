@@ -76,7 +76,7 @@ export function TransactionList({ transactions, currency = "BRL", locale = "pt-B
 
             {/* Amount */}
             <span
-              className={`font-semibold shrink-0 lg:text-base ${TRANSACTION_TYPE_COLORS[tx.type]}`}
+              className={`font-semibold tabular-nums shrink-0 lg:text-base ${TRANSACTION_TYPE_COLORS[tx.type]}`}
             >
               {tx.type === "EXPENSE" ? "-" : tx.type === "INCOME" ? "+" : ""}
               {formatCurrency(Number(tx.amount), currency, locale)}

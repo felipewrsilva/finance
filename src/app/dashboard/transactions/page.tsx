@@ -5,6 +5,8 @@ import { getTransactions } from "@/modules/transactions/actions";
 import { getAccounts } from "@/modules/accounts/actions";
 import { TransactionList } from "@/components/transactions/transaction-list";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import type { TransactionType, TransactionStatus } from "@prisma/client";
 
@@ -51,44 +53,43 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6 lg:space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Transactions</h1>
-        <div className="flex items-center gap-2">
-          <a
-            href={`/api/export/transactions?month=${month}&year=${year}`}
-            className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-          >
-            Export CSV
-          </a>
-          <Link
-            href="/dashboard/transactions/new"
-            className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 active:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 lg:px-5 lg:py-3"
-          >
-            + Add
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Transactions"
+        action={
+          <div className="flex items-center gap-2">
+            <a
+              href={`/api/export/transactions?month=${month}&year=${year}`}
+              className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            >
+              Export
+            </a>
+            <Link
+              href="/dashboard/transactions/new"
+              className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 active:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            >
+              + Add
+            </Link>
+          </div>
+        }
+      />
 
-      {/* Summary cards */}
-      <section aria-label="Monthly summary" className="grid grid-cols-3 gap-3 lg:gap-4">
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-400">Income</p>
-          <p className="mt-1 text-lg font-bold text-green-600 lg:text-xl">
-            {formatCurrency(income, currency, locale)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-400">Expenses</p>
-          <p className="mt-1 text-lg font-bold text-red-500 lg:text-xl">
-            {formatCurrency(expense, currency, locale)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-400">Balance</p>
-          <p className={`mt-1 text-lg font-bold lg:text-xl ${net >= 0 ? "text-indigo-600" : "text-red-500"}`}>
-            {formatCurrency(net, currency, locale)}
-          </p>
-        </div>
+      {/* Summary */}
+      <section aria-label="Monthly summary" className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:gap-4">
+        <StatCard
+          label="Income"
+          value={formatCurrency(income, currency, locale)}
+          valueClassName="text-green-600"
+        />
+        <StatCard
+          label="Expenses"
+          value={formatCurrency(expense, currency, locale)}
+          valueClassName="text-red-500"
+        />
+        <StatCard
+          label="Balance"
+          value={formatCurrency(net, currency, locale)}
+          valueClassName={net >= 0 ? "text-indigo-600" : "text-red-500"}
+        />
       </section>
 
       {/* Filters */}

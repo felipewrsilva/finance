@@ -59,7 +59,7 @@ export function AccountCard({ account, currency }: Props) {
           <p className="text-xs text-gray-500">{ACCOUNT_TYPE_LABELS[account.type]}</p>
         </div>
         <span
-          className={`text-sm font-semibold shrink-0 ml-2 ${
+          className={`text-sm font-semibold tabular-nums shrink-0 ml-2 ${
             balance >= 0 ? "text-gray-900" : "text-red-600"
           }`}
         >

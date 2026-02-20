@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { getBudgets } from "@/modules/budgets/actions";
 import BudgetList from "@/components/budgets/budget-list";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function BudgetsPage() {
   const now = new Date();
@@ -14,18 +15,18 @@ export default async function BudgetsPage() {
 
   return (
     <div className="space-y-6 lg:space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Budgets</h1>
-          <p className="mt-0.5 text-sm text-gray-400">{monthLabel}</p>
-        </div>
-        <a
-          href="/dashboard/budgets/new"
-          className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
-        >
-          + New budget
-        </a>
-      </div>
+      <PageHeader
+        title="Budgets"
+        subtitle={monthLabel}
+        action={
+          <a
+            href="/dashboard/budgets/new"
+            className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+          >
+            + New budget
+          </a>
+        }
+      />
 
       <BudgetList budgets={budgets} currency={currency} />
     </div>

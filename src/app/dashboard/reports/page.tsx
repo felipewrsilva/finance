@@ -3,6 +3,8 @@ import { getMonthlyReport, getAccountBalanceHistory } from "@/modules/dashboard/
 import { formatCurrency } from "@/lib/utils";
 import MonthlyChart from "@/components/reports/monthly-chart";
 import BalanceChart from "@/components/reports/balance-chart";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatCard } from "@/components/ui/stat-card";
 
 export default async function ReportsPage() {
   const [session, data, balanceHistory] = await Promise.all([
@@ -24,37 +26,34 @@ export default async function ReportsPage() {
 
   return (
     <div className="space-y-6 lg:space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Reports</h1>
-        <p className="mt-0.5 text-sm text-gray-400">Last 6 months</p>
-      </div>
+      <PageHeader title="Reports" subtitle="Last 6 months" />
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-500">Total income (6 mo)</p>
-          <p className="mt-1 text-lg font-bold text-green-600 lg:text-xl">{fmt(totalIncome)}</p>
-          <p className="text-xs text-gray-400">avg {fmt(avgIncome)} / mo</p>
-        </div>
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-500">Total expenses (6 mo)</p>
-          <p className="mt-1 text-lg font-bold text-red-500 lg:text-xl">{fmt(totalExpense)}</p>
-          <p className="text-xs text-gray-400">avg {fmt(avgExpense)} / mo</p>
-        </div>
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-500">Net savings (6 mo)</p>
-          <p className={`mt-1 text-lg font-bold lg:text-xl ${totalNet >= 0 ? "text-indigo-600" : "text-red-600"}`}>
-            {fmt(totalNet)}
-          </p>
-          <p className="text-xs text-gray-400">avg {fmt(avgNet)} / mo</p>
-        </div>
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
-          <p className="text-xs font-medium text-gray-500">Savings rate</p>
-          <p className={`mt-1 text-lg font-bold lg:text-xl ${totalNet >= 0 ? "text-indigo-600" : "text-red-600"}`}>
-            {totalIncome > 0 ? `${((totalNet / totalIncome) * 100).toFixed(1)}%` : "—"}
-          </p>
-          <p className="text-xs text-gray-400">of total income</p>
-        </div>
+      {/* Summary */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+        <StatCard
+          label="Total income (6 mo)"
+          value={fmt(totalIncome)}
+          subtext={`avg ${fmt(avgIncome)} / mo`}
+          valueClassName="text-green-600"
+        />
+        <StatCard
+          label="Total expenses (6 mo)"
+          value={fmt(totalExpense)}
+          subtext={`avg ${fmt(avgExpense)} / mo`}
+          valueClassName="text-red-500"
+        />
+        <StatCard
+          label="Net savings (6 mo)"
+          value={fmt(totalNet)}
+          subtext={`avg ${fmt(avgNet)} / mo`}
+          valueClassName={totalNet >= 0 ? "text-indigo-600" : "text-red-600"}
+        />
+        <StatCard
+          label="Savings rate"
+          value={totalIncome > 0 ? `${((totalNet / totalIncome) * 100).toFixed(1)}%` : "—"}
+          subtext="of total income"
+          valueClassName={totalNet >= 0 ? "text-indigo-600" : "text-red-600"}
+        />
       </div>
 
       {/* Income vs Expenses chart */}
@@ -98,18 +97,18 @@ export default async function ReportsPage() {
               <span className="text-sm font-medium text-gray-700">
                 {d.month} {d.year}
               </span>
-              <div className="flex gap-6 text-right text-sm">
+              <div className="flex gap-3 text-right text-sm sm:gap-6">
                 <div>
                   <p className="text-xs text-gray-400">Income</p>
-                  <p className="font-medium text-green-600">{fmt(d.income)}</p>
+                  <p className="font-medium tabular-nums text-green-600">{fmt(d.income)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Expenses</p>
-                  <p className="font-medium text-red-500">{fmt(d.expense)}</p>
+                  <p className="font-medium tabular-nums text-red-500">{fmt(d.expense)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Net</p>
-                  <p className={`font-semibold ${net >= 0 ? "text-indigo-600" : "text-red-600"}`}>
+                  <p className={`font-semibold tabular-nums ${net >= 0 ? "text-indigo-600" : "text-red-600"}`}>
                     {fmt(net)}
                   </p>
                 </div>

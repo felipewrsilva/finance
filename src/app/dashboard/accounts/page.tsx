@@ -2,6 +2,7 @@ import { getAccounts } from "@/modules/accounts/actions";
 import { AccountCard } from "@/components/accounts/account-card";
 import { auth } from "@/auth";
 import { formatCurrency } from "@/lib/utils";
+import { PageHeader } from "@/components/ui/page-header";
 import type { Account } from "@prisma/client";
 
 export default async function AccountsPage() {
@@ -14,20 +15,18 @@ export default async function AccountsPage() {
 
   return (
     <div className="space-y-6 lg:space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Accounts</h1>
-          <p className="mt-0.5 text-sm text-gray-400">
-            Total balance: <span className="font-medium text-gray-700">{formatted}</span>
-          </p>
-        </div>
-        <a
-          href="/dashboard/accounts/new"
-          className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
-        >
-          + New account
-        </a>
-      </div>
+      <PageHeader
+        title="Accounts"
+        subtitle={`Total balance: ${formatted}`}
+        action={
+          <a
+            href="/dashboard/accounts/new"
+            className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+          >
+            + New account
+          </a>
+        }
+      />
 
       {accounts.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-200 bg-white p-10 text-center">
