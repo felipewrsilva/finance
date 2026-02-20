@@ -11,6 +11,7 @@ import {
   type BankKey,
 } from "@/modules/accounts/constants";
 import { CurrencyInput } from "@/components/ui/currency-input";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type Account = {
   id: string;
@@ -195,12 +196,11 @@ export function AccountForm({ account, currency = "BRL", locale = "pt-BR" }: Pro
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">
-        <button
-          type="submit"
+        <SubmitButton
           className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700"
         >
           {isEdit ? "Save changes" : "Create account"}
-        </button>
+        </SubmitButton>
         <a
           href="/dashboard/accounts"
           className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-50"

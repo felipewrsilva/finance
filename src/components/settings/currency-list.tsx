@@ -26,7 +26,7 @@ export function CurrencyList({
   const [enabled, setEnabled] = useState(enabledCodes);
   const [defaultCode, setDefaultCode] = useState(defaultCurrency);
   const [showPicker, setShowPicker] = useState(false);
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const available = allCurrencies.filter((c) => !enabled.includes(c.code));
 
@@ -80,7 +80,7 @@ export function CurrencyList({
 
   return (
     <div>
-      <ul>
+      <ul className={`transition-opacity ${isPending ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
         {enabled.map((code) => {
           const meta = getMeta(code);
           return (

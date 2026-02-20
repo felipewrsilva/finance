@@ -151,6 +151,72 @@ export async function getDashboardSummary(month: number, year: number) {
   return { summary, recentTransactions, categoryBreakdown };
 }
 
+export interface AccountBalancePoint {
+  month: string;
+  year: number;
+  [key: string]: number | string;
+}
+
+/** Get account balance history for the last N months (for balance evolution chart) */
+export async function getAccountBalanceHistory(months = 6) {
+  const user = await getUser();
+
+  const accounts = await prisma.account.findMany({
+    where: { userId: user.id, isActive: true },
+    select: { id: true, name: true, color: true, balance: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const now = new Date();
+  const points: AccountBalancePoint[] = [];
+
+  for (let i = months - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+
+    const point: AccountBalancePoint = {
+      month: d.toLocaleString("default", { month: "short" }),
+      year: d.getFullYear(),
+    };
+
+    for (const account of accounts) {
+      // Sum of all INCOME transactions after monthEnd
+      const [futureIncome, futureExpense] = await Promise.all([
+        prisma.transaction.aggregate({
+          where: {
+            userId: user.id,
+            accountId: account.id,
+            type: TransactionType.INCOME,
+            status: TransactionStatus.PAID,
+            date: { gte: monthEnd },
+          },
+          _sum: { amount: true },
+        }),
+        prisma.transaction.aggregate({
+          where: {
+            userId: user.id,
+            accountId: account.id,
+            type: TransactionType.EXPENSE,
+            status: TransactionStatus.PAID,
+            date: { gte: monthEnd },
+          },
+          _sum: { amount: true },
+        }),
+      ]);
+
+      const currentBalance = Number(account.balance);
+      const addedSince = Number(futureIncome._sum.amount ?? 0);
+      const spentSince = Number(futureExpense._sum.amount ?? 0);
+      // Balance at end of that month = current - what was added after + what was spent after
+      point[account.name] = currentBalance - addedSince + spentSince;
+    }
+
+    points.push(point);
+  }
+
+  return { accounts, dataPoints: points };
+}
+
 /** Get monthly income/expense for the last N months (for reports chart) */
 export async function getMonthlyReport(months = 6) {
   const user = await getUser();

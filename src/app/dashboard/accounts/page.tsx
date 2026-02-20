@@ -13,10 +13,10 @@ export default async function AccountsPage() {
   const formatted = formatCurrency(totalBalance, currency, locale);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 lg:space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Accounts</h1>
+          <h1 className="text-2xl font-bold text-gray-900 lg:text-3xl">Accounts</h1>
           <p className="text-sm text-gray-500">
             Total balance:{" "}
             <span className="font-semibold text-gray-900">{formatted}</span>
@@ -24,7 +24,7 @@ export default async function AccountsPage() {
         </div>
         <a
           href="/dashboard/accounts/new"
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700"
+          className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
         >
           + New account
         </a>
@@ -41,7 +41,7 @@ export default async function AccountsPage() {
           </a>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid gap-3 md:grid-cols-2 md:gap-4">
           {accounts.map((account) => (
             <AccountCard
               key={account.id}

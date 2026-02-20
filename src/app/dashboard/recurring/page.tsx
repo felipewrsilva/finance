@@ -6,7 +6,7 @@ import { InlineConfirmButton } from "@/components/ui/inline-confirm-button";
 import Link from "next/link";
 import type { Account, Category, Transaction } from "@prisma/client";
 
-type TxWithRels = Transaction & { account: Account; category: Category };
+type TxWithRels = Transaction & { account: Account; category: Category | null };
 
 function RecurringCard({ tx, currency, locale }: { tx: TxWithRels; currency: string; locale: string }) {
   const nextDate = tx.frequency
@@ -22,11 +22,11 @@ function RecurringCard({ tx, currency, locale }: { tx: TxWithRels; currency: str
       {/* Top row */}
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-xl shrink-0">
-          {tx.category.icon ?? "🔄"}
+          {tx.category?.icon ?? "🔄"}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-gray-900 truncate">
-            {tx.description || tx.category.name}
+            {tx.description || tx.category?.name || "Recurring"}
           </p>
           <p className="text-xs text-gray-400">
             {tx.account.name}

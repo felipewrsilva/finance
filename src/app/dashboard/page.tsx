@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { getAccounts } from "@/modules/accounts/actions";
 import { ACCOUNT_TYPE_ICONS } from "@/modules/accounts/constants";
 import { getDashboardSummary } from "@/modules/dashboard/actions";
+import { MarkPaidButton } from "@/components/transactions/mark-paid-button";
 import { formatCurrency } from "@/lib/utils";
 import type { Account } from "@prisma/client";
 
@@ -32,34 +33,34 @@ export default async function DashboardPage() {
       </div>
 
       {/* Total balance */}
-      <div className="rounded-xl bg-indigo-600 p-6 text-white shadow">
+      <div className="rounded-xl bg-indigo-600 p-6 text-white shadow lg:p-8">
         <p className="text-sm font-medium opacity-80">Total balance</p>
-        <p className="mt-1 text-3xl font-bold">{fmt(totalBalance)}</p>
+        <p className="mt-1 text-3xl font-bold lg:text-4xl">{fmt(totalBalance)}</p>
         <p className="mt-1 text-xs opacity-60">
           Across {accounts.length} account{accounts.length !== 1 ? "s" : ""}
         </p>
       </div>
 
       {/* Monthly summary cards */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+      <div className="grid grid-cols-3 gap-3 lg:gap-4">
+        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
           <p className="text-xs font-medium text-gray-500">Income</p>
-          <p className="mt-1 text-lg font-bold text-green-600">{fmt(summary.income)}</p>
+          <p className="mt-1 text-lg font-bold text-green-600 lg:text-xl">{fmt(summary.income)}</p>
           {summary.pendingIncome > 0 && (
             <p className="mt-0.5 text-xs text-gray-400">+{fmt(summary.pendingIncome)} pending</p>
           )}
         </div>
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
           <p className="text-xs font-medium text-gray-500">Expenses</p>
-          <p className="mt-1 text-lg font-bold text-red-500">{fmt(summary.expense)}</p>
+          <p className="mt-1 text-lg font-bold text-red-500 lg:text-xl">{fmt(summary.expense)}</p>
           {summary.pendingExpense > 0 && (
             <p className="mt-0.5 text-xs text-gray-400">+{fmt(summary.pendingExpense)} pending</p>
           )}
         </div>
-        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
           <p className="text-xs font-medium text-gray-500">Net</p>
           <p
-            className={`mt-1 text-lg font-bold ${
+            className={`mt-1 text-lg font-bold lg:text-xl ${
               summary.net >= 0 ? "text-indigo-600" : "text-red-600"
             }`}
           >
@@ -128,10 +129,10 @@ export default async function DashboardPage() {
                   i !== recentTransactions.length - 1 ? "border-b border-gray-50" : ""
                 }`}
               >
-                <span className="text-base">{t.categoryIcon ?? "💸"}</span>
+                <span className="text-base">{t.type === "TRANSFER" ? "↔️" : (t.categoryIcon ?? "💸")}</span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-gray-800">
-                    {t.description ?? t.categoryName ?? "Transaction"}
+                    {t.description ?? t.categoryName ?? (t.type === "TRANSFER" ? "Transfer" : "Transaction")}
                   </p>
                   <p className="text-xs text-gray-400">
                     {t.accountName} ·{" "}
@@ -146,12 +147,13 @@ export default async function DashboardPage() {
                     )}
                   </p>
                 </div>
+                {t.status === "PENDING" && <MarkPaidButton id={t.id} />}
                 <span
                   className={`text-sm font-semibold ${
-                    t.type === "INCOME" ? "text-green-600" : "text-red-500"
+                    t.type === "INCOME" ? "text-green-600" : t.type === "EXPENSE" ? "text-red-500" : "text-indigo-600"
                   }`}
                 >
-                  {t.type === "INCOME" ? "+" : "-"}
+                  {t.type === "INCOME" ? "+" : t.type === "EXPENSE" ? "-" : ""}
                   {fmt(t.amount)}
                 </span>
               </div>

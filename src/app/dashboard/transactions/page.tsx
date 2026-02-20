@@ -53,12 +53,20 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
     <div className="space-y-6 lg:space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900 lg:text-3xl">Transactions</h1>
-        <Link
-          href="/dashboard/transactions/new"
-          className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 active:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 lg:px-5 lg:py-3"
-        >
-          + Add
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/api/export/transactions?month=${month}&year=${year}`}
+            className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+          >
+            Export CSV
+          </a>
+          <Link
+            href="/dashboard/transactions/new"
+            className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 active:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 lg:px-5 lg:py-3"
+          >
+            + Add
+          </Link>
+        </div>
       </div>
 
       {/* Summary cards */}

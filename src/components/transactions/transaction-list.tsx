@@ -4,10 +4,11 @@ import Link from "next/link";
 import { deleteTransaction } from "@/modules/transactions/actions";
 import { TRANSACTION_TYPE_COLORS } from "@/modules/transactions/constants";
 import { InlineConfirmButton } from "@/components/ui/inline-confirm-button";
+import { MarkPaidButton } from "./mark-paid-button";
 import { formatCurrency } from "@/lib/utils";
 import type { Transaction, Account, Category } from "@prisma/client";
 
-type TransactionWithRels = Transaction & { account: Account; category: Category };
+type TransactionWithRels = Transaction & { account: Account; category: Category | null };
 
 interface TransactionListProps {
   transactions: TransactionWithRels[];
@@ -46,14 +47,14 @@ export function TransactionList({ transactions, currency = "BRL", locale = "pt-B
           >
             {/* Category icon */}
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-xl shrink-0 lg:h-11 lg:w-11">
-              {tx.category.icon ?? "📌"}
+              {tx.type === "TRANSFER" ? "↔️" : (tx.category?.icon ?? "📌")}
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <p className="font-medium text-gray-900 truncate">
-                  {tx.description || tx.category.name}
+                  {tx.description || tx.category?.name || (tx.type === "TRANSFER" ? "Transfer" : "Transaction")}
                 </p>
                 {tx.isRecurring && (
                   <span
@@ -77,10 +78,17 @@ export function TransactionList({ transactions, currency = "BRL", locale = "pt-B
             <span
               className={`font-semibold shrink-0 lg:text-base ${TRANSACTION_TYPE_COLORS[tx.type]}`}
             >
-              {tx.type === "EXPENSE" ? "-" : "+"}
+              {tx.type === "EXPENSE" ? "-" : tx.type === "INCOME" ? "+" : ""}
               {formatCurrency(Number(tx.amount), currency, locale)}
             </span>
           </Link>
+
+          {/* Mark paid — outside Link */}
+          {tx.status === "PENDING" && (
+            <div className="shrink-0 pr-1">
+              <MarkPaidButton id={tx.id} />
+            </div>
+          )}
 
           {/* Delete — outside Link to avoid click propagation */}
           <div className="pr-3 lg:pr-4 shrink-0">

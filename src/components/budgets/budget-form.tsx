@@ -7,6 +7,7 @@ import { createBudget, updateBudget } from "@/modules/budgets/actions";
 import { BUDGET_PERIOD_LABELS } from "@/modules/budgets/constants";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { DatePicker } from "@/components/ui/date-picker";
+import { SubmitButton } from "@/components/ui/submit-button";
 import type { Category, Budget } from "@prisma/client";
 
 interface Props {
@@ -125,12 +126,11 @@ export default function BudgetForm({ budget, categories, currency = "BRL", local
       </div>
 
       <div className="flex gap-3 pt-2">
-        <button
-          type="submit"
+        <SubmitButton
           className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
         >
           {budget ? "Save changes" : "Create budget"}
-        </button>
+        </SubmitButton>
         <button
           type="button"
           onClick={() => router.back()}
