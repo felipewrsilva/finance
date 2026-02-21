@@ -1,8 +1,10 @@
 import { auth } from "@/auth";
 import { getMonthlyReport, getAccountBalanceHistory } from "@/modules/dashboard/actions";
+import { getInvestments } from "@/modules/investments/actions";
 import { formatCurrency } from "@/lib/utils";
 import MonthlyChart from "@/components/reports/monthly-chart";
 import BalanceChart from "@/components/reports/balance-chart";
+import { ProjectionsSection } from "@/components/investments/projections-section";
 import { StatCard } from "@/components/ui/stat-card";
 import { getTranslations } from "next-intl/server";
 
@@ -10,10 +12,11 @@ type Props = { params: Promise<{ locale: string }> };
 
 export default async function ReportsPage({ params }: Props) {
   const { locale } = await params;
-  const [session, data, balanceHistory, t] = await Promise.all([
+  const [session, data, balanceHistory, investments, t] = await Promise.all([
     auth(),
     getMonthlyReport(6),
     getAccountBalanceHistory(6),
+    getInvestments("ACTIVE"),
     getTranslations("reports"),
   ]);
 
@@ -124,6 +127,20 @@ export default async function ReportsPage({ params }: Props) {
           );
         })}
       </div>
+
+      {/* Investment projections */}
+      {investments.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-base font-semibold text-gray-800">
+            {t("investmentProjections")}
+          </h2>
+          <ProjectionsSection
+            investments={investments}
+            currency={currency}
+            locale={userLocale}
+          />
+        </div>
+      )}
     </div>
   );
 }

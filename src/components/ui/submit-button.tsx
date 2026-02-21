@@ -6,15 +6,17 @@ interface Props {
   children: React.ReactNode;
   className?: string;
   pendingText?: string;
+  disabled?: boolean;
 }
 
-export function SubmitButton({ children, className, pendingText }: Props) {
+export function SubmitButton({ children, className, pendingText, disabled }: Props) {
   const { pending } = useFormStatus();
+  const isDisabled = pending || disabled;
 
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={isDisabled}
       aria-busy={pending}
       className={`${className ?? ""}${pending ? " opacity-60" : ""}`}
     >

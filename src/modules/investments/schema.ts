@@ -3,6 +3,7 @@ import { InvestmentCompounding, InvestmentStatus, RecurrenceInterval } from "@pr
 
 export const investmentSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
+  customCategoryName: z.string().optional().nullable(),
   transactionId: z.string().optional().nullable(),
   startDate: z.coerce.date({ error: "Start date is required" }),
   principalAmount: z

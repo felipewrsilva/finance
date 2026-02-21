@@ -9,7 +9,11 @@ import { formatCurrency } from "@/lib/utils";
 import { totalProjectedValue } from "@/modules/investments/projections";
 import Link from "next/link";
 
-export default async function InvestmentsPage() {
+type Props = { params: Promise<{ locale: string }> };
+
+export default async function InvestmentsPage({ params }: Props) {
+  const { locale } = await params;
+
   const [session, investments, currencyPrefs, t] = await Promise.all([
     auth(),
     getInvestments(),
@@ -18,8 +22,8 @@ export default async function InvestmentsPage() {
   ]);
 
   const currency = session?.user?.defaultCurrency ?? currencyPrefs.defaultCurrency;
-  const locale = session?.user?.locale ?? currencyPrefs.locale;
-  const fmt = (v: number) => formatCurrency(v, currency, locale);
+  const userLocale = session?.user?.locale ?? locale;
+  const fmt = (v: number) => formatCurrency(v, currency, userLocale);
 
   const active = investments.filter((inv) => inv.status === "ACTIVE");
 
@@ -73,7 +77,7 @@ export default async function InvestmentsPage() {
         subtitle={t("activeInvestments", { count: active.length })}
         action={
           <Link
-            href="/dashboard/investments/new"
+            href={`/${locale}/dashboard/investments/new`}
             className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-700 active:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
           >
             {t("addInvestment")}
@@ -114,7 +118,7 @@ export default async function InvestmentsPage() {
       <InvestmentList
         investments={investments}
         currency={currency}
-        locale={locale}
+        locale={userLocale}
       />
     </div>
   );

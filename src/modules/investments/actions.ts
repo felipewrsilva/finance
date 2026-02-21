@@ -79,6 +79,7 @@ export async function createInvestment(formData: FormData) {
   const isRecurring = formData.get("recurring") === "true";
   const parsed = investmentSchema.safeParse({
     categoryId: formData.get("categoryId"),
+    customCategoryName: formData.get("customCategoryName") || null,
     transactionId: formData.get("transactionId") || null,
     startDate: formData.get("startDate"),
     principalAmount: formData.get("principalAmount"),
@@ -125,6 +126,7 @@ export async function updateInvestment(id: string, formData: FormData) {
   const isRecurring = formData.get("recurring") === "true";
   const parsed = investmentSchema.safeParse({
     categoryId: formData.get("categoryId"),
+    customCategoryName: formData.get("customCategoryName") || null,
     transactionId: formData.get("transactionId") || null,
     startDate: formData.get("startDate"),
     principalAmount: formData.get("principalAmount"),

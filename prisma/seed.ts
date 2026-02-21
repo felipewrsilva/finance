@@ -44,6 +44,14 @@ const INVESTMENT_CATEGORIES = [
     description: "Letra de Crédito Imobiliário ou do Agronegócio, isenta de IR.",
     riskLevel: "low",
   },
+  {
+    id: "system-invest-custom",
+    name: "Custom Investment",
+    investmentType: "custom",
+    defaultRateSource: null,
+    description: "User-defined investment with a custom name and manually entered rate.",
+    riskLevel: null,
+  },
 ];
 
 const INCOME_CATEGORIES = [

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { formatCurrency } from "@/lib/utils";
 import {
   buildGrowthSeries,
@@ -16,11 +17,12 @@ interface ProjectionsSectionProps {
   locale?: string;
 }
 
-export function ProjectionsSection({
+export async function ProjectionsSection({
   investments,
   currency = "BRL",
   locale = "pt-BR",
 }: ProjectionsSectionProps) {
+  const t = await getTranslations("investments");
   const active = investments.filter((inv) => inv.status === "ACTIVE");
   const fmt = (v: number) => formatCurrency(v, currency, locale);
 
@@ -44,34 +46,12 @@ export function ProjectionsSection({
     return { years: h, total };
   });
 
-  // Build growth series for the first active investment (or aggregate)
-  const firstInv = active[0];
-  const firstRate = Number(firstInv.annualInterestRate) / 100;
-  const firstPrincipal = Number(firstInv.principalAmount);
-  const firstContrib = firstInv.recurrenceAmount
-    ? Number(firstInv.recurrenceAmount)
-    : 0;
-  const growthSeries = buildGrowthSeries(
-    firstPrincipal,
-    firstRate,
-    30,
-    firstContrib,
-    firstInv.recurrenceInterval ?? null
-  );
-
-  const milestones = calculateMilestones(
-    firstPrincipal,
-    firstRate,
-    firstContrib,
-    firstInv.recurrenceInterval ?? null
-  );
-
   return (
     <div className="space-y-6">
       {/* Horizon summary cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
         <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-          <p className="text-xs text-gray-400">Principal</p>
+          <p className="text-xs text-gray-400">{t("principalLabel")}</p>
           <p className="text-lg font-bold tabular-nums text-violet-700">
             {fmt(aggregatePrincipal)}
           </p>
@@ -81,12 +61,12 @@ export function ProjectionsSection({
             key={years}
             className="rounded-xl border border-violet-100 bg-violet-50 p-4 shadow-sm"
           >
-            <p className="text-xs text-gray-400">In {years} years</p>
+            <p className="text-xs text-gray-400">{t("inYears", { years })}</p>
             <p className="text-lg font-bold tabular-nums text-violet-700">
               {fmt(total)}
             </p>
             <p className="text-xs text-emerald-600 tabular-nums">
-              +{fmt(total - aggregatePrincipal)} gain
+              +{fmt(total - aggregatePrincipal)} {t("gain")}
             </p>
           </div>
         ))}
@@ -113,6 +93,11 @@ export function ProjectionsSection({
             contrib,
             inv.recurrenceInterval ?? null
           );
+          const displayName = inv.customCategoryName ?? inv.category.name;
+          const compoundingLabel =
+            inv.compounding === "DAILY"
+              ? t("dailyCompounding")
+              : t("annualCompounding");
 
           return (
             <div
@@ -121,10 +106,10 @@ export function ProjectionsSection({
             >
               <div className="mb-4 flex items-start justify-between gap-2 flex-wrap">
                 <div>
-                  <p className="font-semibold text-gray-800">{inv.category.name}</p>
+                  <p className="font-semibold text-gray-800">{displayName}</p>
                   <p className="text-xs text-gray-400">
-                    {Number(inv.annualInterestRate).toFixed(2)}% /yr ·{" "}
-                    {inv.compounding === "DAILY" ? "daily" : "annual"} compounding
+                    {Number(inv.annualInterestRate).toFixed(2)}{t("perYrSuffix")} ·{" "}
+                    {compoundingLabel}
                     {inv.recurring && inv.recurrenceInterval
                       ? ` · +${fmt(contrib)} / ${inv.recurrenceInterval.toLowerCase()}`
                       : ""}
@@ -164,7 +149,7 @@ export function ProjectionsSection({
               {ms.length > 0 && (
                 <div className="mt-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
-                    Milestones
+                    {t("milestones")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {ms.map((m) => (
@@ -172,7 +157,7 @@ export function ProjectionsSection({
                         key={m.multiple}
                         className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700"
                       >
-                        {m.multiple}× in {m.years.toFixed(1)} yrs
+                        {t("timesIn", { multiple: m.multiple, years: m.years.toFixed(1) })}
                       </span>
                     ))}
                   </div>

@@ -144,6 +144,7 @@ model Investment {
   compounding         InvestmentCompounding @default(ANNUAL)
   status              InvestmentStatus    @default(ACTIVE)
   notes               String?
+  customCategoryName  String?
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
 

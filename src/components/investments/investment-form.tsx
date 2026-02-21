@@ -17,6 +17,8 @@ import { totalProjectedValue } from "@/modules/investments/projections";
 import { formatCurrency } from "@/lib/utils";
 import type { InvestmentCategory, Investment, RecurrenceInterval } from "@prisma/client";
 
+const CUSTOM_CATEGORY_ID = "system-invest-custom";
+
 type InvestmentWithCategory = Investment & { category: InvestmentCategory };
 
 interface InvestmentFormProps {
@@ -39,6 +41,9 @@ export function InvestmentForm({
   const tf = useTranslations("form");
 
   const [categoryId, setCategoryId] = useState(investment?.categoryId ?? "");
+  const [customCategoryName, setCustomCategoryName] = useState(
+    investment?.customCategoryName ?? ""
+  );
   const [principal, setPrincipal] = useState(
     investment ? Number(investment.principalAmount) : 0
   );
@@ -63,6 +68,7 @@ export function InvestmentForm({
       : new Date().toISOString().split("T")[0]
   );
   const [rateLoading, setRateLoading] = useState(false);
+  const [rateUnavailable, setRateUnavailable] = useState(false);
 
   const availableCurrencies =
     userCurrencies.length > 0 ? userCurrencies : [defaultCurrency];
@@ -70,21 +76,44 @@ export function InvestmentForm({
   const inputCls =
     "w-full rounded-xl border border-gray-200 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-violet-500";
 
-  // Auto-fill rate when category changes (fetch from API)
+  // Determine if the selected category is the custom one
+  const isCustomCategory = categoryId === CUSTOM_CATEGORY_ID;
+
+  // Determine if the selected category has a system-managed rate source
+  const selectedCategory = categories.find((c) => c.id === categoryId);
+  const isSystemRateCategory =
+    !isCustomCategory && !!selectedCategory?.defaultRateSource;
+
+  // Auto-fill rate when category changes — only for edit mode skip initial fetch
   useEffect(() => {
-    if (!categoryId || investment) return;
+    if (!categoryId || isCustomCategory) {
+      setRateUnavailable(false);
+      return;
+    }
+    // On edit page, keep the locked-in rate from DB — don't re-fetch
+    if (investment) return;
+
     setRateLoading(true);
+    setRateUnavailable(false);
 
     fetch(`/api/investments/default-rate?categoryId=${categoryId}`)
       .then((r) => r.json())
       .then((data) => {
         if (typeof data.rate === "number" && data.rate > 0) {
           setRate(data.rate);
+          setRateUnavailable(false);
+        } else if (isSystemRateCategory) {
+          // System category but no rate available
+          setRateUnavailable(true);
+          setRate(0);
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        if (isSystemRateCategory) setRateUnavailable(true);
+      })
       .finally(() => setRateLoading(false));
-  }, [categoryId, investment]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryId]);
 
   const action = investment
     ? updateInvestment.bind(null, investment.id)
@@ -122,18 +151,45 @@ export function InvestmentForm({
         <select
           name="categoryId"
           value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
+          onChange={(e) => {
+            setCategoryId(e.target.value);
+            setCustomCategoryName("");
+            setRate(0);
+            setRateUnavailable(false);
+          }}
           required
           className={inputCls}
         >
           <option value="">{t("selectCategory")}</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
+          {categories
+            .filter((c) => c.id !== CUSTOM_CATEGORY_ID)
+            .map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          <option disabled value="">──────────────</option>
+          <option value={CUSTOM_CATEGORY_ID}>{t("customCategory")}</option>
         </select>
       </div>
+
+      {/* Custom category name — only shown when custom category is selected */}
+      {isCustomCategory && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {t("customCategoryName")}
+          </label>
+          <input
+            name="customCategoryName"
+            type="text"
+            value={customCategoryName}
+            onChange={(e) => setCustomCategoryName(e.target.value)}
+            placeholder={t("customCategoryNamePlaceholder")}
+            required
+            className={inputCls}
+          />
+        </div>
+      )}
 
       {/* Principal */}
       <div>
@@ -168,23 +224,55 @@ export function InvestmentForm({
             <span className="text-xs text-gray-400">{t("loadingRate")}</span>
           )}
         </label>
-        <div className="relative">
-          <input
-            name="annualInterestRate"
-            type="number"
-            step="0.01"
-            min="0.01"
-            max="999"
-            value={rate || ""}
-            onChange={(e) => setRate(Number(e.target.value))}
-            placeholder="e.g. 12.50"
-            required
-            className={inputCls + " pr-10"}
-          />
-          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">
-            % /yr
-          </span>
-        </div>
+
+        {/* Rate unavailable message (system category with no data) */}
+        {rateUnavailable && (
+          <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            {t("rateUnavailable")}
+          </p>
+        )}
+
+        {/* Read-only display for system-rate categories */}
+        {!rateUnavailable && isSystemRateCategory && !rateLoading && rate > 0 && (
+          <>
+            <input type="hidden" name="annualInterestRate" value={rate} />
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base text-gray-700">
+              <span className="font-semibold tabular-nums">{rate.toFixed(2)}%</span>
+              <span className="text-xs text-gray-400">{t("rateReadOnly")}</span>
+            </div>
+          </>
+        )}
+
+        {/* Loading skeleton for system-rate categories */}
+        {isSystemRateCategory && rateLoading && (
+          <div className="h-12 w-full animate-pulse rounded-xl bg-gray-100" />
+        )}
+
+        {/* Editable rate input — for custom category, CDB, LCI/LCA (no defaultRateSource but not custom type), or any non-system-rate category */}
+        {!isSystemRateCategory && !rateUnavailable && (
+          <div className="relative">
+            <input
+              name="annualInterestRate"
+              type="number"
+              step="0.01"
+              min="0.01"
+              max="999"
+              value={rate || ""}
+              onChange={(e) => setRate(Number(e.target.value))}
+              placeholder="0.00"
+              required
+              className={inputCls + " pr-14"}
+            />
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+              {t("perYrSuffix")}
+            </span>
+          </div>
+        )}
+
+        {/* Hidden fallback — needed when rate is read-only but rateUnavailable blocks submission */}
+        {isSystemRateCategory && rateUnavailable && (
+          <input type="hidden" name="annualInterestRate" value="0" />
+        )}
       </div>
 
       {/* Compounding */}
@@ -325,7 +413,10 @@ export function InvestmentForm({
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">
-        <SubmitButton className="flex-1 rounded-xl bg-violet-600 py-3 text-base font-semibold text-white hover:bg-violet-700 active:bg-violet-800">
+        <SubmitButton
+          disabled={rateUnavailable}
+          className="flex-1 rounded-xl bg-violet-600 py-3 text-base font-semibold text-white hover:bg-violet-700 active:bg-violet-800 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           {investment ? tf("saveChanges") : t("addInvestment")}
         </SubmitButton>
         <button

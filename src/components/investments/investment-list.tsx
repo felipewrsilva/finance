@@ -88,7 +88,7 @@ export function InvestmentList({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <p className="truncate text-sm font-medium text-gray-900">
-                    {inv.category.name}
+                    {inv.customCategoryName ?? inv.category.name}
                   </p>
                   <span
                     className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium bg-gray-100 ${INVESTMENT_STATUS_COLORS[inv.status]}`}
@@ -110,7 +110,7 @@ export function InvestmentList({
                     })}
                   </span>
                   <span>·</span>
-                  <span>{Number(inv.annualInterestRate).toFixed(2)}% {t("perYear")}</span>
+                  <span>{Number(inv.annualInterestRate).toFixed(2)}{t("perYrSuffix")}</span>
                   {gain !== 0 && (
                     <>
                       <span>·</span>

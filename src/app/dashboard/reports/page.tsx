@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { getMonthlyReport, getAccountBalanceHistory } from "@/modules/dashboard/actions";
 import { getInvestments } from "@/modules/investments/actions";
 import { formatCurrency } from "@/lib/utils";
@@ -9,11 +10,12 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 
 export default async function ReportsPage() {
-  const [session, data, balanceHistory, investments] = await Promise.all([
+  const [session, data, balanceHistory, investments, ti] = await Promise.all([
     auth(),
     getMonthlyReport(6),
     getAccountBalanceHistory(6),
     getInvestments("ACTIVE"),
+    getTranslations("investments"),
   ]);
   const currency = session?.user?.defaultCurrency ?? "BRL";
   const locale = session?.user?.locale ?? "pt-BR";
@@ -125,7 +127,7 @@ export default async function ReportsPage() {
       {investments.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-base font-semibold text-gray-800">
-            Investment Projections
+            {ti("investmentProjections")}
           </h2>
           <ProjectionsSection
             investments={investments}
