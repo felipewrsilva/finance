@@ -109,7 +109,7 @@ export function getOccurrencesInRange(
   return dates;
 }
 
-function addFrequency(date: Date, frequency: Frequency): Date {
+export function addFrequency(date: Date, frequency: Frequency): Date {
   const d = new Date(date);
   switch (frequency) {
     case "DAILY":

@@ -156,6 +156,14 @@ export function ProfileMenu({ user, signOutAction, locale }: ProfileMenuProps) {
             >
               {t("currency")}
             </Link>
+            <Link
+              href={`/${locale}/dashboard/settings/transaction-types`}
+              role="menuitem"
+              className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+              onClick={() => setOpen(false)}
+            >
+              {t("transactionTypes")}
+            </Link>
           </div>
 
           <div className="border-t border-gray-100 py-1">

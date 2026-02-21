@@ -3,6 +3,7 @@ import { getTransaction } from "@/modules/transactions/actions";
 import { getAccounts } from "@/modules/accounts/actions";
 import { getCategories } from "@/modules/categories/actions";
 import { getUserCurrencies } from "@/modules/currencies/actions";
+import { getEnabledTransactionTypes } from "@/modules/user-settings/actions";
 import { TransactionForm } from "@/components/transactions/transaction-form";
 
 interface PageProps {
@@ -11,11 +12,12 @@ interface PageProps {
 
 export default async function EditTransactionPage({ params }: PageProps) {
   const { id } = await params;
-  const [transaction, accounts, categories, currencyPrefs] = await Promise.all([
+  const [transaction, accounts, categories, currencyPrefs, enabledTypes] = await Promise.all([
     getTransaction(id),
     getAccounts(),
     getCategories(),
     getUserCurrencies(),
+    getEnabledTransactionTypes(),
   ]);
 
   if (!transaction) notFound();
@@ -31,6 +33,7 @@ export default async function EditTransactionPage({ params }: PageProps) {
           userCurrencies={currencyPrefs.currencies}
           defaultCurrency={currencyPrefs.defaultCurrency}
           locale={currencyPrefs.locale}
+          enabledTypes={enabledTypes}
         />
       </div>
     </div>

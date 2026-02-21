@@ -14,6 +14,7 @@
     "english": "English (US)",
     "categories": "Categories",
     "currency": "Currency",
+    "transactionTypes": "Transaction Types",
     "signOut": "Sign out"
   },
   "common": {
@@ -155,10 +156,15 @@
     "customCategories": "Custom",
     "expenseLabel": "Expense",
     "incomeLabel": "Income",
+    "investmentLabel": "Investment",
     "noCustomCategories": "No custom categories yet.",
     "createFirst": "Create your first category",
     "currencyTitle": "Currency",
     "currencySubtitle": "Manage your enabled currencies and default",
+    "transactionTypesTitle": "Transaction Types",
+    "transactionTypesSubtitle": "Choose which transaction types are available when adding transactions.",
+    "transactionTypesAtLeastOne": "At least one type must stay enabled.",
+    "transactionTypesRequired": "Income and expense are always required.",
     "type": "Type",
     "name": "Name",
     "icon": "Icon",

@@ -6,10 +6,13 @@ import { MonthNavigator } from "@/components/ui/month-navigator";
 import { shouldRenderSelector } from "@/lib/utils";
 import type { Account } from "@prisma/client";
 
+type TxType = "INCOME" | "EXPENSE" | "TRANSFER" | "INVESTMENT";
+
 interface TransactionFiltersProps {
   accounts: Account[];
   currentMonth: number;
   currentYear: number;
+  enabledTypes?: TxType[];
 }
 
 function Chip({
@@ -41,6 +44,7 @@ export function TransactionFilters({
   accounts,
   currentMonth,
   currentYear,
+  enabledTypes,
 }: TransactionFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -59,6 +63,17 @@ export function TransactionFilters({
   const activeStatus = params.get("status") ?? "";
   const activeAccount = params.get("accountId") ?? "";
 
+  const TYPE_CHIPS: { type: TxType }[] = [
+    { type: "EXPENSE" },
+    { type: "INCOME" },
+    { type: "TRANSFER" },
+    { type: "INVESTMENT" },
+  ];
+
+  const visibleTypeChips = enabledTypes
+    ? TYPE_CHIPS.filter((c) => enabledTypes.includes(c.type))
+    : TYPE_CHIPS;
+
   return (
     <div className="space-y-4">
       {/* Month navigation */}
@@ -68,29 +83,24 @@ export function TransactionFilters({
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-3">
           {/* Type group */}
-          <div className="space-y-1.5">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-gray-400">
-              {t("type")}
-            </p>
-            <div className="flex gap-1.5">
-              <Chip label={tc("all")} active={activeType === ""} onClick={() => update("type", "")} />
-              <Chip
-                label={tc("expense")}
-                active={activeType === "EXPENSE"}
-                onClick={() => update("type", activeType === "EXPENSE" ? "" : "EXPENSE")}
-              />
-              <Chip
-                label={tc("income")}
-                active={activeType === "INCOME"}
-                onClick={() => update("type", activeType === "INCOME" ? "" : "INCOME")}
-              />
-              <Chip
-                label={tc("investment")}
-                active={activeType === "INVESTMENT"}
-                onClick={() => update("type", activeType === "INVESTMENT" ? "" : "INVESTMENT")}
-              />
+          {visibleTypeChips.length > 1 && (
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-gray-400">
+                {t("type")}
+              </p>
+              <div className="flex gap-1.5">
+                <Chip label={tc("all")} active={activeType === ""} onClick={() => update("type", "")} />
+                {visibleTypeChips.map(({ type }) => (
+                  <Chip
+                    key={type}
+                    label={tc(type.toLowerCase() as Parameters<typeof tc>[0])}
+                    active={activeType === type}
+                    onClick={() => update("type", activeType === type ? "" : type)}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="hidden h-8 w-px self-center bg-gray-100 sm:block" aria-hidden="true" />
 

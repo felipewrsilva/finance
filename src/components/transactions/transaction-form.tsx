@@ -21,6 +21,8 @@ interface TransactionFormProps {
   defaultCurrency?: string;
   /** User's preferred locale for currency formatting (from DB). */
   locale?: string;
+  /** Which transaction types the user has enabled. Defaults to all four. */
+  enabledTypes?: Array<"INCOME" | "EXPENSE" | "TRANSFER" | "INVESTMENT">;
 }
 
 export function TransactionForm({
@@ -31,6 +33,7 @@ export function TransactionForm({
   userCurrencies = [],
   defaultCurrency = "BRL",
   locale: serverLocale = "pt-BR",
+  enabledTypes,
 }: TransactionFormProps) {
   const router = useRouter();
   const t = useTranslations("form");
@@ -93,7 +96,7 @@ export function TransactionForm({
     : createTransaction;
 
   const filteredCategories = categories.filter((c) =>
-    type === "INVESTMENT" ? c.type === "INCOME" : c.type === type
+    type === "TRANSFER" ? false : c.type === type
   );
   const showAccountSelector = shouldRenderSelector(accounts);
 
@@ -111,7 +114,7 @@ export function TransactionForm({
       )}
 
       {/* Type — segmented control */}
-      <TypeToggle value={type} onChange={handleTypeChange} />
+      <TypeToggle value={type} onChange={handleTypeChange} enabledTypes={enabledTypes} />
 
       {/* Amount + currency */}
       <div>
@@ -176,7 +179,12 @@ export function TransactionForm({
       {/* Category — hidden for TRANSFER */}
       {type !== "TRANSFER" && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t("category")}</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {t("category")}
+            {type === "INVESTMENT" && (
+              <span className="ml-1 font-normal text-gray-400">{t("optional")}</span>
+            )}
+          </label>
           {filteredCategories.length === 1 ? (
             <>
               <input type="hidden" name="categoryId" value={filteredCategories[0].id} />
@@ -192,7 +200,7 @@ export function TransactionForm({
             <select
               name="categoryId"
               defaultValue={transaction?.categoryId ?? ""}
-              required
+              required={type !== "INVESTMENT"}
               className={inputCls}
             >
               <option value="">{t("selectCategory")}</option>

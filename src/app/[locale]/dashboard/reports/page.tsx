@@ -2,22 +2,26 @@ import { auth } from "@/auth";
 import { getMonthlyReport, getAccountBalanceHistory } from "@/modules/dashboard/actions";
 import { getInvestments } from "@/modules/investments/actions";
 import { formatCurrency } from "@/lib/utils";
+import { totalProjectedValue } from "@/modules/investments/projections";
 import MonthlyChart from "@/components/reports/monthly-chart";
 import BalanceChart from "@/components/reports/balance-chart";
 import { ProjectionsSection } from "@/components/investments/projections-section";
+import { InvestmentList } from "@/components/investments/investment-list";
 import { StatCard } from "@/components/ui/stat-card";
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 type Props = { params: Promise<{ locale: string }> };
 
 export default async function ReportsPage({ params }: Props) {
   const { locale } = await params;
-  const [session, data, balanceHistory, investments, t] = await Promise.all([
+  const [session, data, balanceHistory, investments, t, ti] = await Promise.all([
     auth(),
     getMonthlyReport(6),
     getAccountBalanceHistory(6),
-    getInvestments("ACTIVE"),
+    getInvestments(),
     getTranslations("reports"),
+    getTranslations("investments"),
   ]);
 
   const currency = session?.user?.defaultCurrency ?? "BRL";
@@ -30,6 +34,38 @@ export default async function ReportsPage({ params }: Props) {
   const avgExpense = data.length ? totalExpense / data.length : 0;
   const totalNet = totalIncome - totalExpense;
   const avgNet = data.length ? totalNet / data.length : 0;
+
+  // Investment stats
+  const active = investments.filter((inv) => inv.status === "ACTIVE");
+  const totalPrincipal = active.reduce((s, inv) => s + Number(inv.principalAmount), 0);
+  const totalCurrentValue = active.reduce((s, inv) => {
+    const r = Number(inv.annualInterestRate) / 100;
+    const p = Number(inv.principalAmount);
+    const yearsElapsed =
+      (Date.now() - new Date(inv.startDate).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+    return (
+      s +
+      totalProjectedValue(
+        p, r, Math.max(yearsElapsed, 0),
+        inv.recurrenceAmount ? Number(inv.recurrenceAmount) : 0,
+        inv.recurrenceInterval ?? null
+      )
+    );
+  }, 0);
+  const totalGain = totalCurrentValue - totalPrincipal;
+  const gainPct = totalPrincipal > 0 ? ((totalGain / totalPrincipal) * 100).toFixed(2) : "0.00";
+  const totalProjected10y = active.reduce((s, inv) => {
+    const r = Number(inv.annualInterestRate) / 100;
+    const p = Number(inv.principalAmount);
+    return (
+      s +
+      totalProjectedValue(
+        p, r, 10,
+        inv.recurrenceAmount ? Number(inv.recurrenceAmount) : 0,
+        inv.recurrenceInterval ?? null
+      )
+    );
+  }, 0);
 
   return (
     <div className="space-y-6 lg:space-y-8">
@@ -128,19 +164,63 @@ export default async function ReportsPage({ params }: Props) {
         })}
       </div>
 
-      {/* Investment projections */}
-      {investments.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-base font-semibold text-gray-800">
-            {t("investmentProjections")}
-          </h2>
+      {/* ── Investments ─────────────────────────────────────────── */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-gray-800">{ti("title")}</h2>
+            <p className="text-sm text-gray-500">
+              {ti("activeInvestments", { count: active.length })}
+            </p>
+          </div>
+          <Link
+            href={`/${locale}/dashboard/investments/new`}
+            className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-700 active:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+          >
+            {ti("addInvestment")}
+          </Link>
+        </div>
+
+        {/* Investment stats */}
+        {active.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
+            <StatCard
+              label={ti("totalInvested")}
+              value={fmt(totalPrincipal)}
+              valueClassName="text-gray-900"
+            />
+            <StatCard
+              label={ti("currentValue")}
+              value={fmt(totalCurrentValue)}
+              subtext={totalGain >= 0 ? ti("gainPercent", { pct: gainPct }) : ti("lossPercent", { pct: gainPct })}
+              valueClassName="text-violet-600"
+            />
+            <StatCard
+              label={ti("totalGain")}
+              value={fmt(totalGain)}
+              valueClassName={totalGain >= 0 ? "text-emerald-600" : "text-red-500"}
+            />
+            <StatCard
+              label={ti("projected10y")}
+              value={fmt(totalProjected10y)}
+              subtext={ti("projectedGain", { amount: fmt(totalProjected10y - totalPrincipal) })}
+              valueClassName="text-violet-600"
+            />
+          </div>
+        )}
+
+        {/* Investment list */}
+        <InvestmentList investments={investments} currency={currency} locale={userLocale} />
+
+        {/* Projections */}
+        {active.length > 0 && (
           <ProjectionsSection
-            investments={investments}
+            investments={active}
             currency={currency}
             locale={userLocale}
           />
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

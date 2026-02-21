@@ -13,7 +13,6 @@ const NAV_ITEMS: NavItem[] = [
   { key: "overview", path: "/dashboard", exact: true },
   { key: "accounts", path: "/dashboard/accounts" },
   { key: "transactions", path: "/dashboard/transactions" },
-  { key: "investments", path: "/dashboard/investments" },
   { key: "budgets", path: "/dashboard/budgets" },
   { key: "reports", path: "/dashboard/reports" },
 ];

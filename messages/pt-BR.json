@@ -14,6 +14,7 @@
     "english": "English (US)",
     "categories": "Categorias",
     "currency": "Moeda",
+    "transactionTypes": "Tipos de Transação",
     "signOut": "Sair"
   },
   "common": {
@@ -155,10 +156,15 @@
     "customCategories": "Personalizado",
     "expenseLabel": "Despesa",
     "incomeLabel": "Receita",
+    "investmentLabel": "Investimento",
     "noCustomCategories": "Sem categorias personalizadas ainda.",
     "createFirst": "Criar primeira categoria",
     "currencyTitle": "Moeda",
     "currencySubtitle": "Gerencie suas moedas habilitadas e padrão",
+    "transactionTypesTitle": "Tipos de Transação",
+    "transactionTypesSubtitle": "Escolha quais tipos de transação ficam disponíveis ao adicionar transações.",
+    "transactionTypesAtLeastOne": "Pelo menos um tipo precisa estar habilitado.",
+    "transactionTypesRequired": "Receita e despesa são sempre obrigatórios.",
     "type": "Tipo",
     "name": "Nome",
     "icon": "Ícone",

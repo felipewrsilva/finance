@@ -7,72 +7,217 @@ datasource db {
   provider = "postgresql"
 }
 
-// ─── User ────────────────────────────────────────────────────────────────────
-
 model User {
-  id              String   @id @default(cuid())
-  email           String   @unique
+  id              String         @id @default(cuid())
+  email           String         @unique
   name            String?
   image           String?
-  defaultCurrency String   @default("BRL")
-  locale          String   @default("pt-BR")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  accounts     Account[]
-  categories   Category[]
-  transactions Transaction[]
-  budgets      Budget[]
-  currencies   UserCurrency[]
-  investments  Investment[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  defaultCurrency          String            @default("BRL")
+  locale                   String            @default("pt-BR")
+  enabledTransactionTypes  TransactionType[] @default([INCOME, EXPENSE, TRANSFER, INVESTMENT])
+  accounts        Account[]
+  budgets         Budget[]
+  categories      Category[]
+  investments     Investment[]
+  recurringRules  RecurringRule[]
+  transactions    Transaction[]
+  currencies      UserCurrency[]
 
   @@map("users")
 }
-
-// ─── UserCurrency ────────────────────────────────────────────────────────────
 
 model UserCurrency {
   id        String   @id @default(cuid())
   userId    String
   currency  String
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, currency])
   @@map("user_currencies")
 }
 
-// ─── Account ─────────────────────────────────────────────────────────────────
-
-enum AccountType {
-  CASH
-  CHECKING
-  BANK
-  CREDIT_CARD
-  INVESTMENT
-}
-
 model Account {
-  id        String      @id @default(cuid())
-  userId    String
-  name      String
-  type      AccountType @default(BANK)
-  balance   Decimal     @default(0) @db.Decimal(14, 2)
-  currency  String      @default("BRL")
-  color     String?
-  icon      String?
-  bankKey   String?
-  bankName  String?
-  isActive  Boolean     @default(true)
-  isDefault Boolean     @default(false)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
+  id           String        @id @default(cuid())
+  userId       String
+  name         String
+  type         AccountType   @default(BANK)
+  balance      Decimal       @default(0) @db.Decimal(14, 2)
+  color        String?
+  icon         String?
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  isDefault    Boolean       @default(false)
+  bankKey      String?
+  bankName     String?
+  currency     String        @default("BRL")
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recurringRules RecurringRule[]
   transactions Transaction[]
 
   @@map("accounts")
+}
+
+model InvestmentCategory {
+  id                String                  @id @default(cuid())
+  name              String
+  investmentType    String
+  defaultRateSource String?
+  description       String?
+  riskLevel         String?
+  createdAt         DateTime                @default(now())
+  rateHistory       InvestmentRateHistory[]
+  investments       Investment[]
+
+  @@map("investment_categories")
+}
+
+model InvestmentRateHistory {
+  id                   String             @id @default(cuid())
+  categoryId           String
+  sourceDate           DateTime
+  rateAnnualPercentage Decimal            @db.Decimal(8, 4)
+  effectiveDate        DateTime           @default(now())
+  category             InvestmentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId, sourceDate])
+  @@map("investment_rate_history")
+}
+
+model Investment {
+  id                 String                @id @default(cuid())
+  userId             String
+  categoryId         String
+  transactionId      String?               @unique
+  startDate          DateTime
+  principalAmount    Decimal               @db.Decimal(14, 2)
+  currency           String                @default("BRL")
+  annualInterestRate Decimal               @db.Decimal(8, 4)
+  recurring          Boolean               @default(false)
+  recurrenceInterval RecurrenceInterval?
+  recurrenceAmount   Decimal?              @db.Decimal(14, 2)
+  compounding        InvestmentCompounding @default(ANNUAL)
+  status             InvestmentStatus      @default(ACTIVE)
+  notes              String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  customCategoryName String?
+  category           InvestmentCategory    @relation(fields: [categoryId], references: [id])
+  transaction        Transaction?          @relation(fields: [transactionId], references: [id])
+  user               User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([userId, startDate])
+  @@map("investments")
+}
+
+model Category {
+  id           String          @id @default(cuid())
+  userId       String?
+  name         String
+  type         TransactionType
+  icon         String?
+  color        String?
+  parentId     String?
+  createdAt    DateTime        @default(now())
+  budgets      Budget[]
+  parent       Category?       @relation("CategoryParent", fields: [parentId], references: [id])
+  children     Category[]      @relation("CategoryParent")
+  user         User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  recurringRules RecurringRule[]
+
+  @@map("categories")
+}
+
+model Transaction {
+  id                      String            @id @default(cuid())
+  userId                  String
+  accountId               String
+  categoryId              String?
+  type                    TransactionType
+  amount                  Decimal           @db.Decimal(14, 2)
+  description             String?
+  date                    DateTime
+  status                  TransactionStatus @default(PAID)
+  metadata                Json?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  frequency               Frequency?
+  isRecurring             Boolean           @default(false)
+  parentTransactionId     String?
+  recurrenceEnd           DateTime?
+  amountInDefaultCurrency Decimal           @default(0) @db.Decimal(14, 2)
+  currency                String            @default("BRL")
+  exchangeRateUsed        Decimal           @default(1) @db.Decimal(14, 6)
+  recurringRuleId         String?
+  investment              Investment?
+  account                 Account           @relation(fields: [accountId], references: [id])
+  category                Category?         @relation(fields: [categoryId], references: [id])
+  parentTransaction       Transaction?      @relation("TransactionChildren", fields: [parentTransactionId], references: [id])
+  childTransactions       Transaction[]     @relation("TransactionChildren")
+  recurringRule           RecurringRule?    @relation(fields: [recurringRuleId], references: [id])
+  user                    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@index([userId, accountId])
+  @@index([userId, categoryId])
+  @@index([userId, isRecurring])
+  @@map("transactions")
+}
+
+model Budget {
+  id         String       @id @default(cuid())
+  userId     String
+  categoryId String?
+  name       String
+  amount     Decimal      @db.Decimal(14, 2)
+  period     BudgetPeriod @default(MONTHLY)
+  startDate  DateTime
+  endDate    DateTime?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  category   Category?    @relation(fields: [categoryId], references: [id])
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("budgets")
+}
+
+model RecurringRule {
+  id                   String          @id @default(cuid())
+  userId               String
+  accountId            String
+  categoryId           String?
+  destinationAccountId String?
+  type                 TransactionType
+  amount               Decimal         @db.Decimal(14, 2)
+  currency             String          @default("BRL")
+  description          String?
+  frequency            Frequency
+  startDate            DateTime
+  endDate              DateTime?
+  lastGeneratedDate    DateTime?
+  isActive             Boolean         @default(true)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account              Account         @relation(fields: [accountId], references: [id])
+  category             Category?       @relation(fields: [categoryId], references: [id])
+  transactions         Transaction[]
+
+  @@index([userId, isActive])
+  @@map("recurring_rules")
+}
+
+enum AccountType {
+  CASH
+  BANK
+  CREDIT_CARD
+  INVESTMENT
+  CHECKING
 }
 
 enum TransactionType {
@@ -81,8 +226,6 @@ enum TransactionType {
   TRANSFER
   INVESTMENT
 }
-
-// ─── Investment ───────────────────────────────────────────────────────────────
 
 enum InvestmentCompounding {
   ANNUAL
@@ -101,83 +244,6 @@ enum RecurrenceInterval {
   YEARLY
 }
 
-model InvestmentCategory {
-  id                String   @id @default(cuid())
-  name              String
-  investmentType    String   // e.g. "fixedIncome"
-  defaultRateSource String?
-  description       String?
-  riskLevel         String?
-  createdAt         DateTime @default(now())
-
-  investments          Investment[]
-  rateHistory          InvestmentRateHistory[]
-
-  @@map("investment_categories")
-}
-
-model InvestmentRateHistory {
-  id                   String    @id @default(cuid())
-  categoryId           String
-  sourceDate           DateTime
-  rateAnnualPercentage Decimal   @db.Decimal(8, 4)
-  effectiveDate        DateTime  @default(now())
-
-  category InvestmentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@index([categoryId, sourceDate])
-  @@map("investment_rate_history")
-}
-
-model Investment {
-  id                  String              @id @default(cuid())
-  userId              String
-  categoryId          String
-  transactionId       String?             @unique
-  startDate           DateTime
-  principalAmount     Decimal             @db.Decimal(14, 2)
-  currency            String              @default("BRL")
-  annualInterestRate  Decimal             @db.Decimal(8, 4)
-  recurring           Boolean             @default(false)
-  recurrenceInterval  RecurrenceInterval?
-  recurrenceAmount    Decimal?            @db.Decimal(14, 2)
-  compounding         InvestmentCompounding @default(ANNUAL)
-  status              InvestmentStatus    @default(ACTIVE)
-  notes               String?
-  customCategoryName  String?
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-
-  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category    InvestmentCategory @relation(fields: [categoryId], references: [id])
-  transaction Transaction?       @relation(fields: [transactionId], references: [id], onDelete: SetNull)
-
-  @@index([userId, status])
-  @@index([userId, startDate])
-  @@map("investments")
-}
-
-model Category {
-  id        String          @id @default(cuid())
-  userId    String?
-  name      String
-  type      TransactionType
-  icon      String?
-  color     String?
-  parentId  String?
-  createdAt DateTime        @default(now())
-
-  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parent       Category?     @relation("CategoryParent", fields: [parentId], references: [id])
-  children     Category[]    @relation("CategoryParent")
-  transactions Transaction[]
-  budgets      Budget[]
-
-  @@map("categories")
-}
-
-// ─── Frequency ───────────────────────────────────────────────────────────────
-
 enum Frequency {
   DAILY
   WEEKLY
@@ -185,70 +251,13 @@ enum Frequency {
   YEARLY
 }
 
-// ─── Transaction ─────────────────────────────────────────────────────────────
-
 enum TransactionStatus {
   PAID
   PENDING
 }
 
-model Transaction {
-  id                      String            @id @default(cuid())
-  userId                  String
-  accountId               String
-  categoryId              String?
-  type                    TransactionType
-  amount                  Decimal           @db.Decimal(14, 2)
-  currency                String            @default("BRL")
-  amountInDefaultCurrency Decimal           @default(0) @db.Decimal(14, 2)
-  exchangeRateUsed        Decimal           @default(1) @db.Decimal(14, 6)
-  description             String?
-  date                    DateTime
-  status                  TransactionStatus @default(PAID)
-  isRecurring             Boolean           @default(false)
-  frequency               Frequency?
-  recurrenceEnd           DateTime?
-  parentTransactionId     String?
-  metadata                Json?
-  createdAt               DateTime          @default(now())
-  updatedAt               DateTime          @updatedAt
-
-  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  account           Account       @relation(fields: [accountId], references: [id], onDelete: Restrict)
-  category          Category?     @relation(fields: [categoryId], references: [id])
-  parentTransaction Transaction?  @relation("TransactionChildren", fields: [parentTransactionId], references: [id], onDelete: SetNull)
-  childTransactions Transaction[] @relation("TransactionChildren")
-  investment        Investment?
-
-  @@index([userId, date])
-  @@index([userId, accountId])
-  @@index([userId, categoryId])
-  @@index([userId, isRecurring])
-  @@map("transactions")
-}
-
-// ─── Budget ───────────────────────────────────────────────────────────────────
-
 enum BudgetPeriod {
   WEEKLY
   MONTHLY
   YEARLY
-}
-
-model Budget {
-  id         String       @id @default(cuid())
-  userId     String
-  categoryId String?
-  name       String
-  amount     Decimal      @db.Decimal(14, 2)
-  period     BudgetPeriod @default(MONTHLY)
-  startDate  DateTime
-  endDate    DateTime?
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category Category? @relation(fields: [categoryId], references: [id])
-
-  @@map("budgets")
 }

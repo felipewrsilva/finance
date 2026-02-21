@@ -2,8 +2,9 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { getTranslations } from "next-intl/server";
-import { getTransactions } from "@/modules/transactions/actions";
+import { getTransactions, generateDueRecurrences } from "@/modules/transactions/actions";
 import { getAccounts } from "@/modules/accounts/actions";
+import { getEnabledTransactionTypes } from "@/modules/user-settings/actions";
 import { TransactionList } from "@/components/transactions/transaction-list";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
 import { PageHeader } from "@/components/ui/page-header";
@@ -22,12 +23,14 @@ interface PageProps {
 }
 
 export default async function TransactionsPage({ params, searchParams }: PageProps) {
+  await generateDueRecurrences();
+
   const [{ locale }, sp] = await Promise.all([params, searchParams]);
   const now = new Date();
   const month = Number(sp.month) || now.getMonth() + 1;
   const year = Number(sp.year) || now.getFullYear();
 
-  const [session, transactions, accounts, t] = await Promise.all([
+  const [session, transactions, accounts, enabledTypes, t] = await Promise.all([
     auth(),
     getTransactions({
       month,
@@ -37,6 +40,7 @@ export default async function TransactionsPage({ params, searchParams }: PagePro
       status: sp.status as TransactionStatus | undefined,
     }),
     getAccounts(),
+    getEnabledTransactionTypes(),
     getTranslations("transactions"),
   ]);
 
@@ -112,6 +116,7 @@ export default async function TransactionsPage({ params, searchParams }: PagePro
           accounts={accounts}
           currentMonth={month}
           currentYear={year}
+          enabledTypes={enabledTypes}
         />
       </Suspense>
 

@@ -1,13 +1,15 @@
 import { getAccounts } from "@/modules/accounts/actions";
 import { getCategories } from "@/modules/categories/actions";
 import { getUserCurrencies } from "@/modules/currencies/actions";
+import { getEnabledTransactionTypes } from "@/modules/user-settings/actions";
 import { TransactionForm } from "@/components/transactions/transaction-form";
 
 export default async function NewTransactionPage() {
-  const [accounts, categories, currencyPrefs] = await Promise.all([
+  const [accounts, categories, currencyPrefs, enabledTypes] = await Promise.all([
     getAccounts(),
     getCategories(),
     getUserCurrencies(),
+    getEnabledTransactionTypes(),
   ]);
 
   return (
@@ -20,6 +22,7 @@ export default async function NewTransactionPage() {
           userCurrencies={currencyPrefs.currencies}
           defaultCurrency={currencyPrefs.defaultCurrency}
           locale={currencyPrefs.locale}
+          enabledTypes={enabledTypes}
         />
       </div>
     </div>

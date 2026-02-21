@@ -2,16 +2,25 @@
 
 import { useTranslations } from "next-intl";
 
+type TxType = "INCOME" | "EXPENSE" | "TRANSFER" | "INVESTMENT";
+
 interface TypeToggleProps {
-  value: "INCOME" | "EXPENSE" | "TRANSFER" | "INVESTMENT";
-  onChange: (value: "INCOME" | "EXPENSE" | "TRANSFER" | "INVESTMENT") => void;
+  value: TxType;
+  onChange: (value: TxType) => void;
+  enabledTypes?: TxType[];
 }
 
-export function TypeToggle({ value, onChange }: TypeToggleProps) {
+export function TypeToggle({ value, onChange, enabledTypes }: TypeToggleProps) {
   const t = useTranslations("form");
+  // Always show the current value even if globally disabled (e.g. editing old transaction)
+  const all: TxType[] = ["EXPENSE", "INCOME", "TRANSFER", "INVESTMENT"];
+  const visible = enabledTypes
+    ? all.filter((t) => enabledTypes.includes(t) || t === value)
+    : all;
+
   return (
     <div className="flex rounded-xl bg-gray-100 p-1 gap-1">
-      {(["EXPENSE", "INCOME", "TRANSFER", "INVESTMENT"] as const).map((type) => (
+      {visible.map((type) => (
         <button
           key={type}
           type="button"

@@ -14,6 +14,7 @@ export default async function CategoriesPage() {
   const systemIncome = system.filter((c) => c.type === "INCOME");
   const customExpenses = custom.filter((c) => c.type === "EXPENSE");
   const customIncome = custom.filter((c) => c.type === "INCOME");
+  const customInvestment = custom.filter((c) => c.type === "INVESTMENT");
 
   function SystemCategoryList({ items }: { items: CategoryItem[] }) {
     if (items.length === 0) return null;
@@ -132,6 +133,12 @@ export default async function CategoriesPage() {
               <div className="space-y-1.5">
                 <p className="text-xs text-gray-400">Income</p>
                 <CustomCategoryList items={customIncome} />
+              </div>
+            )}
+            {customInvestment.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs text-gray-400">Investment</p>
+                <CustomCategoryList items={customInvestment} />
               </div>
             )}
           </>

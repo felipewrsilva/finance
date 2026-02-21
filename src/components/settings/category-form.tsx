@@ -30,6 +30,7 @@ export function CategoryForm({ category }: Props) {
   const TYPE_OPTIONS: { value: TransactionType; label: string; color: string }[] = [
     { value: "EXPENSE", label: t("expenseLabel"), color: "text-red-600" },
     { value: "INCOME", label: t("incomeLabel"), color: "text-green-600" },
+    { value: "INVESTMENT", label: t("investmentLabel"), color: "text-violet-600" },
   ];
   const [type, setType] = useState<TransactionType>(
     category?.type ?? "EXPENSE"

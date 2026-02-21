@@ -3,6 +3,7 @@ import { getTransaction } from "@/modules/transactions/actions";
 import { getAccounts } from "@/modules/accounts/actions";
 import { getCategories } from "@/modules/categories/actions";
 import { getUserCurrencies } from "@/modules/currencies/actions";
+import { getEnabledTransactionTypes } from "@/modules/user-settings/actions";
 import { TransactionForm } from "@/components/transactions/transaction-form";
 import { getTranslations } from "next-intl/server";
 
@@ -10,11 +11,12 @@ type Props = { params: Promise<{ locale: string; id: string }> };
 
 export default async function EditTransactionPage({ params }: Props) {
   const { locale, id } = await params;
-  const [transaction, accounts, categories, currencyPrefs, t] = await Promise.all([
+  const [transaction, accounts, categories, currencyPrefs, enabledTypes, t] = await Promise.all([
     getTransaction(id),
     getAccounts(),
     getCategories(),
     getUserCurrencies(),
+    getEnabledTransactionTypes(),
     getTranslations("transactions"),
   ]);
 
@@ -31,6 +33,7 @@ export default async function EditTransactionPage({ params }: Props) {
           userCurrencies={currencyPrefs.currencies}
           defaultCurrency={currencyPrefs.defaultCurrency}
           locale={currencyPrefs.locale ?? locale}
+          enabledTypes={enabledTypes}
         />
       </div>
     </div>

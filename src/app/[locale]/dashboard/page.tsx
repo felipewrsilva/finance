@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { getAccounts } from "@/modules/accounts/actions";
 import { ACCOUNT_TYPE_ICONS } from "@/modules/accounts/constants";
 import { getDashboardSummary } from "@/modules/dashboard/actions";
+import { generateDueRecurrences } from "@/modules/transactions/actions";
 import { MarkPaidButton } from "@/components/transactions/mark-paid-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
@@ -12,6 +13,8 @@ import type { Account } from "@prisma/client";
 type Props = { params: Promise<{ locale: string }> };
 
 export default async function DashboardPage({ params }: Props) {
+  await generateDueRecurrences();
+
   const { locale } = await params;
   const now = new Date();
   const month = now.getMonth() + 1;
@@ -79,11 +82,8 @@ export default async function DashboardPage({ params }: Props) {
       {/* Category breakdown */}
       {categoryBreakdown.length > 0 && (
         <div>
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3">
             <h2 className="text-sm font-medium text-gray-500">{t("spendingByCategory")}</h2>
-            <a href={`/${locale}/dashboard/transactions`} className="text-xs text-gray-400 transition-colors hover:text-gray-600">
-              {t("viewAll")}
-            </a>
           </div>
           <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
             {categoryBreakdown.map((c, i) => {

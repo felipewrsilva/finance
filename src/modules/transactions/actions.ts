@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getExchangeRate } from "@/lib/exchange-rates";
+import { addFrequency } from "@/lib/utils";
 import { transactionSchema } from "./schema";
 import { TransactionType, TransactionStatus, type Frequency } from "@prisma/client";
 
@@ -60,6 +61,35 @@ export async function getRecurringTransactions() {
     include: { category: true, account: true },
     orderBy: { date: "desc" },
   });
+}
+
+export interface RecurringRuleWithRels {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  currency: string;
+  description: string | null;
+  frequency: Frequency;
+  startDate: Date;
+  endDate: Date | null;
+  lastGeneratedDate: Date | null;
+  isActive: boolean;
+  destinationAccountId: string | null;
+  account: { id: string; name: string };
+  category: { id: string; name: string; icon: string | null } | null;
+}
+
+export async function getRecurringRules(): Promise<RecurringRuleWithRels[]> {
+  const user = await getUser();
+  const rules = await prisma.recurringRule.findMany({
+    where: { userId: user.id, isActive: true },
+    include: {
+      account: { select: { id: true, name: true } },
+      category: { select: { id: true, name: true, icon: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  return rules.map((r) => ({ ...r, amount: Number(r.amount) }));
 }
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
@@ -141,6 +171,26 @@ export async function createTransaction(formData: FormData) {
   );
 
   if (type === "TRANSFER" && destAccountId) {
+    // Build recurring rule for transfers if needed
+    let ruleId: string | null = null;
+    if (isRecurring && frequency) {
+      const rule = await prisma.recurringRule.create({
+        data: {
+          userId: user.id,
+          accountId,
+          destinationAccountId: destAccountId,
+          type,
+          amount,
+          currency,
+          description: rest.description ?? null,
+          frequency,
+          startDate: rest.date,
+          endDate: recurrenceEnd ?? null,
+          lastGeneratedDate: rest.date,
+        },
+      });
+      ruleId = rule.id;
+    }
     await prisma.$transaction([
       prisma.transaction.create({
         data: {
@@ -155,6 +205,7 @@ export async function createTransaction(formData: FormData) {
           date: rest.date,
           description: rest.description ?? null,
           metadata: { destinationAccountId: destAccountId },
+          ...(ruleId ? { recurringRuleId: ruleId } : {}),
         },
       }),
       prisma.account.updateMany({
@@ -167,6 +218,26 @@ export async function createTransaction(formData: FormData) {
       }),
     ]);
   } else {
+    // Build recurring rule for non-transfers if needed
+    let ruleId: string | null = null;
+    if (isRecurring && frequency) {
+      const rule = await prisma.recurringRule.create({
+        data: {
+          userId: user.id,
+          accountId,
+          categoryId: categoryId ?? null,
+          type,
+          amount,
+          currency,
+          description: rest.description ?? null,
+          frequency,
+          startDate: rest.date,
+          endDate: recurrenceEnd ?? null,
+          lastGeneratedDate: rest.date,
+        },
+      });
+      ruleId = rule.id;
+    }
     await prisma.$transaction([
       prisma.transaction.create({
         data: {
@@ -180,6 +251,7 @@ export async function createTransaction(formData: FormData) {
           status,
           ...(categoryId ? { categoryId } : {}),
           ...rest,
+          ...(ruleId ? { recurringRuleId: ruleId } : {}),
         },
       }),
       ...(delta !== 0
@@ -393,14 +465,14 @@ export async function deleteTransaction(id: string) {
 }
 
 /**
- * Stop a recurring series — sets isRecurring=false and clears recurring fields.
- * The original transaction data is preserved; only future virtual occurrences stop.
+ * Stop a recurring series — deactivates the RecurringRule.
+ * Past generated transactions are NOT deleted or modified.
  */
-export async function cancelRecurring(id: string) {
+export async function cancelRecurring(ruleId: string) {
   const user = await getUser();
-  await prisma.transaction.updateMany({
-    where: { id, userId: user.id },
-    data: { isRecurring: false, frequency: null, recurrenceEnd: null },
+  await prisma.recurringRule.updateMany({
+    where: { id: ruleId, userId: user.id },
+    data: { isActive: false },
   });
   revalidatePath("/dashboard/recurring");
   revalidatePath("/dashboard/transactions");
@@ -438,5 +510,110 @@ function getDelta(type: TransactionType, amount: number, status: TransactionStat
   if (status === "PENDING") return 0;
   if (type === "INCOME") return amount;
   if (type === "EXPENSE") return -amount;
-  return 0; // TRANSFER
+  if (type === "INVESTMENT") return -amount;
+  return 0; // TRANSFER handled separately
+}
+
+// ─── Recurring generation ─────────────────────────────────────────────────────
+
+/**
+ * Generates all overdue occurrences for every active RecurringRule belonging to
+ * the current user.  Safe to call on every page load — it is idempotent and
+ * never creates a duplicate for a (rule, date) pair.
+ */
+export async function generateDueRecurrences(): Promise<void> {
+  const user = await getUser();
+  const defaultCurrency = user.defaultCurrency ?? "BRL";
+
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+
+  const rules = await prisma.recurringRule.findMany({
+    where: { userId: user.id, isActive: true },
+  });
+
+  for (const rule of rules) {
+    // Determine the first date that hasn't been generated yet
+    const baseDate = rule.lastGeneratedDate
+      ? addFrequency(new Date(rule.lastGeneratedDate), rule.frequency)
+      : new Date(rule.startDate);
+
+    let nextDate = new Date(baseDate);
+
+    while (nextDate <= today) {
+      // Respect the end date — deactivate rule when it's passed
+      if (rule.endDate && nextDate > new Date(rule.endDate)) {
+        await prisma.recurringRule.update({
+          where: { id: rule.id },
+          data: { isActive: false },
+        });
+        break;
+      }
+
+      // Idempotency guard — skip if this date was already generated
+      const existing = await prisma.transaction.findFirst({
+        where: { recurringRuleId: rule.id, date: nextDate },
+        select: { id: true },
+      });
+
+      if (!existing) {
+        const amount = Number(rule.amount);
+        const { amountInDefaultCurrency, exchangeRateUsed } =
+          await resolveAmountInDefault(amount, rule.currency, defaultCurrency);
+
+        const isTransfer = rule.type === "TRANSFER" && rule.destinationAccountId;
+        const delta = isTransfer ? 0 : getDelta(rule.type as TransactionType, amount, "PAID");
+
+        await prisma.$transaction([
+          prisma.transaction.create({
+            data: {
+              userId: user.id,
+              accountId: rule.accountId,
+              type: rule.type as TransactionType,
+              amount,
+              currency: rule.currency,
+              amountInDefaultCurrency,
+              exchangeRateUsed,
+              status: "PAID",
+              date: nextDate,
+              description: rule.description ?? null,
+              ...(rule.categoryId ? { categoryId: rule.categoryId } : {}),
+              ...(isTransfer
+                ? { metadata: { destinationAccountId: rule.destinationAccountId } }
+                : {}),
+              recurringRuleId: rule.id,
+            },
+          }),
+          ...(delta !== 0
+            ? [
+                prisma.account.updateMany({
+                  where: { id: rule.accountId, userId: user.id },
+                  data: { balance: { increment: delta } },
+                }),
+              ]
+            : []),
+          ...(isTransfer && rule.destinationAccountId
+            ? [
+                prisma.account.updateMany({
+                  where: { id: rule.accountId, userId: user.id },
+                  data: { balance: { increment: -amount } },
+                }),
+                prisma.account.updateMany({
+                  where: { id: rule.destinationAccountId, userId: user.id },
+                  data: { balance: { increment: amount } },
+                }),
+              ]
+            : []),
+        ]);
+      }
+
+      // Always advance lastGeneratedDate so we don't re-check this date
+      await prisma.recurringRule.update({
+        where: { id: rule.id },
+        data: { lastGeneratedDate: nextDate },
+      });
+
+      nextDate = addFrequency(nextDate, rule.frequency as Frequency);
+    }
+  }
 }

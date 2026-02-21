@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { auth } from "@/auth";
-import { getTransactions } from "@/modules/transactions/actions";
+import { getTransactions, generateDueRecurrences } from "@/modules/transactions/actions";
 import { getAccounts } from "@/modules/accounts/actions";
+import { getEnabledTransactionTypes } from "@/modules/user-settings/actions";
 import { TransactionList } from "@/components/transactions/transaction-list";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
 import { PageHeader } from "@/components/ui/page-header";
@@ -21,12 +22,14 @@ interface PageProps {
 }
 
 export default async function TransactionsPage({ searchParams }: PageProps) {
+  await generateDueRecurrences();
+
   const sp = await searchParams;
   const now = new Date();
   const month = Number(sp.month) || now.getMonth() + 1;
   const year = Number(sp.year) || now.getFullYear();
 
-  const [session, transactions, accounts] = await Promise.all([
+  const [session, transactions, accounts, enabledTypes] = await Promise.all([
     auth(),
     getTransactions({
       month,
@@ -36,6 +39,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
       status: sp.status as TransactionStatus | undefined,
     }),
     getAccounts(),
+    getEnabledTransactionTypes(),
   ]);
 
   const currency = session?.user?.defaultCurrency ?? "BRL";
@@ -98,6 +102,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
           accounts={accounts}
           currentMonth={month}
           currentYear={year}
+          enabledTypes={enabledTypes}
         />
       </Suspense>
 
