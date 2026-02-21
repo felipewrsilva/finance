@@ -51,7 +51,7 @@ export function TransactionList({ transactions, currency = "BRL", locale: locale
     >
       {transactions.map((tx, i) => {
         const isPending = tx.status === "PENDING";
-        const sign = tx.type === "EXPENSE" ? "−" : tx.type === "INCOME" ? "+" : "";
+        const sign = tx.type === "EXPENSE" ? "−" : tx.type === "INCOME" ? "+" : tx.type === "INVESTMENT" ? "📥 " : "";
         const dateStr = formatDate(new Date(tx.date), locale, {
           day: "2-digit",
           month: "short",
@@ -76,7 +76,7 @@ export function TransactionList({ transactions, currency = "BRL", locale: locale
             >
               {/* Category icon */}
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-lg">
-                {tx.type === "TRANSFER" ? "↔️" : (tx.category?.icon ?? "📌")}
+                {tx.type === "TRANSFER" ? "↔️" : tx.type === "INVESTMENT" ? "📈" : (tx.category?.icon ?? "📌")}
               </div>
 
               {/* Info */}

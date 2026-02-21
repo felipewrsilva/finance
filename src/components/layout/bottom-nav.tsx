@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl";
 
 const NAV_HREFS: { key: string; path: string; exact?: boolean }[] = [
   { key: "overview", path: "/dashboard", exact: true },
-  { key: "accounts", path: "/dashboard/accounts" },
   { key: "transactions", path: "/dashboard/transactions" },
+  { key: "investments", path: "/dashboard/investments" },
   { key: "budgets", path: "/dashboard/budgets" },
 ] as { key: string; path: string; exact?: boolean }[];
 
@@ -24,6 +24,11 @@ const ICONS: Record<string, React.ReactNode> = {
   transactions: (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+    </svg>
+  ),
+  investments: (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
     </svg>
   ),
   budgets: (

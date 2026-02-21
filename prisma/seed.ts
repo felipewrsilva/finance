@@ -3,6 +3,49 @@ import "dotenv/config";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+const INVESTMENT_CATEGORIES = [
+  {
+    id: "system-invest-tesouro-prefixado",
+    name: "Tesouro Prefixado",
+    investmentType: "fixedIncome",
+    defaultRateSource: "TESOURO_PREFIXADO",
+    description: "Título público prefixado com rentabilidade definida no momento da compra.",
+    riskLevel: "low",
+  },
+  {
+    id: "system-invest-tesouro-selic",
+    name: "Tesouro Selic",
+    investmentType: "fixedIncome",
+    defaultRateSource: "TESOURO_SELIC",
+    description: "Título público pós-fixado atrelado à taxa Selic.",
+    riskLevel: "low",
+  },
+  {
+    id: "system-invest-tesouro-ipca",
+    name: "Tesouro IPCA+",
+    investmentType: "fixedIncome",
+    defaultRateSource: "TESOURO_IPCA_PLUS",
+    description: "Título público híbrido atrelado ao IPCA mais uma taxa prefixada.",
+    riskLevel: "low",
+  },
+  {
+    id: "system-invest-cdb",
+    name: "CDB",
+    investmentType: "fixedIncome",
+    defaultRateSource: null,
+    description: "Certificado de Depósito Bancário emitido por bancos.",
+    riskLevel: "low",
+  },
+  {
+    id: "system-invest-lci-lca",
+    name: "LCI / LCA",
+    investmentType: "fixedIncome",
+    defaultRateSource: null,
+    description: "Letra de Crédito Imobiliário ou do Agronegócio, isenta de IR.",
+    riskLevel: "low",
+  },
+];
+
 const INCOME_CATEGORIES = [
   { id: "system-income-salary", name: "Salary", icon: "💼", color: "#22c55e" },
   { id: "system-income-freelance", name: "Freelance", icon: "💻", color: "#10b981" },
@@ -27,6 +70,16 @@ async function main() {
   const client = await pool.connect();
   console.log("Seeding categories...");
   try {
+    for (const cat of INVESTMENT_CATEGORIES) {
+      await client.query(
+        `INSERT INTO investment_categories (id, name, "investmentType", "defaultRateSource", description, "riskLevel", "createdAt")
+         VALUES ($1, $2, $3, $4, $5, $6, NOW())
+         ON CONFLICT (id) DO NOTHING`,
+        [cat.id, cat.name, cat.investmentType, cat.defaultRateSource, cat.description, cat.riskLevel]
+      );
+    }
+    console.log(`✓ Seeded ${INVESTMENT_CATEGORIES.length} investment categories.`);
+
     for (const cat of INCOME_CATEGORIES) {
       await client.query(
         `INSERT INTO categories (id, "userId", name, type, icon, color, "createdAt")

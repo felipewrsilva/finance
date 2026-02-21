@@ -3,6 +3,7 @@
     "overview": "Overview",
     "accounts": "Accounts",
     "transactions": "Transactions",
+    "investments": "Investments",
     "budgets": "Budgets",
     "reports": "Reports",
     "recurring": "Recurring"
@@ -27,6 +28,7 @@
     "all": "All",
     "income": "Income",
     "expense": "Expense",
+    "investment": "Investment",
     "yes_stop": "Yes, stop",
     "stop_recurring": "Stop recurring",
     "ended": "Ended"
@@ -214,6 +216,7 @@
     "expense": "Expense",
     "income": "Income",
     "transfer": "Transfer",
+    "investment": "Investment",
     "paid": "Paid",
     "pending": "Pending",
     "repeat": "Repeat this transaction",
@@ -224,6 +227,28 @@
     "weekly": "Weekly",
     "monthly": "Monthly",
     "yearly": "Yearly"
+  },
+  "investments": {
+    "title": "Investments",
+    "subtitle": "Track and project your investments",
+    "addInvestment": "+ New investment",
+    "noInvestments": "No investments yet",
+    "addFirst": "Add your first investment to start projecting growth.",
+    "category": "Category",
+    "selectCategory": "Select a category",
+    "principal": "Principal",
+    "startDate": "Start date",
+    "annualRate": "Annual interest rate",
+    "loadingRate": "Loading rate…",
+    "compounding": "Compounding",
+    "recurring": "Recurring contributions",
+    "recurrenceInterval": "Contribution frequency",
+    "recurrenceAmount": "Contribution amount",
+    "status": "Status",
+    "notes": "Notes",
+    "notesPlaceholder": "e.g. Emergency reserve",
+    "projectionPreview": "Projection preview",
+    "perYear": "p.a."
   },
   "datePicker": {
     "selectDate": "Select date",

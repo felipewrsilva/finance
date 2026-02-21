@@ -84,6 +84,11 @@ export function TransactionFilters({
                 active={activeType === "INCOME"}
                 onClick={() => update("type", activeType === "INCOME" ? "" : "INCOME")}
               />
+              <Chip
+                label={tc("investment")}
+                active={activeType === "INVESTMENT"}
+                onClick={() => update("type", activeType === "INVESTMENT" ? "" : "INVESTMENT")}
+              />
             </div>
           </div>
 

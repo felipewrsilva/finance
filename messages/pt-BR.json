@@ -3,6 +3,7 @@
     "overview": "Visão Geral",
     "accounts": "Contas",
     "transactions": "Transações",
+    "investments": "Investimentos",
     "budgets": "Orçamentos",
     "reports": "Relatórios",
     "recurring": "Recorrentes"
@@ -27,6 +28,7 @@
     "all": "Todos",
     "income": "Receita",
     "expense": "Despesa",
+    "investment": "Investimento",
     "yes_stop": "Sim, parar",
     "stop_recurring": "Parar recorrência",
     "ended": "Encerrado"
@@ -214,6 +216,7 @@
     "expense": "Despesa",
     "income": "Receita",
     "transfer": "Transferência",
+    "investment": "Investimento",
     "paid": "Pago",
     "pending": "Pendente",
     "repeat": "Repetir esta transação",
@@ -224,6 +227,28 @@
     "weekly": "Semanal",
     "monthly": "Mensal",
     "yearly": "Anual"
+  },
+  "investments": {
+    "title": "Investimentos",
+    "subtitle": "Acompanhe e projete seus investimentos",
+    "addInvestment": "+ Novo investimento",
+    "noInvestments": "Nenhum investimento ainda",
+    "addFirst": "Adicione seu primeiro investimento para começar a projetar crescimento.",
+    "category": "Categoria",
+    "selectCategory": "Selecione uma categoria",
+    "principal": "Capital inicial",
+    "startDate": "Data de início",
+    "annualRate": "Taxa de juros anual",
+    "loadingRate": "Carregando taxa…",
+    "compounding": "Capitalização",
+    "recurring": "Aportes recorrentes",
+    "recurrenceInterval": "Frequência do aporte",
+    "recurrenceAmount": "Valor do aporte",
+    "status": "Situação",
+    "notes": "Observações",
+    "notesPlaceholder": "ex: Reserva de emergência",
+    "projectionPreview": "Prévia da projeção",
+    "perYear": "a.a."
   },
   "datePicker": {
     "selectDate": "Selecionar data",

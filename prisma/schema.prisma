@@ -24,6 +24,7 @@ model User {
   transactions Transaction[]
   budgets      Budget[]
   currencies   UserCurrency[]
+  investments  Investment[]
 
   @@map("users")
 }
@@ -78,6 +79,81 @@ enum TransactionType {
   INCOME
   EXPENSE
   TRANSFER
+  INVESTMENT
+}
+
+// ─── Investment ───────────────────────────────────────────────────────────────
+
+enum InvestmentCompounding {
+  ANNUAL
+  DAILY
+}
+
+enum InvestmentStatus {
+  ACTIVE
+  CANCELED
+  COMPLETED
+}
+
+enum RecurrenceInterval {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+model InvestmentCategory {
+  id                String   @id @default(cuid())
+  name              String
+  investmentType    String   // e.g. "fixedIncome"
+  defaultRateSource String?
+  description       String?
+  riskLevel         String?
+  createdAt         DateTime @default(now())
+
+  investments          Investment[]
+  rateHistory          InvestmentRateHistory[]
+
+  @@map("investment_categories")
+}
+
+model InvestmentRateHistory {
+  id                   String    @id @default(cuid())
+  categoryId           String
+  sourceDate           DateTime
+  rateAnnualPercentage Decimal   @db.Decimal(8, 4)
+  effectiveDate        DateTime  @default(now())
+
+  category InvestmentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId, sourceDate])
+  @@map("investment_rate_history")
+}
+
+model Investment {
+  id                  String              @id @default(cuid())
+  userId              String
+  categoryId          String
+  transactionId       String?             @unique
+  startDate           DateTime
+  principalAmount     Decimal             @db.Decimal(14, 2)
+  currency            String              @default("BRL")
+  annualInterestRate  Decimal             @db.Decimal(8, 4)
+  recurring           Boolean             @default(false)
+  recurrenceInterval  RecurrenceInterval?
+  recurrenceAmount    Decimal?            @db.Decimal(14, 2)
+  compounding         InvestmentCompounding @default(ANNUAL)
+  status              InvestmentStatus    @default(ACTIVE)
+  notes               String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    InvestmentCategory @relation(fields: [categoryId], references: [id])
+  transaction Transaction?       @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([userId, startDate])
+  @@map("investments")
 }
 
 model Category {
@@ -141,6 +217,7 @@ model Transaction {
   category          Category?     @relation(fields: [categoryId], references: [id])
   parentTransaction Transaction?  @relation("TransactionChildren", fields: [parentTransactionId], references: [id], onDelete: SetNull)
   childTransactions Transaction[] @relation("TransactionChildren")
+  investment        Investment?
 
   @@index([userId, date])
   @@index([userId, accountId])

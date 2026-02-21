@@ -1,16 +1,19 @@
 import { auth } from "@/auth";
 import { getMonthlyReport, getAccountBalanceHistory } from "@/modules/dashboard/actions";
+import { getInvestments } from "@/modules/investments/actions";
 import { formatCurrency } from "@/lib/utils";
 import MonthlyChart from "@/components/reports/monthly-chart";
 import BalanceChart from "@/components/reports/balance-chart";
+import { ProjectionsSection } from "@/components/investments/projections-section";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 
 export default async function ReportsPage() {
-  const [session, data, balanceHistory] = await Promise.all([
+  const [session, data, balanceHistory, investments] = await Promise.all([
     auth(),
     getMonthlyReport(6),
     getAccountBalanceHistory(6),
+    getInvestments("ACTIVE"),
   ]);
   const currency = session?.user?.defaultCurrency ?? "BRL";
   const locale = session?.user?.locale ?? "pt-BR";
@@ -117,6 +120,20 @@ export default async function ReportsPage() {
           );
         })}
       </div>
+
+      {/* Investment projections */}
+      {investments.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-base font-semibold text-gray-800">
+            Investment Projections
+          </h2>
+          <ProjectionsSection
+            investments={investments}
+            currency={currency}
+            locale={locale}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
   INCOME: "Income",
   EXPENSE: "Expense",
   TRANSFER: "Transfer",
+  INVESTMENT: "Investment",
 };
 
 export const TRANSACTION_STATUS_LABELS: Record<TransactionStatus, string> = {
@@ -15,6 +16,7 @@ export const TRANSACTION_TYPE_COLORS: Record<TransactionType, string> = {
   INCOME: "text-green-600",
   EXPENSE: "text-red-500",
   TRANSFER: "text-blue-500",
+  INVESTMENT: "text-violet-600",
 };
 
 export const MONTHS = [

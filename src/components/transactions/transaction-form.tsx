@@ -16,7 +16,7 @@ interface TransactionFormProps {
   accounts: Account[];
   categories: Category[];
   transaction?: Transaction;
-  defaultType?: "INCOME" | "EXPENSE";
+  defaultType?: "INCOME" | "EXPENSE" | "INVESTMENT";
   userCurrencies?: string[];
   defaultCurrency?: string;
   /** User's preferred locale for currency formatting (from DB). */
@@ -35,8 +35,8 @@ export function TransactionForm({
   const router = useRouter();
   const t = useTranslations("form");
 
-  const [type, setType] = useState<"INCOME" | "EXPENSE" | "TRANSFER">(
-    (transaction?.type as "INCOME" | "EXPENSE" | "TRANSFER") ?? defaultType
+  const [type, setType] = useState<"INCOME" | "EXPENSE" | "TRANSFER" | "INVESTMENT">(
+    (transaction?.type as "INCOME" | "EXPENSE" | "TRANSFER" | "INVESTMENT") ?? defaultType
   );
   const [accountId, setAccountId] = useState(
     transaction?.accountId ?? (accounts.length === 1 ? accounts[0].id : "")
@@ -78,9 +78,9 @@ export function TransactionForm({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function handleTypeChange(newType: "INCOME" | "EXPENSE" | "TRANSFER") {
+  function handleTypeChange(newType: "INCOME" | "EXPENSE" | "TRANSFER" | "INVESTMENT") {
     setType(newType);
-    if (newType !== "TRANSFER") localStorage.setItem("lastTxType", newType);
+    if (newType !== "TRANSFER" && newType !== "INVESTMENT") localStorage.setItem("lastTxType", newType);
   }
 
   function handleAccountChange(id: string) {
@@ -92,7 +92,9 @@ export function TransactionForm({
     ? updateTransaction.bind(null, transaction.id)
     : createTransaction;
 
-  const filteredCategories = categories.filter((c) => c.type === type);
+  const filteredCategories = categories.filter((c) =>
+    type === "INVESTMENT" ? c.type === "INCOME" : c.type === type
+  );
   const showAccountSelector = shouldRenderSelector(accounts);
 
   const inputCls =
