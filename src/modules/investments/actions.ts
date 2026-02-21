@@ -41,17 +41,11 @@ export async function getInvestment(id: string) {
 }
 
 /**
- * Returns the last 12-month moving-average rate for a given category source key.
+ * Returns the last 12-month moving-average rate for a category.
+ * Works for both system categories (Tesouro) and manual-rate categories (CDB, LCI/LCA).
  * Falls back to 0 if no rate history exists.
  */
 export async function getDefaultRateForCategory(categoryId: string): Promise<number> {
-  const category = await prisma.investmentCategory.findUnique({
-    where: { id: categoryId },
-    select: { defaultRateSource: true },
-  });
-
-  if (!category?.defaultRateSource) return 0;
-
   const cutoff = new Date();
   cutoff.setFullYear(cutoff.getFullYear() - 1);
 
