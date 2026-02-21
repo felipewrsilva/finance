@@ -85,7 +85,14 @@
     "typeChecking": "Conta Corrente",
     "typeBank": "Conta Bancária",
     "typeCreditCard": "Cartão de Crédito",
-    "typeInvestment": "Investimento"
+    "typeInvestment": "Investimento",
+    "totalBalanceLabel": "Saldo total",
+    "edit": "Editar",
+    "actions": "Ações da conta",
+    "accountCount": "{count, plural, one {# conta} other {# contas}}",
+    "emptyTitle": "Nenhuma conta ainda",
+    "emptySubtitle": "Adicione sua primeira conta para começar a controlar suas finanças.",
+    "emptyCta": "Criar primeira conta"
   },
   "budgets": {
     "title": "Orçamentos",

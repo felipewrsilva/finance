@@ -59,6 +59,17 @@ export const ACCOUNT_TYPE_ICONS: Record<AccountType, string> = {
   INVESTMENT: "📈",
 };
 
+// ─── Design tokens per account type ─────────────────────────────────────────
+// iconBg: Tailwind bg-* class for the icon container
+// Full class names required so Tailwind v4 can detect them statically.
+export const ACCOUNT_TYPE_TOKENS: Record<AccountType, { iconBg: string; icon: string }> = {
+  CASH:        { iconBg: "bg-emerald-50", icon: "💵" },
+  CHECKING:    { iconBg: "bg-sky-50",     icon: "🏧" },
+  BANK:        { iconBg: "bg-indigo-50",  icon: "🏦" },
+  CREDIT_CARD: { iconBg: "bg-violet-50",  icon: "💳" },
+  INVESTMENT:  { iconBg: "bg-amber-50",   icon: "📈" },
+};
+
 export const ACCOUNT_COLORS = [
   "#6366f1",
   "#8b5cf6",
