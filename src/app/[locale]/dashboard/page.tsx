@@ -5,7 +5,7 @@ import { getDashboardSummary } from "@/modules/dashboard/actions";
 import { MarkPaidButton } from "@/components/transactions/mark-paid-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
 import type { Account } from "@prisma/client";
 
@@ -17,12 +17,13 @@ export default async function DashboardPage({ params }: Props) {
   const month = now.getMonth() + 1;
   const year = now.getFullYear();
 
-  const [session, accounts, { summary, recentTransactions, categoryBreakdown }, t] =
+  const [session, accounts, { summary, recentTransactions, categoryBreakdown }, t, tc] =
     await Promise.all([
       auth(),
       getAccounts(),
       getDashboardSummary(month, year),
       getTranslations("dashboard"),
+      getTranslations("common"),
     ]);
 
   const currency = session?.user?.defaultCurrency ?? "BRL";
@@ -32,7 +33,7 @@ export default async function DashboardPage({ params }: Props) {
 
   const totalBalance = accounts.reduce((sum: number, a: Account) => sum + Number(a.balance), 0);
 
-  const monthLabel = now.toLocaleString(userLocale, { month: "long", year: "numeric" });
+  const monthLabel = formatDate(now, userLocale, { month: "long", year: "numeric" });
 
   return (
     <div className="space-y-6">
@@ -131,13 +132,13 @@ export default async function DashboardPage({ params }: Props) {
                 <span className="text-base">{tx.type === "TRANSFER" ? "↔️" : (tx.categoryIcon ?? "💸")}</span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-gray-800">
-                    {tx.description ?? tx.categoryName ?? (tx.type === "TRANSFER" ? "Transfer" : "Transaction")}
+                    {tx.description ?? tx.categoryName ?? (tx.type === "TRANSFER" ? tc("transfer") : tc("transaction"))}
                   </p>
                   <p className="text-xs text-gray-400">
                     {tx.accountName} ·{" "}
-                    {new Intl.DateTimeFormat(userLocale, { day: "2-digit", month: "short" }).format(new Date(tx.date))}
+                    {formatDate(new Date(tx.date), userLocale, { day: "2-digit", month: "short" })}
                     {tx.status === "PENDING" && (
-                      <span className="ml-1 rounded bg-yellow-100 px-1 py-0.5 text-yellow-700">pending</span>
+                      <span className="ml-1 rounded bg-yellow-100 px-1 py-0.5 text-yellow-700">{tc("pending")}</span>
                     )}
                   </p>
                 </div>

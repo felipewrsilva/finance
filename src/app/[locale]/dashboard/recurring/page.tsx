@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { getRecurringTransactions, cancelRecurring } from "@/modules/transactions/actions";
-import { formatCurrency, getNextOccurrenceDate } from "@/lib/utils";
+import { formatCurrency, getNextOccurrenceDate, formatDate } from "@/lib/utils";
 import { InlineConfirmButton } from "@/components/ui/inline-confirm-button";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -73,7 +73,7 @@ export default async function RecurringPage({ params }: Props) {
                       {nextDate && (
                         <p className="text-xs text-gray-400 mt-0.5">
                           {t("next")}{" "}
-                          {new Intl.DateTimeFormat(userLocale, { day: "2-digit", month: "short" }).format(nextDate)}
+                          {formatDate(nextDate, userLocale, { day: "2-digit", month: "short" })}
                         </p>
                       )}
                       {!nextDate && tx.recurrenceEnd && (

@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BudgetPeriod } from "@prisma/client";
+import { useTranslations } from "next-intl";
 import { createBudget, updateBudget } from "@/modules/budgets/actions";
-import { BUDGET_PERIOD_LABELS } from "@/modules/budgets/constants";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -19,6 +19,13 @@ interface Props {
 
 export default function BudgetForm({ budget, categories, currency = "BRL", locale = "pt-BR" }: Props) {
   const router = useRouter();
+  const t = useTranslations("budgets");
+  const tf = useTranslations("form");
+  const periodOptions: { value: BudgetPeriod; label: string }[] = [
+    { value: "WEEKLY", label: t("weekly") },
+    { value: "MONTHLY", label: t("monthly") },
+    { value: "YEARLY", label: t("yearly") },
+  ];
 
   const [amount, setAmount] = useState(
     budget?.amount ? Number(budget.amount) : 0
@@ -41,11 +48,11 @@ export default function BudgetForm({ budget, categories, currency = "BRL", local
     <form action={action} className="space-y-4">
       {/* Name */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">Name</label>
+        <label className="mb-1 block text-sm font-medium text-gray-700">{t("name")}</label>
         <input
           name="name"
           defaultValue={budget?.name ?? ""}
-          placeholder="e.g. Monthly food budget"
+          placeholder={t("namePlaceholder")}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
           required
         />
@@ -54,14 +61,14 @@ export default function BudgetForm({ budget, categories, currency = "BRL", local
       {/* Category (optional) */}
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700">
-          Category <span className="text-gray-400">(optional)</span>
+          {t("category")} <span className="text-gray-400">{tf("optional")}</span>
         </label>
         <select
           name="categoryId"
           defaultValue={budget?.categoryId ?? ""}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
         >
-          <option value="">All expense categories</option>
+          <option value="">{t("allCategories")}</option>
           {categories
             .filter((c) => c.type === "EXPENSE")
             .map((c) => (
@@ -74,7 +81,7 @@ export default function BudgetForm({ budget, categories, currency = "BRL", local
 
       {/* Amount */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">Budget amount</label>
+        <label className="mb-1 block text-sm font-medium text-gray-700">{t("budgetAmount")}</label>
         <CurrencyInput
           name="amount"
           value={amount}
@@ -87,14 +94,14 @@ export default function BudgetForm({ budget, categories, currency = "BRL", local
 
       {/* Period */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">Period</label>
+        <label className="mb-1 block text-sm font-medium text-gray-700">{t("period")}</label>
         <select
           name="period"
           defaultValue={budget?.period ?? "MONTHLY"}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
         >
-          {Object.entries(BUDGET_PERIOD_LABELS).map(([val, label]) => (
-            <option key={val} value={val}>
+          {periodOptions.map(({ value, label }) => (
+            <option key={value} value={value}>
               {label}
             </option>
           ))}
@@ -103,7 +110,7 @@ export default function BudgetForm({ budget, categories, currency = "BRL", local
 
       {/* Start date */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">Start date</label>
+        <label className="mb-1 block text-sm font-medium text-gray-700">{t("startDate")}</label>
         <DatePicker
           name="startDate"
           value={startDate}
@@ -115,13 +122,13 @@ export default function BudgetForm({ budget, categories, currency = "BRL", local
       {/* End date */}
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700">
-          End date <span className="text-gray-400">(optional)</span>
+          {t("endDate")} <span className="text-gray-400">{tf("optional")}</span>
         </label>
         <DatePicker
           name="endDate"
           value={endDate}
           onChange={setEndDate}
-          placeholder="No end date"
+          placeholder={t("noEndDate")}
         />
       </div>
 
@@ -129,14 +136,14 @@ export default function BudgetForm({ budget, categories, currency = "BRL", local
         <SubmitButton
           className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
         >
-          {budget ? "Save changes" : "Create budget"}
+          {budget ? t("saveChanges") : t("createBudget")}
         </SubmitButton>
         <button
           type="button"
           onClick={() => router.back()}
           className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>

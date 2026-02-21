@@ -3,13 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TransactionType } from "@prisma/client";
+import { useTranslations } from "next-intl";
 import { createCategory, updateCategory } from "@/modules/categories/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
-
-const TYPE_OPTIONS: { value: TransactionType; label: string; color: string }[] = [
-  { value: "EXPENSE", label: "Expense", color: "text-red-600" },
-  { value: "INCOME", label: "Income", color: "text-green-600" },
-];
 
 const PRESET_ICONS = [
   "🏠", "🛒", "🍔", "🚗", "💊", "🎬", "✈️", "👗",
@@ -29,6 +25,12 @@ interface Props {
 
 export function CategoryForm({ category }: Props) {
   const router = useRouter();
+  const t = useTranslations("settings");
+  const tf = useTranslations("form");
+  const TYPE_OPTIONS: { value: TransactionType; label: string; color: string }[] = [
+    { value: "EXPENSE", label: t("expenseLabel"), color: "text-red-600" },
+    { value: "INCOME", label: t("incomeLabel"), color: "text-green-600" },
+  ];
   const [type, setType] = useState<TransactionType>(
     category?.type ?? "EXPENSE"
   );
@@ -48,7 +50,7 @@ export function CategoryForm({ category }: Props) {
 
       {/* Type */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t("type")}</label>
         <div className="flex rounded-xl bg-gray-100 p-1 gap-1">
           {TYPE_OPTIONS.map((t) => (
             <button
@@ -69,11 +71,11 @@ export function CategoryForm({ category }: Props) {
 
       {/* Name */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t("name")}</label>
         <input
           name="name"
           defaultValue={category?.name ?? ""}
-          placeholder="e.g. Streaming, Gym"
+          placeholder={t("categoryNamePlaceholder")}
           required
           className={inputCls}
         />
@@ -82,7 +84,7 @@ export function CategoryForm({ category }: Props) {
       {/* Icon picker */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Icon <span className="text-gray-400 font-normal">(optional)</span>
+          {t("icon")} <span className="text-gray-400 font-normal">{tf("optional")}</span>
         </label>
         <div className="flex flex-wrap gap-2 mb-2">
           {PRESET_ICONS.map((emoji) => (
@@ -102,13 +104,13 @@ export function CategoryForm({ category }: Props) {
         </div>
         {icon && (
           <p className="text-xs text-gray-500">
-            Selected: <span className="text-base">{icon}</span>{" "}
+            {t("selectedIcon")} <span className="text-base">{icon}</span>{" "}
             <button
               type="button"
               onClick={() => setIcon("")}
               className="text-indigo-600 hover:underline"
             >
-              Clear
+              {t("clearIcon")}
             </button>
           </p>
         )}
@@ -119,14 +121,14 @@ export function CategoryForm({ category }: Props) {
         <SubmitButton
           className="flex-1 rounded-xl bg-indigo-600 py-3 text-base font-semibold text-white hover:bg-indigo-700"
         >
-          {category ? "Save changes" : "Create category"}
+          {category ? t("saveChanges") : t("createCategory")}
         </SubmitButton>
         <button
           type="button"
           onClick={() => router.back()}
           className="flex-1 rounded-xl border border-gray-200 py-3 text-base font-semibold text-gray-700 hover:bg-gray-50"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>

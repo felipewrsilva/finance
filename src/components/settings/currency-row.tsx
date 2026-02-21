@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { InlineConfirmButton } from "@/components/ui/inline-confirm-button";
 
 export interface CurrencyRowProps {
@@ -22,6 +23,7 @@ export function CurrencyRow({
   onMakeDefault,
   onRemove,
 }: CurrencyRowProps) {
+  const t = useTranslations("settings");
   return (
     <li className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0">
       {/* Flag + name */}
@@ -35,7 +37,7 @@ export function CurrencyRow({
         <span className="ml-1.5 text-sm text-gray-400">{code}</span>
         {isDefault && (
           <span className="ml-2 inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
-            Default
+            {t("defaultBadge")}
           </span>
         )}
       </div>
@@ -48,14 +50,14 @@ export function CurrencyRow({
             onClick={onMakeDefault}
             className="text-xs text-gray-500 hover:text-indigo-600 transition-colors"
           >
-            Make default
+            {t("makeDefault")}
           </button>
         )}
         {!isDefault && canRemove && (
           <InlineConfirmButton
-            label="Remove"
-            confirmLabel="Yes, remove"
-            cancelLabel="Cancel"
+            label={t("remove")}
+            confirmLabel={t("yesRemove")}
+            cancelLabel={t("cancel")}
             onConfirm={onRemove}
             className="text-xs text-gray-400 hover:text-red-500 transition-colors"
           />

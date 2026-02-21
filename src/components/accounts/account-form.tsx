@@ -1,11 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { AccountType } from "@prisma/client";
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { createAccount, updateAccount } from "@/modules/accounts/actions";
 import {
-  ACCOUNT_TYPE_LABELS,
   ACCOUNT_COLORS,
   BANKS,
   type BankKey,
@@ -30,9 +29,19 @@ type Props = {
 };
 
 export function AccountForm({ account, currency = "BRL", locale = "pt-BR" }: Props) {
+  const t = useTranslations("accounts");
+  const tc = useTranslations("common");
+  const tf = useTranslations("form");
   const formRef = useRef<HTMLFormElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const isEdit = !!account;
+  const accountTypeOptions: { value: AccountType; label: string }[] = [
+    { value: "BANK", label: t("typeBank") },
+    { value: "CHECKING", label: t("typeChecking") },
+    { value: "CASH", label: t("typeCash") },
+    { value: "CREDIT_CARD", label: t("typeCreditCard") },
+    { value: "INVESTMENT", label: t("typeInvestment") },
+  ];
 
   const [balance, setBalance] = useState(
     account ? Number(account.balance) : 0
@@ -71,7 +80,7 @@ export function AccountForm({ account, currency = "BRL", locale = "pt-BR" }: Pro
       {/* Bank selector */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Bank <span className="text-gray-400 font-normal">(optional)</span>
+          {t("bank")} <span className="text-gray-400 font-normal">{tf("optional")}</span>
         </label>
         <div className="grid grid-cols-5 gap-2">
           {BANKS.map((bank) => {
@@ -89,11 +98,10 @@ export function AccountForm({ account, currency = "BRL", locale = "pt-BR" }: Pro
                 }`}
               >
                 <div className="relative h-8 w-8">
-                  <Image
+                  <img
                     src={bank.logoPath}
                     alt={bank.label}
-                    fill
-                    className="object-contain"
+                    className="h-8 w-8 object-contain"
                   />
                 </div>
                 <span className="text-[10px] text-gray-600 leading-tight text-center">
@@ -108,14 +116,14 @@ export function AccountForm({ account, currency = "BRL", locale = "pt-BR" }: Pro
       {/* Name */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Account name
+          {t("accountName")}
         </label>
         <input
           ref={nameRef}
           name="name"
           defaultValue={account?.name}
           required
-          placeholder="e.g. Nubank, Wallet"
+          placeholder={t("accountNamePlaceholder")}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </div>
@@ -123,14 +131,14 @@ export function AccountForm({ account, currency = "BRL", locale = "pt-BR" }: Pro
       {/* Type */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Type
+          {t("type")}
         </label>
         <select
           name="type"
           defaultValue={account?.type ?? "BANK"}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
-          {Object.entries(ACCOUNT_TYPE_LABELS).map(([value, label]) => (
+          {accountTypeOptions.map(({ value, label }) => (
             <option key={value} value={value}>
               {label}
             </option>
@@ -141,7 +149,7 @@ export function AccountForm({ account, currency = "BRL", locale = "pt-BR" }: Pro
       {/* Balance */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Current balance
+          {t("currentBalance")}
         </label>
         <CurrencyInput
           name="balance"
@@ -155,7 +163,7 @@ export function AccountForm({ account, currency = "BRL", locale = "pt-BR" }: Pro
       {/* Color */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Color
+          {t("color")}
         </label>
         <div className="flex flex-wrap gap-2">
           {ACCOUNT_COLORS.map((color) => (
@@ -190,7 +198,7 @@ export function AccountForm({ account, currency = "BRL", locale = "pt-BR" }: Pro
           className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
         />
         <label htmlFor="isDefault" className="text-sm font-medium text-gray-700">
-          Set as default account
+          {t("setDefault")}
         </label>
       </div>
 
@@ -199,13 +207,13 @@ export function AccountForm({ account, currency = "BRL", locale = "pt-BR" }: Pro
         <SubmitButton
           className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700"
         >
-          {isEdit ? "Save changes" : "Create account"}
+          {isEdit ? t("saveChanges") : t("createAccount")}
         </SubmitButton>
         <a
-          href="/dashboard/accounts"
+          href={`/${locale}/dashboard/accounts`}
           className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm font-medium text-gray-700 transition hover:bg-gray-50"
         >
-          Cancel
+          {t("cancel")}
         </a>
       </div>
     </form>

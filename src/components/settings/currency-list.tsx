@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import {
   addUserCurrency,
   removeUserCurrency,
@@ -27,6 +28,7 @@ export function CurrencyList({
   const [defaultCode, setDefaultCode] = useState(defaultCurrency);
   const [showPicker, setShowPicker] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("settings");
 
   const available = allCurrencies.filter((c) => !enabled.includes(c.code));
 
@@ -109,7 +111,7 @@ export function CurrencyList({
             onBlur={() => setShowPicker(false)}
           >
             <option value="" disabled>
-              Select a currency…
+              {t("selectCurrency")}
             </option>
             {available.map((c) => (
               <option key={c.code} value={c.code}>
@@ -124,7 +126,7 @@ export function CurrencyList({
             className="flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-700 transition-colors"
           >
             <span className="text-base leading-none">+</span>
-            Add currency
+            {t("addCurrency")}
           </button>
         ) : null}
       </div>

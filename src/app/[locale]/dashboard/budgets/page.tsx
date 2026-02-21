@@ -3,6 +3,7 @@ import { getBudgets } from "@/modules/budgets/actions";
 import BudgetList from "@/components/budgets/budget-list";
 import { PageHeader } from "@/components/ui/page-header";
 import { getTranslations } from "next-intl/server";
+import { formatDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -17,7 +18,7 @@ export default async function BudgetsPage({ params }: Props) {
 
   const currency = session?.user?.defaultCurrency ?? "BRL";
   const userLocale = session?.user?.locale ?? locale;
-  const monthLabel = now.toLocaleString(userLocale, { month: "long", year: "numeric" });
+  const monthLabel = formatDate(now, userLocale, { month: "long", year: "numeric" });
 
   return (
     <div className="space-y-6 lg:space-y-8">
