@@ -225,14 +225,14 @@ export function InvestmentForm({
           )}
         </label>
 
-        {/* Rate unavailable message (system category with no data) */}
+        {/* Rate unavailable — fall back to editable input */}
         {rateUnavailable && (
-          <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          <p className="mb-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
             {t("rateUnavailable")}
           </p>
         )}
 
-        {/* Read-only display for system-rate categories */}
+        {/* Read-only display for system-rate categories when rate is known */}
         {!rateUnavailable && isSystemRateCategory && !rateLoading && rate > 0 && (
           <>
             <input type="hidden" name="annualInterestRate" value={rate} />
@@ -248,8 +248,8 @@ export function InvestmentForm({
           <div className="h-12 w-full animate-pulse rounded-xl bg-gray-100" />
         )}
 
-        {/* Editable rate input — for custom category, CDB, LCI/LCA (no defaultRateSource but not custom type), or any non-system-rate category */}
-        {!isSystemRateCategory && !rateUnavailable && (
+        {/* Editable rate input — non-system categories OR system category with no rate data */}
+        {(!isSystemRateCategory || rateUnavailable) && !rateLoading && (
           <div className="relative">
             <input
               name="annualInterestRate"
@@ -267,11 +267,6 @@ export function InvestmentForm({
               {t("perYrSuffix")}
             </span>
           </div>
-        )}
-
-        {/* Hidden fallback — needed when rate is read-only but rateUnavailable blocks submission */}
-        {isSystemRateCategory && rateUnavailable && (
-          <input type="hidden" name="annualInterestRate" value="0" />
         )}
       </div>
 
@@ -414,8 +409,7 @@ export function InvestmentForm({
       {/* Actions */}
       <div className="flex gap-3 pt-2">
         <SubmitButton
-          disabled={rateUnavailable}
-          className="flex-1 rounded-xl bg-violet-600 py-3 text-base font-semibold text-white hover:bg-violet-700 active:bg-violet-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 rounded-xl bg-violet-600 py-3 text-base font-semibold text-white hover:bg-violet-700 active:bg-violet-800"
         >
           {investment ? tf("saveChanges") : t("addInvestment")}
         </SubmitButton>

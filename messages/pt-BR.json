@@ -245,7 +245,7 @@
     "annualRate": "Taxa de juros anual",
     "loadingRate": "Carregando taxa…",
     "rateReadOnly": "Preenchida automaticamente e bloqueada para esta categoria.",
-    "rateUnavailable": "Taxa indisponível — entre em contato com o suporte.",
+    "rateUnavailable": "Taxa não disponível para esta categoria. Você pode informá-la manualmente.",
     "compounding": "Capitalização",
     "recurring": "Aportes recorrentes",
     "recurrenceInterval": "Frequência do aporte",

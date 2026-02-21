@@ -245,7 +245,7 @@
     "annualRate": "Annual interest rate",
     "loadingRate": "Loading rate…",
     "rateReadOnly": "Auto-filled and locked for this category.",
-    "rateUnavailable": "Rate unavailable — contact support.",
+    "rateUnavailable": "Rate not available for this category. You can enter it manually.",
     "compounding": "Compounding",
     "recurring": "Recurring contributions",
     "recurrenceInterval": "Contribution frequency",
