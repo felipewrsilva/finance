@@ -4,7 +4,8 @@ import { AccountType } from "@prisma/client";
 import { useLocale, useTranslations } from "next-intl";
 import { ACCOUNT_TYPE_TOKENS } from "@/modules/accounts/constants";
 import { formatCurrency } from "@/lib/utils";
-import { AccountActionsDropdown } from "./account-actions-dropdown";
+import { deleteAccount } from "@/modules/accounts/actions";
+import { InlineConfirmButton } from "@/components/ui/inline-confirm-button";
 
 type Account = {
   id: string;
@@ -18,14 +19,18 @@ type Account = {
 type Props = {
   account: Account;
   currency: string;
+  /** Total number of accounts — used to disable delete on the last account */
+  totalAccounts: number;
 };
 
-export function AccountCard({ account, currency }: Props) {
+export function AccountCard({ account, currency, totalAccounts }: Props) {
   const locale = useLocale();
   const ta = useTranslations("accounts");
+  const tc = useTranslations("common");
   const balance = Number(account.balance);
   const formatted = formatCurrency(balance, currency, locale);
   const tokens = ACCOUNT_TYPE_TOKENS[account.type];
+  const canDelete = totalAccounts > 1;
 
   const typeLabel: Record<AccountType, string> = {
     CASH: ta("typeCash"),
@@ -36,7 +41,7 @@ export function AccountCard({ account, currency }: Props) {
   };
 
   return (
-    <div className="group flex items-center overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <div className="group flex items-center rounded-xl border border-neutral-200 bg-white shadow-sm transition-shadow hover:shadow-md">
       {/* Clickable area — navigates to edit */}
       <a
         href={`/${locale}/dashboard/accounts/${account.id}/edit`}
@@ -75,9 +80,26 @@ export function AccountCard({ account, currency }: Props) {
         </span>
       </a>
 
-      {/* Actions — outside the link to avoid nested interactivity */}
-      <div className="px-2 shrink-0">
-        <AccountActionsDropdown accountId={account.id} locale={locale} />
+      {/* Delete — matches transaction list pattern */}
+      <div className="shrink-0 pr-3 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+        {canDelete ? (
+          <InlineConfirmButton
+            onConfirm={() => deleteAccount(account.id)}
+            label={tc("delete")}
+            confirmLabel={tc("yes_delete")}
+            cancelLabel={tc("keep")}
+            showAsText
+          />
+        ) : (
+          <button
+            type="button"
+            disabled
+            title={ta("deleteDisabledHint")}
+            className="rounded px-2 py-1 text-xs font-medium text-gray-300 cursor-not-allowed"
+          >
+            {tc("delete")}
+          </button>
+        )}
       </div>
     </div>
   );

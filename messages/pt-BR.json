@@ -92,7 +92,8 @@
     "accountCount": "{count, plural, one {# conta} other {# contas}}",
     "emptyTitle": "Nenhuma conta ainda",
     "emptySubtitle": "Adicione sua primeira conta para começar a controlar suas finanças.",
-    "emptyCta": "Criar primeira conta"
+    "emptyCta": "Criar primeira conta",
+    "deleteDisabledHint": "Voc\u00ea n\u00e3o pode excluir sua \u00fanica conta"
   },
   "budgets": {
     "title": "Orçamentos",

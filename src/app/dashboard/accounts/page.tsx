@@ -62,6 +62,7 @@ export default async function AccountsPage() {
               <AccountCard
                 account={{ ...account, balance: account.balance.toString() }}
                 currency={currency}
+                totalAccounts={accounts.length}
               />
             </div>
           ))}

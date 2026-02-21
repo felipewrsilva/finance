@@ -92,7 +92,8 @@
     "accountCount": "{count, plural, one {# account} other {# accounts}}",
     "emptyTitle": "No accounts yet",
     "emptySubtitle": "Add your first account to start tracking your finances.",
-    "emptyCta": "Create your first account"
+    "emptyCta": "Create your first account",
+    "deleteDisabledHint": "You cannot delete your only account"
   },
   "budgets": {
     "title": "Budgets",
