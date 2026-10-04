@@ -1,6 +1,7 @@
 import { ContentStill, PhotoCredit } from "@/components/home/credited-photo";
-import { YoutubeClip } from "@/components/home/youtube-clip";
+import { ToolVideo } from "@/components/home/tool-video";
 import { STILLS } from "@/lib/stills";
+import { VIDEOS } from "@/lib/videos";
 import { tools } from "@/lib/copy";
 
 const PHOTO_SIZES = "(max-width: 768px) 100vw, 768px";
@@ -82,23 +83,15 @@ export default function ToolsHome() {
         ))}
       </ol>
 
-      <section className="mt-14 border-t border-[var(--border)] pt-10 sm:mt-16">
-        <div className="mb-6 max-w-md">
-          <h2 className="font-display text-2xl leading-snug text-[var(--text)] sm:text-3xl">
-            {tools.homeVideosTitle}
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)] sm:text-base">
-            {tools.homeVideosLead}
-          </p>
-        </div>
-        <YoutubeClip
-          videoId="WBNkhIaY7gc"
-          title={tools.homeVideoSelicTitle}
-          source={tools.homeVideoSelicSource}
-          sourceHref="https://www.youtube.com/watch?v=WBNkhIaY7gc"
-          note={tools.homeVideoSelicNote}
-        />
-      </section>
+      <ToolVideo
+        heading={tools.homeVideosTitle}
+        lead={tools.homeVideosLead}
+        videoId={VIDEOS.home.id}
+        title={tools.homeVideoSelicTitle}
+        source={tools.videoWatch}
+        sourceHref={VIDEOS.home.href}
+        note={tools.homeVideoSelicNote}
+      />
     </div>
   );
 }

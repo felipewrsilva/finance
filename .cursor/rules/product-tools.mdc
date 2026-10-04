@@ -16,7 +16,7 @@ alwaysApply: true
 
 ## Product surface
 
-- Public routes: `/` and `/ferramentas/*` (esse gasto, renda, tempo). Old `/pt-BR`, `/login`, and `/dashboard` paths redirect in `next.config.ts`. There are no login or dashboard pages.
+- Public routes: `/` and `/ferramentas/*` (esse gasto, renda, tempo). No login, dashboard, or locale-prefixed URLs.
 - Calculators use pure client/math. No auth-gated pages. No database in the public app.
 
 ## Copy and UX (public)

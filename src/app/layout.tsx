@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Figtree, Fraunces } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { BRAND } from "@/lib/brand";
 import { ToolsShell } from "@/components/layout/tools-shell";
 import "./globals.css";
@@ -35,6 +37,8 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${figtree.variable} ${fraunces.variable} antialiased`}>
         <ToolsShell>{children}</ToolsShell>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
