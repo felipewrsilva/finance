@@ -16,8 +16,7 @@ alwaysApply: true
 
 ## Product surface
 
-- Public routes: `/pt-BR` and `/pt-BR/ferramentas/*` (esse gasto, renda, tempo).
-- Legacy `/login` and `/dashboard/*` stay redirects to the tools home.
+- Public routes: `/` and `/ferramentas/*` (esse gasto, renda, tempo). Old `/pt-BR`, `/login`, and `/dashboard` paths redirect in `next.config.ts`. There are no login or dashboard pages.
 - Calculators use pure client/math. No auth-gated pages. No database in the public app.
 
 ## Copy and UX (public)

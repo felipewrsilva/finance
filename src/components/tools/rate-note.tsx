@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { fill, tools } from "@/lib/copy";
 import { MoneyField } from "@/components/tools/money-field";
 
 export function RateNote({
@@ -11,7 +11,6 @@ export function RateNote({
   rate: number;
   onRateChange: (n: number) => void;
 }) {
-  const t = useTranslations("tools");
   const [open, setOpen] = useState(false);
 
   return (
@@ -21,13 +20,13 @@ export function RateNote({
         onClick={() => setOpen((v) => !v)}
         className="text-sm text-[var(--text-muted)] underline decoration-[var(--border-strong)] underline-offset-4 hover:text-[var(--text)]"
       >
-        {open ? t("hideRate") : t("showRate")}
+        {open ? tools.hideRate : tools.showRate}
       </button>
       {open ? (
         <div className="mt-4">
           <MoneyField
-            label={t("annualRate")}
-            hint={t("rateHint")}
+            label={tools.annualRate}
+            hint={tools.rateHint}
             value={rate}
             onChange={onRateChange}
             step={0.1}
@@ -35,7 +34,7 @@ export function RateNote({
           />
         </div>
       ) : (
-        <p className="mt-2 text-sm text-[var(--text-muted)]">{t("rateQuiet", { rate })}</p>
+        <p className="mt-2 text-sm text-[var(--text-muted)]">{fill(tools.rateQuiet, { rate })}</p>
       )}
     </div>
   );

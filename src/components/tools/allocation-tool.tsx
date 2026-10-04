@@ -1,10 +1,29 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
 import { formatCurrency } from "@/lib/utils";
 import { allocateIncome, type AllocationGroupKey } from "@/lib/tools-math";
+import { tools } from "@/lib/copy";
 import { MoneyField } from "@/components/tools/money-field";
+
+const GROUP: Record<AllocationGroupKey, string> = {
+  fixed: tools.alloc_fixed,
+  comfort: tools.alloc_comfort,
+  goals: tools.alloc_goals,
+  investments: tools.alloc_investments,
+};
+
+const PART: Record<string, { label: string; hint: string }> = {
+  housing: { label: tools.part_housing, hint: tools.part_housingHint },
+  utilities: { label: tools.part_utilities, hint: tools.part_utilitiesHint },
+  groceries: { label: tools.part_groceries, hint: tools.part_groceriesHint },
+  transport: { label: tools.part_transport, hint: tools.part_transportHint },
+  out: { label: tools.part_out, hint: tools.part_outHint },
+  small: { label: tools.part_small, hint: tools.part_smallHint },
+  reserve: { label: tools.part_reserve, hint: tools.part_reserveHint },
+  wish: { label: tools.part_wish, hint: tools.part_wishHint },
+  grow: { label: tools.part_grow, hint: tools.part_growHint },
+};
 
 const BAR: Record<AllocationGroupKey, string> = {
   fixed: "bg-[var(--text)]",
@@ -21,7 +40,6 @@ const CARD: Record<AllocationGroupKey, string> = {
 };
 
 export function AllocationTool() {
-  const t = useTranslations("tools");
   const [income, setIncome] = useState(3000);
   const [open, setOpen] = useState<AllocationGroupKey | null>("fixed");
   const rows = useMemo(() => allocateIncome(Number(income) || 0), [income]);
@@ -29,8 +47,8 @@ export function AllocationTool() {
 
   return (
     <div className="space-y-8 sm:space-y-10">
-      <MoneyField label={t("monthlyIncome")} value={income} onChange={setIncome} step={50} />
-      <p className="max-w-md text-sm leading-relaxed text-[var(--text-secondary)]">{t("allocHint")}</p>
+      <MoneyField label={tools.monthlyIncome} value={income} onChange={setIncome} step={50} />
+      <p className="max-w-md text-sm leading-relaxed text-[var(--text-secondary)]">{tools.allocHint}</p>
       <ul className="space-y-3">
         {rows.map((row) => {
           const expanded = open === row.key;
@@ -44,9 +62,9 @@ export function AllocationTool() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-display text-lg leading-snug sm:text-xl">{t(`alloc_${row.key}`)}</p>
+                    <p className="font-display text-lg leading-snug sm:text-xl">{GROUP[row.key]}</p>
                     <p className="mt-1 text-sm text-[var(--text-muted)]">
-                      {row.percentage}% · {expanded ? t("allocClose") : t("allocOpen")}
+                      {row.percentage}% · {expanded ? tools.allocClose : tools.allocOpen}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
@@ -76,9 +94,9 @@ export function AllocationTool() {
                       <li key={part.key}>
                         <div className="flex items-baseline justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="text-sm text-[var(--text)] sm:text-base">{t(`part_${part.key}`)}</p>
+                            <p className="text-sm text-[var(--text)] sm:text-base">{PART[part.key].label}</p>
                             <p className="mt-0.5 text-xs leading-relaxed text-[var(--text-muted)]">
-                              {t(`part_${part.key}Hint`)}
+                              {PART[part.key].hint}
                             </p>
                           </div>
                           <p className="shrink-0 tabular-nums text-sm sm:text-base">{fmt(part.amount)}</p>
@@ -98,7 +116,7 @@ export function AllocationTool() {
           );
         })}
       </ul>
-      <p className="max-w-md text-sm leading-relaxed text-[var(--text-muted)]">{t("allocNote")}</p>
+      <p className="max-w-md text-sm leading-relaxed text-[var(--text-muted)]">{tools.allocNote}</p>
     </div>
   );
 }

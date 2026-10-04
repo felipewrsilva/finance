@@ -1,20 +1,19 @@
-import { getTranslations } from "next-intl/server";
 import { ToolIntro } from "@/components/tools/tool-intro";
 import { RedirectTool } from "@/components/tools/redirect-tool";
 import { STILLS } from "@/lib/stills";
+import { tools } from "@/lib/copy";
 
-export default async function RedirectPage() {
-  const t = await getTranslations("tools");
+export default function RedirectPage() {
   return (
     <div>
       <ToolIntro
-        title={t("redirectTitle")}
-        ask={t("redirectAsk")}
+        title={tools.redirectTitle}
+        ask={tools.redirectAsk}
         photo={{
           src: STILLS.spend.src,
           href: STILLS.spend.href,
-          alt: t("homeOnePhotoAlt"),
-          credit: t("homeOnePhotoCredit"),
+          alt: tools.homeOnePhotoAlt,
+          credit: tools.homeOnePhotoCredit,
         }}
       />
       <RedirectTool />

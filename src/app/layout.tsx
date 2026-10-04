@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Figtree, Fraunces } from "next/font/google";
 import { BRAND } from "@/lib/brand";
+import { ToolsShell } from "@/components/layout/tools-shell";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -33,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${figtree.variable} ${fraunces.variable} antialiased`}>
-        {children}
+        <ToolsShell>{children}</ToolsShell>
       </body>
     </html>
   );

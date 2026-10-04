@@ -1,20 +1,19 @@
-import { getTranslations } from "next-intl/server";
 import { ToolIntro } from "@/components/tools/tool-intro";
 import { AllocationTool } from "@/components/tools/allocation-tool";
 import { STILLS } from "@/lib/stills";
+import { tools } from "@/lib/copy";
 
-export default async function AllocationPage() {
-  const t = await getTranslations("tools");
+export default function AllocationPage() {
   return (
     <div>
       <ToolIntro
-        title={t("allocationTitle")}
-        ask={t("allocationAsk")}
+        title={tools.allocationTitle}
+        ask={tools.allocationAsk}
         photo={{
           src: STILLS.income.src,
           href: STILLS.income.href,
-          alt: t("homeTwoPhotoAlt"),
-          credit: t("homeTwoPhotoCredit"),
+          alt: tools.homeTwoPhotoAlt,
+          credit: tools.homeTwoPhotoCredit,
         }}
       />
       <AllocationTool />
