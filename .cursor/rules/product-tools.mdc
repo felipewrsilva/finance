@@ -18,7 +18,7 @@ alwaysApply: true
 
 - Public routes: `/pt-BR` and `/pt-BR/ferramentas/*` (esse gasto, renda, tempo).
 - Legacy `/login` and `/dashboard/*` stay redirects to the tools home.
-- Calculators use pure client/math. No auth-gated pages.
+- Calculators use pure client/math. No auth-gated pages. No database in the public app.
 
 ## Copy and UX (public)
 
@@ -30,4 +30,4 @@ alwaysApply: true
 
 ## If a request needs accounts
 
-Refuse in the product. Keep tools public. Point leftover Prisma/server modules at `personalFeaturesDisabled()` rather than rebuilding auth.
+Refuse in the product. Keep tools public. Do not add Prisma, Neon, or Auth.js back.

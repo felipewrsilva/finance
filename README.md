@@ -17,10 +17,9 @@ Ferramentas em **português (Brasil)**. Sem cadastro. Três perguntas: um extra 
 | Styling | Tailwind CSS v4 |
 | i18n | next-intl v4, somente `pt-BR` |
 | Math | Funções puras de projeção |
-| Validation | Zod v4 |
 | Deployment | Vercel |
 
-Prisma/Neon permanecem no repositório para scripts internos. A UI pública não lê dados por usuário.
+A UI pública não usa banco nem conta.
 
 ---
 
@@ -41,12 +40,6 @@ git clone https://github.com/felipewrsilva/finance.git
 cd finance
 npm install
 npm run dev
-```
-
-Opcional (só se for usar scripts Prisma/Neon):
-
-```env
-DATABASE_URL="your_neon_connection_string"
 ```
 
 Abra [http://localhost:3000](http://localhost:3000) (redireciona para `/pt-BR`).

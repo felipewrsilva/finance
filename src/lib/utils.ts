@@ -1,4 +1,4 @@
-import type { Frequency } from "@prisma/client";
+type Frequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 
 // ─── Date ────────────────────────────────────────────────────────────────────
 

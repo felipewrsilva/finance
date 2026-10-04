@@ -1,5 +1,3 @@
-import { totalProjectedValue } from "@/modules/investments/projections";
-
 export const ALLOCATION_GROUPS = [
   { key: "fixed", percentage: 50 },
   { key: "comfort", percentage: 30 },
@@ -15,6 +13,36 @@ export function allocateIncome(monthlyIncome: number) {
   }));
 }
 
+function futureValue(principal: number, annualRate: number, years: number): number {
+  return principal * Math.pow(1 + annualRate, years);
+}
+
+function futureValueMonthly(
+  contribution: number,
+  annualRate: number,
+  years: number
+): number {
+  const delta = 1 / 12;
+  const periods = Math.floor(years / delta);
+  let fv = 0;
+  for (let n = 1; n <= periods; n++) {
+    const remaining = years - n * delta;
+    fv += contribution * Math.pow(1 + annualRate, Math.max(remaining, 0));
+  }
+  return fv;
+}
+
+export function totalProjectedValue(
+  principal: number,
+  annualRate: number,
+  years: number,
+  monthlyContribution = 0
+): number {
+  const principalFv = futureValue(principal, annualRate, years);
+  if (!monthlyContribution) return principalFv;
+  return principalFv + futureValueMonthly(monthlyContribution, annualRate, years);
+}
+
 export function projectInvestment(input: {
   principal: number;
   annualRatePct: number;
@@ -22,32 +50,16 @@ export function projectInvestment(input: {
   years: number;
 }) {
   const rate = input.annualRatePct / 100;
-  const horizons = [5, 10, 20].filter((y) => y <= Math.max(input.years, 20));
-  if (!horizons.includes(input.years)) horizons.push(input.years);
-  horizons.sort((a, b) => a - b);
-
   return {
     atHorizon: totalProjectedValue(
       input.principal,
       rate,
       input.years,
-      input.monthlyContribution,
-      "MONTHLY"
+      input.monthlyContribution
     ),
-    horizons: horizons.map((years) => ({
-      years,
-      value: totalProjectedValue(
-        input.principal,
-        rate,
-        years,
-        input.monthlyContribution,
-        "MONTHLY"
-      ),
-    })),
   };
 }
 
-/** A monthly extra, left to grow. No starting pile, no "two paths". */
 export function spendHabitFuture(monthly: number, annualRatePct: number, years: number) {
-  return totalProjectedValue(0, annualRatePct / 100, Math.max(1, years), monthly, "MONTHLY");
+  return totalProjectedValue(0, annualRatePct / 100, Math.max(1, years), monthly);
 }
