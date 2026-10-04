@@ -5,11 +5,12 @@ import {
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { chartColors, chartDefaults, formatAxisCurrency } from "@/lib/chart-config";
+import { ChartTooltip } from "@/components/ui/chart-tooltip";
 
 interface DataPoint {
   month: string;
@@ -21,40 +22,49 @@ interface DataPoint {
 interface Props {
   data: DataPoint[];
   currency: string;
+  locale?: string;
 }
 
-export default function MonthlyChart({ data, currency }: Props) {
-  const fmt = (v: number) =>
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 0,
-    }).format(v);
+export default function MonthlyChart({ data, currency, locale = "pt-BR" }: Props) {
+  const axisFmt = (v: number) => formatAxisCurrency(v, currency, locale);
 
   return (
-    <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+    <ResponsiveContainer width="100%" height={chartDefaults.height}>
+      <BarChart data={data} margin={{ ...chartDefaults.margin }}>
         <XAxis
           dataKey="month"
-          tick={{ fontSize: 12, fill: "#6b7280" }}
-          axisLine={false}
-          tickLine={false}
+          tick={{ fontSize: chartDefaults.axis.fontSize, fill: chartDefaults.axis.tickFill }}
+          axisLine={chartDefaults.axis.axisLine}
+          tickLine={chartDefaults.axis.tickLine}
         />
         <YAxis
-          tickFormatter={(v) => fmt(v)}
-          tick={{ fontSize: 11, fill: "#6b7280" }}
-          axisLine={false}
-          tickLine={false}
-          width={80}
+          tickFormatter={(v) => axisFmt(v)}
+          tick={{ fontSize: chartDefaults.axis.yFontSize, fill: chartDefaults.axis.tickFill }}
+          axisLine={chartDefaults.axis.axisLine}
+          tickLine={chartDefaults.axis.tickLine}
+          width={chartDefaults.axis.yWidth}
         />
         <Tooltip
-          formatter={(value: number | string | undefined) => [fmt(Number(value ?? 0)), ""]}
-          contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "12px" }}
+          content={<ChartTooltip currency={currency} locale={locale} />}
         />
-        <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }} />
-        <Bar dataKey="income" name="Income" fill="#22c55e" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="expense" name="Expenses" fill="#f87171" radius={[4, 4, 0, 0]} />
+        <Legend
+          wrapperStyle={{
+            fontSize: chartDefaults.legend.fontSize,
+            paddingTop: chartDefaults.legend.paddingTop,
+          }}
+        />
+        <Bar
+          dataKey="income"
+          name="Income"
+          fill={chartColors.income}
+          radius={[4, 4, 0, 0]}
+        />
+        <Bar
+          dataKey="expense"
+          name="Expenses"
+          fill={chartColors.expense}
+          radius={[4, 4, 0, 0]}
+        />
       </BarChart>
     </ResponsiveContainer>
   );

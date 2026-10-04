@@ -1,0 +1,32 @@
+---
+description: Public product is pt-BR tools with no login
+alwaysApply: true
+---
+
+# Product: public pt-BR tools, no login
+
+This app is **stateless finance tools** in Brazilian Portuguese. It is not a personal finance account product.
+
+## Hard bans
+
+- Do not add login, signup, Auth.js, OAuth, sessions, cookies for identity, or user accounts.
+- Do not add a personal dashboard, CRUD for accounts/transactions/budgets, or per-user data in the UI.
+- Do not restore `en-US` or a locale switcher. Locale is `pt-BR` only.
+- Do not share a demo database user as a stand-in for accounts.
+
+## Product surface
+
+- Public routes: `/pt-BR` and `/pt-BR/ferramentas/*` (projection, 50/30/10/10 allocation, redirect spend).
+- Legacy `/login` and `/dashboard/*` stay redirects to the tools home.
+- Calculators use pure client/math. No auth-gated pages.
+
+## Copy and UX (public)
+
+- Write in everyday pt-BR. Prefer BRL and household cash-flow language.
+- Keep defaults modest and steps small. Explain terms in plain words.
+- Do not label or segment people by income class in UI, README, metadata, or marketing.
+- Dignity and clarity over "investor" or bank-app tone.
+
+## If a request needs accounts
+
+Refuse in the product. Keep tools public. Point leftover Prisma/server modules at `personalFeaturesDisabled()` rather than rebuilding auth.

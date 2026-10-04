@@ -1,7 +1,7 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { personalFeaturesDisabled } from "@/lib/personal-features";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { TransactionType } from "@prisma/client";
@@ -9,10 +9,8 @@ import { TransactionType } from "@prisma/client";
 const ALL_TYPES: TransactionType[] = ["INCOME", "EXPENSE", "TRANSFER", "INVESTMENT"];
 const REQUIRED_TYPES: TransactionType[] = ["INCOME", "EXPENSE"];
 
-async function getUser() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  return session.user;
+async function getUser(): Promise<{ id: string; defaultCurrency?: string; locale?: string }> {
+  return personalFeaturesDisabled();
 }
 
 export async function getEnabledTransactionTypes(): Promise<TransactionType[]> {

@@ -1,20 +1,18 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { personalFeaturesDisabled } from "@/lib/personal-features";
 import { prisma } from "@/lib/prisma";
 import { investmentSchema } from "./schema";
 import { fetchTesouroDiretoRates } from "@/lib/tesouro-rates";
 import type { InvestmentStatus } from "@prisma/client";
 
-async function getUser() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  return session.user;
+async function getUser(): Promise<{ id: string; defaultCurrency?: string; locale?: string }> {
+  return personalFeaturesDisabled();
 }
 
-// ─── Queries ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Queries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getInvestmentCategories() {
   return prisma.investmentCategory.findMany({ orderBy: { name: "asc" } });
@@ -65,7 +63,7 @@ export async function getDefaultRateForCategory(categoryId: string): Promise<num
   return Math.round(avg * 100) / 100;
 }
 
-// ─── Mutations ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Mutations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function createInvestment(formData: FormData) {
   const user = await getUser();
@@ -104,9 +102,8 @@ export async function createInvestment(formData: FormData) {
     },
   });
 
-  revalidatePath("/dashboard/investments");
   revalidatePath("/dashboard/reports");
-  redirect("/dashboard/investments");
+  redirect("/dashboard/reports");
 }
 
 export async function updateInvestment(id: string, formData: FormData) {
@@ -148,19 +145,17 @@ export async function updateInvestment(id: string, formData: FormData) {
     },
   });
 
-  revalidatePath("/dashboard/investments");
   revalidatePath("/dashboard/reports");
-  redirect("/dashboard/investments");
+  redirect("/dashboard/reports");
 }
 
 export async function deleteInvestment(id: string) {
   const user = await getUser();
   await prisma.investment.deleteMany({ where: { id, userId: user.id } });
-  revalidatePath("/dashboard/investments");
   revalidatePath("/dashboard/reports");
 }
 
-// ─── Rate sync ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Rate sync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Fetches latest Tesouro Direto rates and stores them in investment_rate_history.
@@ -185,7 +180,7 @@ export async function syncTesouroDiretoRates() {
     const categoryId = sourceToId[entry.source];
     if (!categoryId) continue;
 
-    // Upsert by (categoryId, sourceDate) — skip if already exists
+    // Upsert by (categoryId, sourceDate) â€” skip if already exists
     const existing = await prisma.investmentRateHistory.findFirst({
       where: { categoryId, sourceDate: entry.sourceDate },
     });

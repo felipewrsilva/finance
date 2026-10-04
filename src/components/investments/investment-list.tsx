@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { deleteInvestment } from "@/modules/investments/actions";
 import { INVESTMENT_STATUS_COLORS, INVESTMENT_STATUS_LABELS } from "@/modules/investments/constants";
 import { totalProjectedValue } from "@/modules/investments/projections";
+import { investmentAsOfMs, yearsElapsedSince } from "@/modules/investments/time";
 import { InlineConfirmButton } from "@/components/ui/inline-confirm-button";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Investment, InvestmentCategory } from "@prisma/client";
@@ -16,19 +15,20 @@ interface InvestmentListProps {
   investments: InvestmentWithCategory[];
   currency?: string;
   locale?: string;
+  onAdd?: () => void;
+  onEdit?: (investment: InvestmentWithCategory) => void;
 }
 
 export function InvestmentList({
   investments,
   currency = "BRL",
-  locale: localeProp = "pt-BR",
+  locale = "pt-BR",
+  onAdd,
+  onEdit,
 }: InvestmentListProps) {
   const t = useTranslations("investments");
   const tc = useTranslations("common");
-  const locale = useLocale() || localeProp;
-  const pathname = usePathname();
-
-  const localePrefix = pathname.split("/")[1] ?? locale;
+  const asOfMs = investmentAsOfMs();
 
   if (investments.length === 0) {
     return (
@@ -36,12 +36,15 @@ export function InvestmentList({
         <p className="text-4xl mb-3" aria-hidden="true">📈</p>
         <p className="font-medium text-gray-600">{t("noInvestments")}</p>
         <p className="text-sm mt-1 mb-5 text-gray-400">{t("addFirst")}</p>
-        <Link
-          href={`/${localePrefix}/dashboard/investments/new`}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
-        >
-          {t("addInvestment")}
-        </Link>
+        {onAdd && (
+          <button
+            type="button"
+            onClick={onAdd}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+          >
+            {t("addInvestment")}
+          </button>
+        )}
       </div>
     );
   }
@@ -55,8 +58,7 @@ export function InvestmentList({
       {investments.map((inv, i) => {
         const rate = Number(inv.annualInterestRate) / 100;
         const principal = Number(inv.principalAmount);
-        const yearsElapsed =
-          (Date.now() - new Date(inv.startDate).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+        const yearsElapsed = yearsElapsedSince(new Date(inv.startDate), asOfMs);
         const currentValue = totalProjectedValue(
           principal,
           rate,
@@ -75,16 +77,15 @@ export function InvestmentList({
               i !== investments.length - 1 ? "border-b border-gray-100" : ""
             }`}
           >
-            <Link
-              href={`/${localePrefix}/dashboard/investments/${inv.id}/edit`}
-              className="flex flex-1 min-w-0 items-center gap-3 px-4 py-3.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-500"
+            <button
+              type="button"
+              onClick={() => onEdit?.(inv)}
+              className="flex flex-1 min-w-0 items-center gap-3 px-4 py-3.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-500"
             >
-              {/* Icon */}
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-50 text-lg">
                 📈
               </div>
 
-              {/* Info */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <p className="truncate text-sm font-medium text-gray-900">
@@ -122,7 +123,6 @@ export function InvestmentList({
                 </div>
               </div>
 
-              {/* Amounts */}
               <div className="shrink-0 text-right">
                 <p className="text-sm font-semibold tabular-nums text-violet-600">
                   {formatCurrency(currentValue, currency, locale)}
@@ -131,9 +131,8 @@ export function InvestmentList({
                   {t("principal")}: {formatCurrency(principal, currency, locale)}
                 </p>
               </div>
-            </Link>
+            </button>
 
-            {/* Delete */}
             <div className="shrink-0 pr-3 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
               <InlineConfirmButton
                 onConfirm={() => deleteInvestment(inv.id)}

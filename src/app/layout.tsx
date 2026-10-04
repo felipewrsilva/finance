@@ -13,21 +13,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Finance",
-  description: "Personal finance management",
+  title: "Finance: ferramentas para investir melhor",
+  description:
+    "Ferramentas em português para projetar investimentos, alocar renda e redirecionar gastos. Sem cadastro.",
 };
 
-// Root layout: minimal wrapper. Locale-aware content lives in [locale]/layout.tsx
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="pt-BR">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>
     </html>

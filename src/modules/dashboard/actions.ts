@@ -1,14 +1,11 @@
-"use server";
+﻿"use server";
 
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { personalFeaturesDisabled } from "@/lib/personal-features";
 import { prisma } from "@/lib/prisma";
 import { TransactionType, TransactionStatus } from "@prisma/client";
 
-async function getUser() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  return session.user;
+async function getUser(): Promise<{ id: string; defaultCurrency?: string; locale?: string }> {
+  return personalFeaturesDisabled();
 }
 
 export interface MonthlySummary {

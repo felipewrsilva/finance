@@ -1,17 +1,15 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { personalFeaturesDisabled } from "@/lib/personal-features";
 import { prisma } from "@/lib/prisma";
 
-async function getUser() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  return session.user;
+async function getUser(): Promise<{ id: string; defaultCurrency?: string; locale?: string }> {
+  return personalFeaturesDisabled();
 }
 
-// ─── Queries ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Queries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface UserCurrencyPreferences {
   defaultCurrency: string;
@@ -47,7 +45,7 @@ export async function getUserCurrencies(): Promise<UserCurrencyPreferences> {
   return { defaultCurrency: dbUser.defaultCurrency, locale: dbUser.locale, currencies };
 }
 
-// ─── Mutations ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Mutations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function addUserCurrency(formData: FormData) {
   const user = await getUser();

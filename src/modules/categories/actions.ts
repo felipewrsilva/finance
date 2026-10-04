@@ -1,15 +1,13 @@
-"use server";
+﻿"use server";
 
-import { auth } from "@/auth";
+import { personalFeaturesDisabled } from "@/lib/personal-features";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { TransactionType } from "@prisma/client";
+import { BudgetGroupType, TransactionType } from "@prisma/client";
 
-async function getUser() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  return session.user;
+async function getUser(): Promise<{ id: string; defaultCurrency?: string; locale?: string }> {
+  return personalFeaturesDisabled();
 }
 
 export async function getCategories(type?: TransactionType) {
@@ -39,6 +37,17 @@ export async function getCategoryById(id: string) {
   });
 }
 
+function parseIsEssential(value: FormDataEntryValue | null): boolean {
+  if (value == null || value === "") return true;
+  return value === "true" || value === "on" || value === "1";
+}
+
+function parseGroupType(value: FormDataEntryValue | null): BudgetGroupType | null {
+  if (value == null || value === "") return null;
+  const allowed = Object.values(BudgetGroupType) as string[];
+  return allowed.includes(String(value)) ? (value as BudgetGroupType) : null;
+}
+
 export async function createCategory(formData: FormData) {
   const user = await getUser();
 
@@ -46,11 +55,13 @@ export async function createCategory(formData: FormData) {
   const type = formData.get("type") as TransactionType;
   const icon = (formData.get("icon") as string) || null;
   const color = (formData.get("color") as string) || null;
+  const isEssential = parseIsEssential(formData.get("isEssential"));
+  const groupType = parseGroupType(formData.get("groupType"));
 
   if (!name || !type) return;
 
   await prisma.category.create({
-    data: { userId: user.id, name, type, icon, color },
+    data: { userId: user.id, name, type, icon, color, isEssential, groupType },
   });
 
   revalidatePath("/dashboard/settings/categories");
@@ -63,12 +74,14 @@ export async function updateCategory(id: string, formData: FormData) {
   const name = formData.get("name") as string;
   const icon = (formData.get("icon") as string) || null;
   const color = (formData.get("color") as string) || null;
+  const isEssential = parseIsEssential(formData.get("isEssential"));
+  const groupType = parseGroupType(formData.get("groupType"));
 
   if (!name) return;
 
   await prisma.category.updateMany({
     where: { id, userId: user.id },
-    data: { name, icon, color },
+    data: { name, icon, color, isEssential, groupType },
   });
 
   revalidatePath("/dashboard/settings/categories");

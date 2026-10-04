@@ -18,6 +18,7 @@ model User {
   locale                   String            @default("pt-BR")
   enabledTransactionTypes  TransactionType[] @default([INCOME, EXPENSE, TRANSFER, INVESTMENT])
   accounts        Account[]
+  budgetGroups    BudgetGroup[]
   budgets         Budget[]
   categories      Category[]
   investments     Investment[]
@@ -115,18 +116,20 @@ model Investment {
 }
 
 model Category {
-  id           String          @id @default(cuid())
+  id           String           @id @default(cuid())
   userId       String?
   name         String
   type         TransactionType
   icon         String?
   color        String?
   parentId     String?
-  createdAt    DateTime        @default(now())
+  isEssential  Boolean          @default(true)
+  groupType    BudgetGroupType?
+  createdAt    DateTime         @default(now())
   budgets      Budget[]
-  parent       Category?       @relation("CategoryParent", fields: [parentId], references: [id])
-  children     Category[]      @relation("CategoryParent")
-  user         User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent       Category?        @relation("CategoryParent", fields: [parentId], references: [id])
+  children     Category[]       @relation("CategoryParent")
+  user         User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
   recurringRules RecurringRule[]
 
@@ -169,20 +172,41 @@ model Transaction {
   @@map("transactions")
 }
 
-model Budget {
-  id         String       @id @default(cuid())
+model BudgetGroup {
+  id         String          @id @default(cuid())
   userId     String
-  categoryId String?
+  type       BudgetGroupType
   name       String
-  amount     Decimal      @db.Decimal(14, 2)
-  period     BudgetPeriod @default(MONTHLY)
-  startDate  DateTime
-  endDate    DateTime?
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  category   Category?    @relation(fields: [categoryId], references: [id])
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  percentage Decimal         @db.Decimal(5, 2)
+  sortOrder  Int             @default(0)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgets    Budget[]
 
+  @@unique([userId, type])
+  @@index([userId, sortOrder])
+  @@map("budget_groups")
+}
+
+model Budget {
+  id                String       @id @default(cuid())
+  userId            String
+  categoryId        String?
+  groupId           String?
+  name              String
+  amount            Decimal      @db.Decimal(14, 2)
+  percentageOfGroup Decimal?     @db.Decimal(5, 2)
+  period            BudgetPeriod @default(MONTHLY)
+  startDate         DateTime
+  endDate           DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  category          Category?    @relation(fields: [categoryId], references: [id])
+  group             BudgetGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, groupId])
   @@map("budgets")
 }
 
@@ -260,4 +284,12 @@ enum BudgetPeriod {
   WEEKLY
   MONTHLY
   YEARLY
+}
+
+/// Income allocation buckets (default split 50/30/10/10).
+enum BudgetGroupType {
+  FIXED_COSTS
+  COMFORT
+  GOALS
+  INVESTMENTS
 }

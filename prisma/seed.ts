@@ -63,16 +63,16 @@ const INCOME_CATEGORIES = [
 ];
 
 const EXPENSE_CATEGORIES = [
-  { id: "system-expense-housing", name: "Housing", icon: "🏠", color: "#f97316" },
-  { id: "system-expense-food", name: "Food", icon: "🍽️", color: "#ef4444" },
-  { id: "system-expense-transport", name: "Transport", icon: "🚗", color: "#f59e0b" },
-  { id: "system-expense-health", name: "Health", icon: "🏥", color: "#ec4899" },
-  { id: "system-expense-education", name: "Education", icon: "📚", color: "#8b5cf6" },
-  { id: "system-expense-entertainment", name: "Entertainment", icon: "🎬", color: "#3b82f6" },
-  { id: "system-expense-clothing", name: "Clothing", icon: "👕", color: "#06b6d4" },
-  { id: "system-expense-subscriptions", name: "Subscriptions", icon: "📱", color: "#64748b" },
-  { id: "system-expense-other-expense", name: "Other Expense", icon: "📦", color: "#94a3b8" },
-];
+  { id: "system-expense-housing", name: "Housing", icon: "🏠", color: "#f97316", isEssential: true, groupType: "FIXED_COSTS" },
+  { id: "system-expense-food", name: "Food", icon: "🍽️", color: "#ef4444", isEssential: false, groupType: "COMFORT" },
+  { id: "system-expense-transport", name: "Transport", icon: "🚗", color: "#f59e0b", isEssential: true, groupType: "FIXED_COSTS" },
+  { id: "system-expense-health", name: "Health", icon: "🏥", color: "#ec4899", isEssential: true, groupType: "FIXED_COSTS" },
+  { id: "system-expense-education", name: "Education", icon: "📚", color: "#8b5cf6", isEssential: true, groupType: "FIXED_COSTS" },
+  { id: "system-expense-entertainment", name: "Entertainment", icon: "🎬", color: "#3b82f6", isEssential: false, groupType: "COMFORT" },
+  { id: "system-expense-clothing", name: "Clothing", icon: "👕", color: "#06b6d4", isEssential: false, groupType: "COMFORT" },
+  { id: "system-expense-subscriptions", name: "Subscriptions", icon: "📱", color: "#64748b", isEssential: false, groupType: "COMFORT" },
+  { id: "system-expense-other-expense", name: "Other Expense", icon: "📦", color: "#94a3b8", isEssential: true, groupType: "FIXED_COSTS" },
+] as const;
 
 async function main() {
   const client = await pool.connect();
@@ -98,10 +98,12 @@ async function main() {
     }
     for (const cat of EXPENSE_CATEGORIES) {
       await client.query(
-        `INSERT INTO categories (id, "userId", name, type, icon, color, "createdAt")
-         VALUES ($1, NULL, $2, 'EXPENSE', $3, $4, NOW())
-         ON CONFLICT (id) DO NOTHING`,
-        [cat.id, cat.name, cat.icon, cat.color]
+        `INSERT INTO categories (id, "userId", name, type, icon, color, "isEssential", "groupType", "createdAt")
+         VALUES ($1, NULL, $2, 'EXPENSE', $3, $4, $5, $6::"BudgetGroupType", NOW())
+         ON CONFLICT (id) DO UPDATE SET
+           "isEssential" = EXCLUDED."isEssential",
+           "groupType" = EXCLUDED."groupType"`,
+        [cat.id, cat.name, cat.icon, cat.color, cat.isEssential, cat.groupType]
       );
     }
     console.log(`✓ Seeded ${INCOME_CATEGORIES.length} income + ${EXPENSE_CATEGORIES.length} expense categories.`);

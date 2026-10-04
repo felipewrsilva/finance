@@ -27,6 +27,7 @@ interface InvestmentFormProps {
   userCurrencies?: string[];
   defaultCurrency?: string;
   locale?: string;
+  onCancel?: () => void;
 }
 
 export function InvestmentForm({
@@ -35,6 +36,7 @@ export function InvestmentForm({
   userCurrencies = [],
   defaultCurrency = "BRL",
   locale = "pt-BR",
+  onCancel,
 }: InvestmentFormProps) {
   const router = useRouter();
   const t = useTranslations("investments");
@@ -415,7 +417,7 @@ export function InvestmentForm({
         </SubmitButton>
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => (onCancel ? onCancel() : router.back())}
           className="flex-1 rounded-xl border border-gray-200 py-3 text-base font-semibold text-gray-700 hover:bg-gray-50 active:bg-gray-100"
         >
           {tf("cancel")}

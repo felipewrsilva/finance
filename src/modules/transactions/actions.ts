@@ -1,21 +1,19 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { personalFeaturesDisabled } from "@/lib/personal-features";
 import { prisma } from "@/lib/prisma";
 import { getExchangeRate } from "@/lib/exchange-rates";
 import { addFrequency } from "@/lib/utils";
 import { transactionSchema } from "./schema";
 import { TransactionType, TransactionStatus, type Frequency } from "@prisma/client";
 
-async function getUser() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  return session.user;
+async function getUser(): Promise<{ id: string; defaultCurrency?: string; locale?: string }> {
+  return personalFeaturesDisabled();
 }
 
-// ─── Queries ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Queries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface TransactionFilters {
   month: number; // 1-12
@@ -92,7 +90,7 @@ export async function getRecurringRules(): Promise<RecurringRuleWithRels[]> {
   return rules.map((r) => ({ ...r, amount: Number(r.amount) }));
 }
 
-// ─── Mutations ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Mutations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function parseRecurringFromForm(formData: FormData) {
   const isRecurring = formData.get("isRecurring") === "true";
@@ -465,7 +463,7 @@ export async function deleteTransaction(id: string) {
 }
 
 /**
- * Stop a recurring series — deactivates the RecurringRule.
+ * Stop a recurring series â€” deactivates the RecurringRule.
  * Past generated transactions are NOT deleted or modified.
  */
 export async function cancelRecurring(ruleId: string) {
@@ -474,7 +472,6 @@ export async function cancelRecurring(ruleId: string) {
     where: { id: ruleId, userId: user.id },
     data: { isActive: false },
   });
-  revalidatePath("/dashboard/recurring");
   revalidatePath("/dashboard/transactions");
 }
 
@@ -504,7 +501,7 @@ export async function markTransactionPaid(id: string) {
   revalidatePath("/dashboard");
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getDelta(type: TransactionType, amount: number, status: TransactionStatus): number {
   if (status === "PENDING") return 0;
@@ -514,11 +511,11 @@ function getDelta(type: TransactionType, amount: number, status: TransactionStat
   return 0; // TRANSFER handled separately
 }
 
-// ─── Recurring generation ─────────────────────────────────────────────────────
+// â”€â”€â”€ Recurring generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Generates all overdue occurrences for every active RecurringRule belonging to
- * the current user.  Safe to call on every page load — it is idempotent and
+ * the current user.  Safe to call on every page load â€” it is idempotent and
  * never creates a duplicate for a (rule, date) pair.
  */
 export async function generateDueRecurrences(): Promise<void> {
@@ -541,7 +538,7 @@ export async function generateDueRecurrences(): Promise<void> {
     let nextDate = new Date(baseDate);
 
     while (nextDate <= today) {
-      // Respect the end date — deactivate rule when it's passed
+      // Respect the end date â€” deactivate rule when it's passed
       if (rule.endDate && nextDate > new Date(rule.endDate)) {
         await prisma.recurringRule.update({
           where: { id: rule.id },
@@ -550,7 +547,7 @@ export async function generateDueRecurrences(): Promise<void> {
         break;
       }
 
-      // Idempotency guard — skip if this date was already generated
+      // Idempotency guard â€” skip if this date was already generated
       const existing = await prisma.transaction.findFirst({
         where: { recurringRuleId: rule.id, date: nextDate },
         select: { id: true },
