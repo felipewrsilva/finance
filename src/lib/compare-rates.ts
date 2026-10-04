@@ -7,7 +7,8 @@ export const COMPARE_RATES = {
   cdbCdiPct: 100,
   equityTicker: "CHIP11",
   equity12mPct: 81.51,
+  equityLaterPct: 30.1,
   equitySource:
-    "ETFs Brasil. CHIP11, variação da cota em 12 meses. Maior retorno 12 meses entre ETFs da B3 nesta leitura.",
+    "ETFs Brasil. CHIP11: 81,51% só no primeiro ano (12 meses). Anos seguintes: 30,1%, ano civil 2025. Não usa acumulado de vários anos como taxa de um ano.",
   equityHref: "https://www.etfsbrasil.com.br/etfs/chip11",
 } as const;

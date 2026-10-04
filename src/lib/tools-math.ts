@@ -166,3 +166,27 @@ export function projectByYear(input: {
   }
   return points;
 }
+
+export function ratesForYears(years: number, firstYearPct: number, laterYearPct: number) {
+  const n = Math.max(0, years);
+  return Array.from({ length: n }, (_, i) => (i === 0 ? firstYearPct : laterYearPct));
+}
+
+export function projectByYearSchedule(input: {
+  principal: number;
+  monthlyContribution: number;
+  years: number;
+  yearRatesPct: number[];
+}) {
+  const years = Math.max(0, input.years);
+  const points: { year: number; value: number }[] = [{ year: 0, value: Math.max(0, input.principal) }];
+  let value = Math.max(0, input.principal);
+  for (let y = 1; y <= years; y++) {
+    const listed = input.yearRatesPct[y - 1];
+    const fallback = input.yearRatesPct[input.yearRatesPct.length - 1] ?? 0;
+    const rate = ((listed === undefined ? fallback : listed) || 0) / 100;
+    value = totalProjectedValue(value, rate, 1, input.monthlyContribution);
+    points.push({ year: y, value });
+  }
+  return points;
+}
