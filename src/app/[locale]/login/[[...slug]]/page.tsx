@@ -1,8 +1,8 @@
-import { redirect } from "next/navigation";
+import { redirectHome } from "@/lib/redirect-home";
 
 type Props = { params: Promise<{ locale: string }> };
 
 export default async function LegacyLocaleLoginRedirect({ params }: Props) {
   const { locale } = await params;
-  redirect(`/${locale}`);
+  redirectHome(locale);
 }

@@ -24,19 +24,10 @@
   },
   "include": [
     "next-env.d.ts",
-    "src/app/**/*.ts",
-    "src/app/**/*.tsx",
-    "src/components/brand/**/*.tsx",
-    "src/components/layout/**/*.tsx",
-    "src/components/tools/**/*.tsx",
-    "src/i18n/**/*.ts",
-    "src/lib/brand.ts",
-    "src/lib/tools-math.ts",
-    "src/lib/utils.ts",
-    "src/proxy.ts",
-    "next.config.ts",
+    "**/*.ts",
+    "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "prisma", "scripts"]
+  "exclude": ["node_modules"]
 }

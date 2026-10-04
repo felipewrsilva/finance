@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { formatCurrency } from "@/lib/utils";
 import { projectInvestment } from "@/lib/tools-math";
 import { MoneyField, YearPicks, ResultAmount } from "@/components/tools/money-field";
+import { RateNote } from "@/components/tools/rate-note";
 
 export function ProjectionTool() {
   const t = useTranslations("tools");
@@ -12,7 +13,6 @@ export function ProjectionTool() {
   const [monthlyContribution, setMonthlyContribution] = useState(150);
   const [years, setYears] = useState(10);
   const [annualRatePct, setAnnualRatePct] = useState(8);
-  const [showRate, setShowRate] = useState(false);
 
   const result = useMemo(
     () =>
@@ -24,7 +24,6 @@ export function ProjectionTool() {
       }),
     [principal, annualRatePct, monthlyContribution, years]
   );
-  const fmt = (v: number) => formatCurrency(v, "BRL", "pt-BR");
 
   return (
     <div className="space-y-8 sm:space-y-10">
@@ -36,35 +35,11 @@ export function ProjectionTool() {
         step={10}
       />
       <YearPicks label={t("years")} value={years} onChange={setYears} />
-
       <div>
         <p className="text-sm text-[var(--text-muted)]">{t("projectionResult", { years })}</p>
-        <ResultAmount tone="success">{fmt(result.atHorizon)}</ResultAmount>
+        <ResultAmount tone="success">{formatCurrency(result.atHorizon)}</ResultAmount>
       </div>
-
-      <div>
-        <button
-          type="button"
-          onClick={() => setShowRate((v) => !v)}
-          className="text-sm text-[var(--text-muted)] underline decoration-[var(--border-strong)] underline-offset-4 hover:text-[var(--text)]"
-        >
-          {showRate ? t("hideRate") : t("showRate")}
-        </button>
-        {showRate ? (
-          <div className="mt-4">
-            <MoneyField
-              label={t("annualRate")}
-              hint={t("rateHint")}
-              value={annualRatePct}
-              onChange={setAnnualRatePct}
-              step={0.1}
-              quiet
-            />
-          </div>
-        ) : (
-          <p className="mt-2 text-sm text-[var(--text-muted)]">{t("rateQuiet", { rate: annualRatePct })}</p>
-        )}
-      </div>
+      <RateNote rate={annualRatePct} onRateChange={setAnnualRatePct} />
     </div>
   );
 }

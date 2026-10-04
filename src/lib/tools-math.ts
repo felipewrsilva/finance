@@ -5,12 +5,44 @@ export const ALLOCATION_GROUPS = [
   { key: "investments", percentage: 10 },
 ] as const;
 
+export type AllocationGroupKey = (typeof ALLOCATION_GROUPS)[number]["key"];
+
+const ALLOCATION_PARTS: Record<
+  AllocationGroupKey,
+  { key: string; ofGroup: number }[]
+> = {
+  fixed: [
+    { key: "housing", ofGroup: 0.5 },
+    { key: "utilities", ofGroup: 0.25 },
+    { key: "groceries", ofGroup: 0.25 },
+  ],
+  comfort: [
+    { key: "transport", ofGroup: 0.4 },
+    { key: "out", ofGroup: 0.35 },
+    { key: "small", ofGroup: 0.25 },
+  ],
+  goals: [
+    { key: "reserve", ofGroup: 0.6 },
+    { key: "wish", ofGroup: 0.4 },
+  ],
+  investments: [{ key: "grow", ofGroup: 1 }],
+};
+
 export function allocateIncome(monthlyIncome: number) {
-  return ALLOCATION_GROUPS.map((g) => ({
-    key: g.key,
-    percentage: g.percentage,
-    amount: (monthlyIncome * g.percentage) / 100,
-  }));
+  const income = Math.max(0, monthlyIncome);
+  return ALLOCATION_GROUPS.map((g) => {
+    const amount = (income * g.percentage) / 100;
+    return {
+      key: g.key,
+      percentage: g.percentage,
+      amount,
+      parts: ALLOCATION_PARTS[g.key].map((part) => ({
+        key: part.key,
+        amount: amount * part.ofGroup,
+        ofGroupPct: Math.round(part.ofGroup * 100),
+      })),
+    };
+  });
 }
 
 function futureValue(principal: number, annualRate: number, years: number): number {
