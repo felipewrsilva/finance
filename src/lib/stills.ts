@@ -19,4 +19,8 @@ export const STILLS = {
     src: "/home/balanca.jpg",
     href: "https://commons.wikimedia.org/wiki/File:Salter_kitchen_scales.jpg",
   },
+  freedom: {
+    src: "/home/pote.jpg",
+    href: "https://commons.wikimedia.org/wiki/File:Money_saving_growth.jpg",
+  },
 } as const;

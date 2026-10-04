@@ -58,6 +58,16 @@ export default function ToolsHome() {
       credit: tools.homeFivePhotoCredit,
       accent: false,
     },
+    {
+      href: "/ferramentas/folga",
+      index: tools.homeSixIndex,
+      title: tools.freedomTitle,
+      ask: tools.homeSixAsk,
+      still: STILLS.freedom,
+      alt: tools.homeSixPhotoAlt,
+      credit: tools.homeSixPhotoCredit,
+      accent: false,
+    },
   ];
 
   return (

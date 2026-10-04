@@ -23,4 +23,8 @@ export const VIDEOS = {
     id: "0iUuaJr9EdI",
     href: "https://www.youtube.com/watch?v=0iUuaJr9EdI",
   },
+  freedom: {
+    id: "IoL3bN7eHVQ",
+    href: "https://www.youtube.com/watch?v=IoL3bN7eHVQ",
+  },
 } as const;

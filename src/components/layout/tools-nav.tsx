@@ -3,12 +3,13 @@
 import { usePathname } from "next/navigation";
 import { nav } from "@/lib/copy";
 
-const NAV_ITEMS: { key: "redirect" | "allocation" | "projection" | "mix" | "comparar"; path: string }[] = [
+const NAV_ITEMS: { key: "redirect" | "allocation" | "projection" | "mix" | "comparar" | "folga"; path: string }[] = [
   { key: "redirect", path: "/ferramentas/redirecionar" },
   { key: "allocation", path: "/ferramentas/alocacao" },
   { key: "projection", path: "/ferramentas/projecao" },
   { key: "mix", path: "/ferramentas/mix" },
   { key: "comparar", path: "/ferramentas/comparar" },
+  { key: "folga", path: "/ferramentas/folga" },
 ];
 
 function isActive(pathname: string, href: string) {
