@@ -1,176 +1,123 @@
 @import "tailwindcss";
 
 :root {
-  /* Surfaces */
-  --background: #ffffff;
-  --foreground: #171717;
-  --surface: #ffffff;
-  --surface-muted: #f9fafb;
-  --surface-elevated: #ffffff;
+  --background: #f3eee4;
+  --foreground: #1c1915;
+  --surface: #faf6ee;
+  --surface-muted: #ebe4d6;
+  --surface-elevated: #fffdf8;
 
-  /* Text hierarchy */
-  --text: #171717;
-  --text-secondary: #4b5563;
-  --text-muted: #9ca3af;
-  --text-inverse: #ffffff;
+  --text: #1c1915;
+  --text-secondary: #5c5348;
+  --text-muted: #8a8073;
+  --text-inverse: #faf6ee;
 
-  /* Borders */
-  --border: #e5e7eb;
-  --border-strong: #d1d5db;
+  --border: #ddd4c4;
+  --border-strong: #c4b8a4;
 
-  /* Semantic colors */
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --primary-subtle: #eef2ff;
+  --primary: #b5441f;
+  --primary-hover: #933616;
+  --primary-subtle: #f3ddd3;
 
-  --success: #059669;
-  --success-hover: #047857;
-  --success-subtle: #ecfdf5;
+  --success: #3d5a3c;
+  --success-hover: #2f462e;
+  --success-subtle: #dfe8dc;
 
-  --warning: #d97706;
-  --warning-hover: #b45309;
-  --warning-subtle: #fffbeb;
+  --warning: #c48a2a;
+  --warning-hover: #a06e1c;
+  --warning-subtle: #f5e6c8;
 
-  --danger: #ef4444;
-  --danger-hover: #dc2626;
-  --danger-subtle: #fef2f2;
+  --danger: #b5441f;
+  --danger-hover: #933616;
+  --danger-subtle: #f3ddd3;
 
-  --investment: #7c3aed;
-  --investment-hover: #6d28d9;
-  --investment-subtle: #f5f3ff;
+  --investment: #3d5a3c;
+  --investment-hover: #2f462e;
+  --investment-subtle: #dfe8dc;
 
-  /* Elevation */
-  --elevation-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --elevation-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --elevation-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --elevation-sm: 0 1px 0 rgb(28 25 21 / 0.06);
+  --elevation-md: 0 12px 40px rgb(28 25 21 / 0.06);
+  --elevation-lg: 0 20px 50px rgb(28 25 21 / 0.08);
 
-  /* Typography scale */
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
-  --text-base: 1rem;
+  --text-base: 1.0625rem;
   --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-numeric: 0.875rem;
+  --text-xl: 1.35rem;
+  --text-2xl: 1.75rem;
+  --text-numeric: 1.125rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
   --color-surface-elevated: var(--surface-elevated);
-
   --color-text: var(--text);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
   --color-text-inverse: var(--text-inverse);
-
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
-
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-subtle: var(--primary-subtle);
-
   --color-success: var(--success);
   --color-success-hover: var(--success-hover);
   --color-success-subtle: var(--success-subtle);
-
   --color-warning: var(--warning);
   --color-warning-hover: var(--warning-hover);
   --color-warning-subtle: var(--warning-subtle);
-
   --color-danger: var(--danger);
   --color-danger-hover: var(--danger-hover);
   --color-danger-subtle: var(--danger-subtle);
-
   --color-investment: var(--investment);
   --color-investment-hover: var(--investment-hover);
   --color-investment-subtle: var(--investment-subtle);
-
   --shadow-sm: var(--elevation-sm);
   --shadow-md: var(--elevation-md);
   --shadow-lg: var(--elevation-lg);
-
-  --font-size-xs: var(--text-xs);
-  --font-size-sm: var(--text-sm);
-  --font-size-base: var(--text-base);
-  --font-size-lg: var(--text-lg);
-  --font-size-xl: var(--text-xl);
-  --font-size-2xl: var(--text-2xl);
-  --font-size-numeric: var(--text-numeric);
-
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-figtree);
+  --font-display: var(--font-fraunces);
+  --font-mono: var(--font-figtree);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-
-    --surface: #111111;
-    --surface-muted: #171717;
-    --surface-elevated: #1a1a1a;
-
-    --text: #ededed;
-    --text-secondary: #d1d5db;
-    --text-muted: #9ca3af;
-    --text-inverse: #171717;
-
-    --border: #292929;
-    --border-strong: #3f3f46;
-
-    --primary: #818cf8;
-    --primary-hover: #a5b4fc;
-    --primary-subtle: #1e1b4b;
-
-    --success: #34d399;
-    --success-hover: #6ee7b7;
-    --success-subtle: #064e3b;
-
-    --warning: #fbbf24;
-    --warning-hover: #fcd34d;
-    --warning-subtle: #78350f;
-
-    --danger: #f87171;
-    --danger-hover: #fca5a5;
-    --danger-subtle: #7f1d1d;
-
-    --investment: #a78bfa;
-    --investment-hover: #c4b5fd;
-    --investment-subtle: #2e1065;
-  }
+html {
+  color-scheme: light;
+  overflow-x: hidden;
 }
 
 body {
-  background: var(--background);
+  overflow-x: hidden;
+  background-color: var(--background);
+  background-image: radial-gradient(rgb(28 25 21 / 0.045) 0.7px, transparent 0.7px);
+  background-size: 8px 8px;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-figtree), "Segoe UI", sans-serif;
 }
 
 @layer base {
   input,
   textarea,
   select {
-    color: #111827; /* gray-900 */
-    background-color: #ffffff;
+    color: var(--text);
+    background-color: transparent;
+    font-size: 1rem;
   }
 
   input::placeholder,
   textarea::placeholder {
-    color: #9ca3af; /* gray-400 */
+    color: var(--text-muted);
   }
 
-  /* Prevent accidental text selection on tappable elements */
   button,
   [role="button"],
   nav a,
   label {
     user-select: none;
     -webkit-user-select: none;
+    touch-action: manipulation;
   }
 }
 
@@ -179,5 +126,17 @@ body {
     font-variant-numeric: tabular-nums;
     font-weight: 600;
     font-size: var(--text-numeric);
+  }
+
+  .font-display {
+    font-family: var(--font-fraunces), Georgia, serif;
+  }
+
+  .result-figure {
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+    font-size: clamp(1.85rem, 8.5vw, 3.5rem);
   }
 }

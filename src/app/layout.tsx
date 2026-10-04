@@ -1,21 +1,28 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Figtree, Fraunces } from "next/font/google";
+import { BRAND } from "@/lib/brand";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const figtree = Figtree({
+  variable: "--font-figtree",
+  subsets: ["latin", "latin-ext"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin", "latin-ext"],
 });
 
 export const metadata: Metadata = {
-  title: "Finance: ferramentas para investir melhor",
+  title: `${BRAND.name}. ${BRAND.tagline}`,
   description:
-    "Ferramentas em português para projetar investimentos, alocar renda e redirecionar gastos. Sem cadastro.",
+    "Semeia: veja o que um extra pode virar se for investimento, como a renda se divide e o que o tempo faz. Em português. Sem cadastro.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -25,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${figtree.variable} ${fraunces.variable} antialiased`}>
         {children}
       </body>
     </html>

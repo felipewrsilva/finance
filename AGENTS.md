@@ -1,10 +1,10 @@
 # AGENTS
 
-Public product: **pt-BR finance tools**, no login.
+Public product: **Semeia**. pt-BR tools, no login. Paper, clay, olive. Short copy. One question per screen.
 
 ## Do
 
-- Ship stateless calculators (projection, 50/30/10/10 allocation, redirect spend).
+- Ship stateless calculators (spend-to-save, income split, time projection).
 - Keep locale `pt-BR` only.
 - Use everyday Portuguese and BRL. Modest defaults. Plain explanations.
 - Redirect leftover `/login` and `/dashboard` paths to tools home.

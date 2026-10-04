@@ -1,6 +1,8 @@
-# Finance
+# Semeia
 
-Ferramentas financeiras públicas em **português (Brasil)**. Projete investimentos, aloque renda e veja o impacto de redirecionar gastos. Sem cadastro e sem login.
+O tempo trabalha com o que você guarda.
+
+Ferramentas em **português (Brasil)**. Sem cadastro. Três perguntas: um extra que vira investimento, para onde vai a renda, o que o tempo faz com um valor.
 
 **Live:** [finance-seven-plum.vercel.app](https://finance-seven-plum.vercel.app)
 
@@ -14,19 +16,19 @@ Ferramentas financeiras públicas em **português (Brasil)**. Projete investimen
 | Language | TypeScript |
 | Styling | Tailwind CSS v4 |
 | i18n | next-intl v4, somente `pt-BR` |
-| Math | Funções puras de projeção (juros compostos) |
+| Math | Funções puras de projeção |
 | Validation | Zod v4 |
 | Deployment | Vercel |
 
-Prisma/Neon permanecem no repositório para scripts internos, mas a UI pública **não** lê dados por usuário.
+Prisma/Neon permanecem no repositório para scripts internos. A UI pública não lê dados por usuário.
 
 ---
 
 ## Ferramentas
 
-1. **Projeção de investimentos:** valor futuro com principal, taxa anual, aporte mensal e prazo
-2. **Alocação 50/30/10/10:** divide a renda em custos fixos, conforto, metas e investimentos
-3. **Redirecionar gastos:** compara o caminho atual com aportes extras investidos
+1. **Esse gasto:** um extra por mês virando investimento, e o que isso vira no tempo
+2. **Renda:** a entrada do mês em quatro partes
+3. **Tempo:** um valor agora, um pouco todo mês, e o horizonte
 
 ---
 

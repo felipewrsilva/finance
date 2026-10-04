@@ -47,32 +47,7 @@ export function projectInvestment(input: {
   };
 }
 
-export function redirectImpact(input: {
-  principal: number;
-  annualRatePct: number;
-  currentMonthly: number;
-  redirectMonthly: number;
-  years: number;
-}) {
-  const rate = input.annualRatePct / 100;
-  const current = totalProjectedValue(
-    input.principal,
-    rate,
-    input.years,
-    input.currentMonthly,
-    "MONTHLY"
-  );
-  const optimized = totalProjectedValue(
-    input.principal,
-    rate,
-    input.years,
-    input.currentMonthly + input.redirectMonthly,
-    "MONTHLY"
-  );
-  return {
-    current,
-    optimized,
-    delta: optimized - current,
-    optimizedMonthly: input.currentMonthly + input.redirectMonthly,
-  };
+/** A monthly extra, left to grow. No starting pile, no "two paths". */
+export function spendHabitFuture(monthly: number, annualRatePct: number, years: number) {
+  return totalProjectedValue(0, annualRatePct / 100, Math.max(1, years), monthly, "MONTHLY");
 }

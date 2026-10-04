@@ -1,11 +1,11 @@
 ---
-description: Public product is pt-BR tools with no login
+description: Semeia is pt-BR tools with no login
 alwaysApply: true
 ---
 
-# Product: public pt-BR tools, no login
+# Product: Semeia (pt-BR tools, no login)
 
-This app is **stateless finance tools** in Brazilian Portuguese. It is not a personal finance account product.
+**Semeia** is a public, stateless tools site in Brazilian Portuguese. Paper, clay, and olive. Editorial type. Not a bank app and not a personal finance account product.
 
 ## Hard bans
 
@@ -16,7 +16,7 @@ This app is **stateless finance tools** in Brazilian Portuguese. It is not a per
 
 ## Product surface
 
-- Public routes: `/pt-BR` and `/pt-BR/ferramentas/*` (projection, 50/30/10/10 allocation, redirect spend).
+- Public routes: `/pt-BR` and `/pt-BR/ferramentas/*` (esse gasto, renda, tempo).
 - Legacy `/login` and `/dashboard/*` stay redirects to the tools home.
 - Calculators use pure client/math. No auth-gated pages.
 
@@ -24,6 +24,7 @@ This app is **stateless finance tools** in Brazilian Portuguese. It is not a per
 
 - Write in everyday pt-BR. Prefer BRL and household cash-flow language.
 - Keep defaults modest and steps small. Explain terms in plain words.
+- One idea per screen. Avoid repeating the same blurb in nav, home, and tool headers.
 - Do not label or segment people by income class in UI, README, metadata, or marketing.
 - Dignity and clarity over "investor" or bank-app tone.
 

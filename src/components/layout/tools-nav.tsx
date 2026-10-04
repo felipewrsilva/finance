@@ -3,39 +3,30 @@
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-const NAV_ITEMS: { key: string; path: string; exact?: boolean }[] = [
-  { key: "home", path: "", exact: true },
-  { key: "projection", path: "/ferramentas/projecao" },
-  { key: "allocation", path: "/ferramentas/alocacao" },
+const NAV_ITEMS: { key: string; path: string }[] = [
   { key: "redirect", path: "/ferramentas/redirecionar" },
+  { key: "allocation", path: "/ferramentas/alocacao" },
+  { key: "projection", path: "/ferramentas/projecao" },
 ];
 
-interface Props {
-  locale: string;
-}
-
-export function ToolsNav({ locale }: Props) {
+export function ToolsNav({ locale }: { locale: string }) {
   const pathname = usePathname();
   const t = useTranslations("nav");
 
-  function isActive(path: string, exact?: boolean) {
-    const full = path ? `/${locale}${path}` : `/${locale}`;
-    if (exact) return pathname === full || pathname === `${full}/`;
-    return pathname === full || pathname.startsWith(`${full}/`);
-  }
-
   return (
     <>
-      <nav className="hidden items-center gap-5 text-sm font-medium sm:flex">
-        {NAV_ITEMS.map(({ key, path, exact }) => {
-          const active = isActive(path, exact);
-          const href = path ? `/${locale}${path}` : `/${locale}`;
+      <nav className="hidden items-center gap-5 text-sm text-[var(--text-secondary)] md:flex">
+        {NAV_ITEMS.map(({ key, path }) => {
+          const href = `/${locale}${path}`;
+          const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <a
               key={key}
               href={href}
-              className={`transition-colors ${
-                active ? "text-indigo-600" : "text-gray-500 hover:text-gray-800"
+              className={`border-b border-transparent pb-0.5 transition-colors ${
+                active
+                  ? "border-[var(--primary)] text-[var(--text)]"
+                  : "hover:text-[var(--text)]"
               }`}
             >
               {t(key)}
@@ -43,22 +34,24 @@ export function ToolsNav({ locale }: Props) {
           );
         })}
       </nav>
-      <nav className="fixed inset-x-0 bottom-0 z-20 flex border-t border-gray-200 bg-white sm:hidden">
-        {NAV_ITEMS.map(({ key, path, exact }) => {
-          const active = isActive(path, exact);
-          const href = path ? `/${locale}${path}` : `/${locale}`;
-          return (
-            <a
-              key={key}
-              href={href}
-              className={`flex flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[9px] font-medium transition-colors ${
-                active ? "text-indigo-600" : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              <span className="truncate">{t(key)}</span>
-            </a>
-          );
-        })}
+      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--border)] bg-[var(--background)]/95 pt-1 backdrop-blur-sm md:hidden pb-[max(0.4rem,env(safe-area-inset-bottom))]">
+        <div className="mx-auto flex max-w-3xl">
+          {NAV_ITEMS.map(({ key, path }) => {
+            const href = `/${locale}${path}`;
+            const active = pathname === href || pathname.startsWith(`${href}/`);
+            return (
+              <a
+                key={key}
+                href={href}
+                className={`flex min-h-12 flex-1 items-center justify-center px-1 text-center text-[11px] leading-tight ${
+                  active ? "text-[var(--primary)]" : "text-[var(--text-muted)]"
+                }`}
+              >
+                {t(key)}
+              </a>
+            );
+          })}
+        </div>
       </nav>
     </>
   );
