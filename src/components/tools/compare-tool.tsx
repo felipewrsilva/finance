@@ -2,38 +2,64 @@
 
 import { useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
+import { COMPARE_RATES } from "@/lib/compare-rates";
 import {
-  DEFAULT_CDB_CDI_PCT,
-  DEFAULT_SELIC_PCT,
-  DEFAULT_WRLD_ANNUAL_PCT,
-  POUPANCA_SELIC_CUTOFF,
   cdbAnnualRatePct,
   monthlyFromHorizon,
   poupancaAnnualRatePct,
+  projectByYear,
   projectInvestment,
   tesouroSelicAnnualRatePct,
 } from "@/lib/tools-math";
 import { fill, tools } from "@/lib/copy";
 import { MoneyField, YearPicks } from "@/components/tools/money-field";
-
-const CDI_OPTIONS = [90, 100, 110];
+import { CompareChart } from "@/components/tools/compare-chart";
 
 function formatRate(n: number) {
   return n.toLocaleString("pt-BR", { maximumFractionDigits: 2, minimumFractionDigits: 0 });
 }
 
+function formatDay(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("pt-BR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+const PATH_META = [
+  { key: "poupanca", bar: "bg-[var(--text)]" },
+  { key: "tesouro", bar: "bg-[var(--warning)]" },
+  { key: "cdb", bar: "bg-[var(--primary)]" },
+  { key: "chip", bar: "bg-[var(--success)]" },
+] as const;
+
+const PATH_RATES = {
+  poupanca: poupancaAnnualRatePct(COMPARE_RATES.selicPct),
+  tesouro: tesouroSelicAnnualRatePct(COMPARE_RATES.selicPct),
+  cdb: cdbAnnualRatePct(COMPARE_RATES.selicPct, COMPARE_RATES.cdbCdiPct),
+  chip: COMPARE_RATES.equity12mPct,
+} as const;
+
 export function CompareTool() {
   const [principal, setPrincipal] = useState(500);
   const [monthly, setMonthly] = useState(150);
   const [years, setYears] = useState(10);
-  const [selic, setSelic] = useState(DEFAULT_SELIC_PCT);
-  const [cdbCdi, setCdbCdi] = useState(DEFAULT_CDB_CDI_PCT);
-  const [wrldRate, setWrldRate] = useState(DEFAULT_WRLD_ANNUAL_PCT);
 
-  const selicNum = Number(selic) || 0;
-  const poupancaRate = poupancaAnnualRatePct(selicNum);
-  const tesouroRate = tesouroSelicAnnualRatePct(selicNum);
-  const cdbRate = cdbAnnualRatePct(selicNum, cdbCdi);
+  const selic = COMPARE_RATES.selicPct;
+  const poupancaRate = PATH_RATES.poupanca;
+  const tesouroRate = PATH_RATES.tesouro;
+  const cdbRate = PATH_RATES.cdb;
+  const equityRate = PATH_RATES.chip;
+
+  const titles = {
+    poupanca: tools.comparePoupanca,
+    tesouro: tools.compareTesouro,
+    cdb: tools.compareCdb,
+    chip: tools.compareWrld,
+  };
 
   const paths = useMemo(() => {
     const input = {
@@ -41,38 +67,23 @@ export function CompareTool() {
       monthlyContribution: Number(monthly) || 0,
       years,
     };
-    const rows = [
-      { key: "poupanca", rate: poupancaRate, bar: "bg-[var(--text)]" },
-      { key: "tesouro", rate: tesouroRate, bar: "bg-[var(--warning)]" },
-      { key: "cdb", rate: cdbRate, bar: "bg-[var(--primary)]" },
-      { key: "wrld", rate: Number(wrldRate) || 0, bar: "bg-[var(--success)]" },
-    ] as const;
-    const results = rows.map((row) => {
-      const atHorizon = projectInvestment({
-        ...input,
-        annualRatePct: row.rate,
-      }).atHorizon;
+    const results = PATH_META.map((row) => {
+      const rate = PATH_RATES[row.key];
+      const atHorizon = projectInvestment({ ...input, annualRatePct: rate }).atHorizon;
       return {
         ...row,
+        rate,
         atHorizon,
         perMonth: monthlyFromHorizon(atHorizon, years),
+        points: projectByYear({ ...input, annualRatePct: rate }),
       };
     });
     const max = Math.max(...results.map((r) => r.atHorizon), 1);
     return results.map((row) => ({ ...row, barPct: (row.atHorizon / max) * 100 }));
-  }, [principal, monthly, years, poupancaRate, tesouroRate, cdbRate, wrldRate]);
+  }, [principal, monthly, years]);
 
   const fmt = (v: number) => formatCurrency(v, "BRL", "pt-BR");
-  const poupancaRule =
-    selicNum > POUPANCA_SELIC_CUTOFF ? tools.comparePoupancaHigh : tools.comparePoupancaLow;
-
   const paperMax = paths.reduce((best, row) => (row.atHorizon > best.atHorizon ? row : best), paths[0]);
-  const titles = {
-    poupanca: tools.comparePoupanca,
-    tesouro: tools.compareTesouro,
-    cdb: tools.compareCdb,
-    wrld: tools.compareWrld,
-  };
 
   return (
     <div className="space-y-8 sm:space-y-10">
@@ -84,15 +95,14 @@ export function CompareTool() {
         step={10}
       />
       <YearPicks label={tools.years} value={years} onChange={setYears} />
-      <MoneyField
-        label={tools.compareSelic}
-        hint={tools.compareSelicHint}
-        value={selic}
-        onChange={setSelic}
-        step={0.1}
-        quiet
-      />
+      <p className="max-w-md text-sm leading-relaxed text-[var(--text)]">
+        {fill(tools.compareSelicNow, { rate: formatRate(selic) })}
+      </p>
       <p className="max-w-md text-sm leading-relaxed text-[var(--text-secondary)]">{tools.compareLead}</p>
+      <div>
+        <p className="mb-3 font-display text-lg text-[var(--text)]">{tools.compareChartTitle}</p>
+        <CompareChart series={paths} labels={titles} title={tools.compareChartTitle} />
+      </div>
       <ul className="grid gap-3 sm:grid-cols-2">
         {paths.map((row) => (
           <li
@@ -107,51 +117,6 @@ export function CompareTool() {
             <p className="mt-1 text-sm text-[var(--text-muted)]">
               {fill(tools.compareRateLine, { rate: formatRate(row.rate) })}
             </p>
-            {row.key === "poupanca" ? (
-              <p className="mt-2 text-xs leading-relaxed text-[var(--text-muted)]">{poupancaRule}</p>
-            ) : null}
-            {row.key === "tesouro" ? (
-              <p className="mt-2 text-xs leading-relaxed text-[var(--text-muted)]">
-                {tools.compareTesouroNote}
-              </p>
-            ) : null}
-            {row.key === "cdb" ? (
-              <fieldset className="mt-3">
-                <legend className="text-sm text-[var(--text-secondary)]">{tools.compareCdi}</legend>
-                <p className="mt-1 text-xs text-[var(--text-muted)]">{tools.compareCdiHint}</p>
-                <div className="mt-2 grid grid-cols-3 gap-2">
-                  {CDI_OPTIONS.map((pct) => {
-                    const active = pct === cdbCdi;
-                    return (
-                      <button
-                        key={pct}
-                        type="button"
-                        onClick={() => setCdbCdi(pct)}
-                        className={`min-h-10 rounded-full px-2 py-1.5 text-sm transition-colors ${
-                          active
-                            ? "bg-[var(--text)] text-[var(--text-inverse)]"
-                            : "bg-[var(--background)] text-[var(--text-secondary)] hover:text-[var(--text)]"
-                        }`}
-                      >
-                        {pct}%
-                      </button>
-                    );
-                  })}
-                </div>
-              </fieldset>
-            ) : null}
-            {row.key === "wrld" ? (
-              <div className="mt-3">
-                <MoneyField
-                  label={tools.annualRate}
-                  hint={tools.compareWrldNote}
-                  value={wrldRate}
-                  onChange={setWrldRate}
-                  step={0.1}
-                  quiet
-                />
-              </div>
-            ) : null}
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[var(--background)]/80">
               <div className={`h-full ${row.bar}`} style={{ width: `${row.barPct}%` }} />
             </div>
@@ -168,6 +133,32 @@ export function CompareTool() {
       <p className="max-w-md text-sm leading-relaxed text-[var(--text-secondary)]">
         {fill(tools.comparePaperMax, { name: titles[paperMax.key] })}
       </p>
+      <div className="max-w-md space-y-2 text-xs leading-relaxed text-[var(--text-muted)]">
+        <p>{tools.compareLegendTitle}</p>
+        <p>{fill(tools.compareLegendPoupanca, { rate: formatRate(poupancaRate) })}</p>
+        <p>{fill(tools.compareLegendTesouro, { rate: formatRate(tesouroRate) })}</p>
+        <p>{fill(tools.compareLegendCdb, { rate: formatRate(cdbRate) })}</p>
+        <p>
+          {fill(tools.compareLegendWrld, { rate: formatRate(equityRate) })}{" "}
+          <a
+            href={COMPARE_RATES.equityHref}
+            className="underline decoration-[var(--border)] underline-offset-2 hover:text-[var(--text-secondary)]"
+          >
+            ETFs Brasil
+          </a>
+          .
+        </p>
+        <p>
+          {fill(tools.compareLegendAsOf, { date: formatDay(COMPARE_RATES.asOf) })}{" "}
+          <a
+            href={COMPARE_RATES.selicHref}
+            className="underline decoration-[var(--border)] underline-offset-2 hover:text-[var(--text-secondary)]"
+          >
+            Agência Brasil
+          </a>
+          .
+        </p>
+      </div>
       <p className="max-w-md text-sm leading-relaxed text-[var(--text-muted)]">{tools.compareNote}</p>
     </div>
   );

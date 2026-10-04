@@ -100,7 +100,6 @@ export const MIX_FIXED_MIN = 10;
 export const MIX_FIXED_MAX = 90;
 export const POUPANCA_SELIC_CUTOFF = 8.5;
 export const POUPANCA_HIGH_SELIC_MONTHLY = 0.005;
-export const DEFAULT_SELIC_PCT = 8;
 export const DEFAULT_CDB_CDI_PCT = 100;
 export const DEFAULT_WRLD_ANNUAL_PCT = 6;
 
@@ -148,4 +147,22 @@ export function cdbAnnualRatePct(selicPct: number, cdiPct = DEFAULT_CDB_CDI_PCT)
 export function monthlyFromHorizon(atHorizon: number, years: number): number {
   const months = Math.max(1, years) * 12;
   return Math.max(0, atHorizon) / months;
+}
+
+export function projectByYear(input: {
+  principal: number;
+  annualRatePct: number;
+  monthlyContribution: number;
+  years: number;
+}) {
+  const years = Math.max(0, input.years);
+  const rate = input.annualRatePct / 100;
+  const points: { year: number; value: number }[] = [];
+  for (let y = 0; y <= years; y++) {
+    points.push({
+      year: y,
+      value: totalProjectedValue(input.principal, rate, y, input.monthlyContribution),
+    });
+  }
+  return points;
 }
