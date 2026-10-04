@@ -100,7 +100,8 @@ export const MIX_FIXED_MIN = 10;
 export const MIX_FIXED_MAX = 90;
 export const POUPANCA_SELIC_CUTOFF = 8.5;
 export const POUPANCA_HIGH_SELIC_MONTHLY = 0.005;
-export const DEFAULT_CDB_CDI_PCT = 100;
+export const DEFAULT_CDB_CDI_PCT = 110;
+export const DEFAULT_IR_PCT = 15;
 export const DEFAULT_WRLD_ANNUAL_PCT = 6;
 
 export function mixFixedPctFromYears(years: number): number {
@@ -142,6 +143,11 @@ export function tesouroSelicAnnualRatePct(selicPct: number): number {
 
 export function cdbAnnualRatePct(selicPct: number, cdiPct = DEFAULT_CDB_CDI_PCT): number {
   return Math.max(0, selicPct) * (Math.max(0, cdiPct) / 100);
+}
+
+/** Long-horizon IR estimate (acima de 2 anos). Poupança isenta fica de fora. */
+export function afterIrPct(grossPct: number, irPct = DEFAULT_IR_PCT): number {
+  return Math.max(0, grossPct) * (1 - Math.min(100, Math.max(0, irPct)) / 100);
 }
 
 export function monthlyFromHorizon(atHorizon: number, years: number): number {

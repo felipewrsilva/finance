@@ -22,17 +22,10 @@ function formatRate(n: number) {
 const NET_PCT = netNominalPct(FREEDOM_RATES.selicPct, FREEDOM_RATES.irPct);
 const REAL_PCT = realYieldPct(NET_PCT, FREEDOM_RATES.ipcaPct);
 
-const EXAMPLES = [
-  { key: "tesouro", label: tools.freedomTesouro, hint: tools.freedomTesouroHint },
-  { key: "cdb", label: tools.freedomCdb, hint: tools.freedomCdbHint },
-  { key: "lci", label: tools.freedomLci, hint: tools.freedomLciHint },
-] as const;
-
 export function FreedomTool() {
   const [income, setIncome] = useState(2500);
   const [principal, setPrincipal] = useState(500);
   const [years, setYears] = useState(10);
-  const [open, setOpen] = useState<string | null>("tesouro");
 
   const selic = FREEDOM_RATES.selicPct;
   const netPct = NET_PCT;
@@ -73,6 +66,7 @@ export function FreedomTool() {
       monthNow,
       monthReal,
       alreadyReal: realCorpus > 0 && have >= realCorpus,
+      empty: want <= 0,
       points,
     };
   }, [income, principal, years]);
@@ -81,82 +75,72 @@ export function FreedomTool() {
 
   return (
     <div className="space-y-8 sm:space-y-10">
-      <MoneyField label={tools.freedomIncome} value={income} onChange={setIncome} step={50} />
-      <MoneyField label={tools.principal} value={principal} onChange={setPrincipal} step={50} />
+      <MoneyField
+        label={tools.freedomIncome}
+        value={income}
+        onChange={setIncome}
+        step={50}
+        prefix="R$"
+      />
+      <MoneyField
+        label={tools.principal}
+        value={principal}
+        onChange={setPrincipal}
+        step={50}
+        prefix="R$"
+      />
       <YearPicks label={tools.years} value={years} onChange={setYears} />
 
-      <p className="max-w-md text-sm leading-relaxed text-[var(--text)]">
-        {fill(tools.freedomSelicNow, { rate: formatRate(selic) })}
-      </p>
       <p className="max-w-md text-sm leading-relaxed text-[var(--text-secondary)]">{tools.freedomLead}</p>
 
-      <ul className="grid gap-3 sm:grid-cols-2">
-        <li className="rounded-2xl border border-[var(--border-strong)] bg-[var(--surface-elevated)] p-4 shadow-[var(--elevation-sm)] sm:p-5">
-          <p className="font-display text-lg leading-snug sm:text-xl">{tools.freedomNeedTitle}</p>
-          <p className="mt-1 text-sm text-[var(--text-muted)]">{tools.freedomNeedReal}</p>
-          <p className="mt-3 font-display text-2xl tabular-nums leading-tight sm:text-3xl">
-            {fmt(plan.realCorpus)}
-          </p>
-          <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
-            {fill(tools.freedomNeedNow, { amount: fmt(plan.nowCorpus) })}
-          </p>
-        </li>
-        <li className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--elevation-sm)] sm:p-5">
-          <p className="font-display text-lg leading-snug sm:text-xl">{tools.freedomMonthTitle}</p>
-          <p className="mt-1 text-sm text-[var(--text-muted)]">
-            {fill(tools.freedomMonthReal, { years: String(years) })}
-          </p>
-          <p className="mt-3 font-display text-2xl tabular-nums leading-tight text-[var(--primary)] sm:text-3xl">
-            {plan.alreadyReal ? tools.freedomAlready : fmt(plan.monthReal)}
-          </p>
-          <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
-            {fill(tools.freedomMonthNow, { amount: fmt(plan.monthNow) })}
-          </p>
-        </li>
-      </ul>
+      {plan.empty ? (
+        <p className="max-w-md text-sm leading-relaxed text-[var(--text-muted)]">{tools.freedomEmpty}</p>
+      ) : (
+        <>
+          <div className="rounded-2xl border border-[var(--border-strong)] bg-[var(--surface-elevated)] p-4 shadow-[var(--elevation-sm)] sm:p-5">
+            <p className="font-display text-lg leading-snug sm:text-xl">{tools.freedomNeedTitle}</p>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">{tools.freedomNeedReal}</p>
+            <p className="mt-3 font-display text-2xl tabular-nums leading-tight sm:text-3xl">
+              {fmt(plan.realCorpus)}
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+              {fill(tools.freedomNeedNow, { amount: fmt(plan.nowCorpus) })}
+            </p>
+          </div>
 
-      <div>
-        <p className="mb-3 font-display text-lg text-[var(--text)]">{tools.freedomChartTitle}</p>
-        <FreedomChart
-          points={plan.points}
-          target={plan.realCorpus}
-          title={tools.freedomChartTitle}
-          todayLabel={tools.freedomChartToday}
-          yearsLabel={tools.freedomChartYears}
-          targetLabel={fill(tools.freedomChartTarget, { amount: fmt(plan.realCorpus) })}
-        />
-      </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--elevation-sm)] sm:p-5">
+            <p className="font-display text-lg leading-snug sm:text-xl">{tools.freedomMonthTitle}</p>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">
+              {fill(tools.freedomMonthReal, { years: String(years) })}
+            </p>
+            <p className="mt-3 font-display text-2xl tabular-nums leading-tight text-[var(--primary)] sm:text-3xl">
+              {plan.alreadyReal ? tools.freedomAlready : fmt(plan.monthReal)}
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+              {fill(tools.freedomMonthNow, { amount: fmt(plan.monthNow) })}
+            </p>
+          </div>
 
-      <p className="max-w-md text-sm leading-relaxed text-[var(--text-secondary)]">
-        {fill(tools.freedomCovered, {
-          now: fmt(plan.nowCovered),
-          real: fmt(plan.realCovered),
-        })}
-      </p>
+          <div>
+            <p className="mb-3 font-display text-lg text-[var(--text)]">{tools.freedomChartTitle}</p>
+            <FreedomChart
+              points={plan.points}
+              target={plan.realCorpus}
+              title={tools.freedomChartTitle}
+              todayLabel={tools.freedomChartToday}
+              yearsLabel={tools.freedomChartYears}
+              targetLabel={fill(tools.freedomChartTarget, { amount: fmt(plan.realCorpus) })}
+            />
+          </div>
 
-      <div>
-        <p className="mb-3 font-display text-lg text-[var(--text)]">{tools.freedomExamplesTitle}</p>
-        <ul className="space-y-2">
-          {EXAMPLES.map((row) => {
-            const isOpen = open === row.key;
-            return (
-              <li key={row.key}>
-                <button
-                  type="button"
-                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-left shadow-[var(--elevation-sm)] sm:p-5"
-                  onClick={() => setOpen(isOpen ? null : row.key)}
-                  aria-expanded={isOpen}
-                >
-                  <p className="font-display text-base sm:text-lg">{row.label}</p>
-                  {isOpen ? (
-                    <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">{row.hint}</p>
-                  ) : null}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+          <p className="max-w-md text-sm leading-relaxed text-[var(--text-secondary)]">
+            {fill(tools.freedomCovered, {
+              now: fmt(plan.nowCovered),
+              real: fmt(plan.realCovered),
+            })}
+          </p>
+        </>
+      )}
 
       <div className="max-w-md space-y-2 text-xs leading-relaxed text-[var(--text-muted)]">
         <p>{tools.freedomLegendTitle}</p>
@@ -188,6 +172,7 @@ export function FreedomTool() {
           .
         </p>
         <p>{tools.freedomLegendKeep}</p>
+        <p>{tools.freedomExamplesTitle}: {tools.freedomTesouro}, {tools.freedomCdb}, {tools.freedomLci}.</p>
       </div>
       <p className="max-w-md text-sm leading-relaxed text-[var(--text-muted)]">{tools.freedomNote}</p>
     </div>

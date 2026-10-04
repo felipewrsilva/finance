@@ -4,13 +4,12 @@ import { useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { COMPARE_RATES } from "@/lib/compare-rates";
 import {
+  afterIrPct,
   cdbAnnualRatePct,
   monthlyFromHorizon,
   poupancaAnnualRatePct,
   projectByYear,
-  projectByYearSchedule,
   projectInvestment,
-  ratesForYears,
   tesouroSelicAnnualRatePct,
 } from "@/lib/tools-math";
 import { fill, tools } from "@/lib/copy";
@@ -35,15 +34,17 @@ const PATH_META = [
   { key: "poupanca", bar: "bg-[var(--text)]" },
   { key: "tesouro", bar: "bg-[var(--warning)]" },
   { key: "cdb", bar: "bg-[var(--primary)]" },
-  { key: "chip", bar: "bg-[var(--success)]" },
+  { key: "bova", bar: "bg-[var(--success)]" },
 ] as const;
 
 const PATH_RATES = {
   poupanca: poupancaAnnualRatePct(COMPARE_RATES.selicPct),
-  tesouro: tesouroSelicAnnualRatePct(COMPARE_RATES.selicPct),
-  cdb: cdbAnnualRatePct(COMPARE_RATES.selicPct, COMPARE_RATES.cdbCdiPct),
-  chip: COMPARE_RATES.equity12mPct,
-  chipLater: COMPARE_RATES.equityLaterPct,
+  tesouro: afterIrPct(tesouroSelicAnnualRatePct(COMPARE_RATES.selicPct), COMPARE_RATES.irPct),
+  cdb: afterIrPct(
+    cdbAnnualRatePct(COMPARE_RATES.selicPct, COMPARE_RATES.cdbCdiPct),
+    COMPARE_RATES.irPct
+  ),
+  bova: COMPARE_RATES.equity12mPct,
 } as const;
 
 export function CompareTool() {
@@ -53,6 +54,8 @@ export function CompareTool() {
 
   const selic = COMPARE_RATES.selicPct;
   const poupancaRate = PATH_RATES.poupanca;
+  const tesouroGross = tesouroSelicAnnualRatePct(selic);
+  const cdbGross = cdbAnnualRatePct(selic, COMPARE_RATES.cdbCdiPct);
   const tesouroRate = PATH_RATES.tesouro;
   const cdbRate = PATH_RATES.cdb;
 
@@ -60,7 +63,7 @@ export function CompareTool() {
     poupanca: tools.comparePoupanca,
     tesouro: tools.compareTesouro,
     cdb: tools.compareCdb,
-    chip: tools.compareWrld,
+    bova: tools.compareWrld,
   };
 
   const paths = useMemo(() => {
@@ -70,18 +73,6 @@ export function CompareTool() {
       years,
     };
     const results = PATH_META.map((row) => {
-      if (row.key === "chip") {
-        const yearRatesPct = ratesForYears(years, PATH_RATES.chip, PATH_RATES.chipLater);
-        const points = projectByYearSchedule({ ...input, yearRatesPct });
-        const atHorizon = points[points.length - 1]?.value ?? 0;
-        return {
-          ...row,
-          rate: PATH_RATES.chip,
-          atHorizon,
-          perMonth: monthlyFromHorizon(atHorizon, years),
-          points,
-        };
-      }
       const rate = PATH_RATES[row.key];
       const atHorizon = projectInvestment({ ...input, annualRatePct: rate }).atHorizon;
       return {
@@ -101,12 +92,19 @@ export function CompareTool() {
 
   return (
     <div className="space-y-8 sm:space-y-10">
-      <MoneyField label={tools.principal} value={principal} onChange={setPrincipal} step={50} />
+      <MoneyField
+        label={tools.principal}
+        value={principal}
+        onChange={setPrincipal}
+        step={50}
+        prefix="R$"
+      />
       <MoneyField
         label={tools.monthlyContribution}
         value={monthly}
         onChange={setMonthly}
         step={10}
+        prefix="R$"
       />
       <YearPicks label={tools.years} value={years} onChange={setYears} />
       <p className="max-w-md text-sm leading-relaxed text-[var(--text)]">
@@ -129,12 +127,7 @@ export function CompareTool() {
           >
             <p className="font-display text-lg leading-snug sm:text-xl">{titles[row.key]}</p>
             <p className="mt-1 text-sm text-[var(--text-muted)]">
-              {row.key === "chip"
-                ? fill(tools.compareRateChip, {
-                    first: formatRate(PATH_RATES.chip),
-                    later: formatRate(PATH_RATES.chipLater),
-                  })
-                : fill(tools.compareRateLine, { rate: formatRate(row.rate) })}
+              {fill(tools.compareRateLine, { rate: formatRate(row.rate) })}
             </p>
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[var(--background)]/80">
               <div className={`h-full ${row.bar}`} style={{ width: `${row.barPct}%` }} />
@@ -155,13 +148,23 @@ export function CompareTool() {
       <div className="max-w-md space-y-2 text-xs leading-relaxed text-[var(--text-muted)]">
         <p>{tools.compareLegendTitle}</p>
         <p>{fill(tools.compareLegendPoupanca, { rate: formatRate(poupancaRate) })}</p>
-        <p>{fill(tools.compareLegendTesouro, { rate: formatRate(tesouroRate) })}</p>
-        <p>{fill(tools.compareLegendCdb, { rate: formatRate(cdbRate) })}</p>
         <p>
-          {fill(tools.compareLegendWrld, {
-            first: formatRate(PATH_RATES.chip),
-            later: formatRate(PATH_RATES.chipLater),
-          })}{" "}
+          {fill(tools.compareLegendTesouro, {
+            gross: formatRate(tesouroGross),
+            rate: formatRate(tesouroRate),
+            ir: formatRate(COMPARE_RATES.irPct),
+          })}
+        </p>
+        <p>
+          {fill(tools.compareLegendCdb, {
+            cdi: formatRate(COMPARE_RATES.cdbCdiPct),
+            gross: formatRate(cdbGross),
+            rate: formatRate(cdbRate),
+            ir: formatRate(COMPARE_RATES.irPct),
+          })}
+        </p>
+        <p>
+          {fill(tools.compareLegendWrld, { rate: formatRate(PATH_RATES.bova) })}{" "}
           <a
             href={COMPARE_RATES.equityHref}
             className="underline decoration-[var(--border)] underline-offset-2 hover:text-[var(--text-secondary)]"

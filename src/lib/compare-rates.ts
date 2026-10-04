@@ -4,11 +4,11 @@ export const COMPARE_RATES = {
   selicSince: "2026-09-17",
   selicSource: "Banco Central. Meta do Copom, Comunicado de 16 set 2026. Agência Brasil.",
   selicHref: "https://agenciabrasil.ebc.com.br/economia/noticia/2026-09/bc-reduz-juros-basicos-para-1375-ao-ano",
-  cdbCdiPct: 100,
-  equityTicker: "CHIP11",
-  equity12mPct: 81.51,
-  equityLaterPct: 30.1,
+  cdbCdiPct: 110,
+  irPct: 15,
+  equityTicker: "BOVA11",
+  equity12mPct: 28.51,
   equitySource:
-    "ETFs Brasil. CHIP11: 81,51% só no primeiro ano (12 meses). Anos seguintes: 30,1%, ano civil 2025. Não usa acumulado de vários anos como taxa de um ano.",
-  equityHref: "https://www.etfsbrasil.com.br/etfs/chip11",
+    "ETFs Brasil. BOVA11: 28,51% em 12 meses (referência ago/2026). Nesta conta a mesma taxa se repete todo ano. Pode perder.",
+  equityHref: "https://www.etfsbrasil.com.br/etfs/bova11",
 } as const;

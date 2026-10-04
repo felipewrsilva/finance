@@ -4,12 +4,12 @@ import { STILLS } from "@/lib/stills";
 import { VIDEOS } from "@/lib/videos";
 import { tools } from "@/lib/copy";
 
-const PHOTO_SIZES = "(max-width: 768px) 100vw, 768px";
+const PHOTO_SIZES = "(max-width: 768px) 50vw, 360px";
 
 export default function ToolsHome() {
   const cards = [
     {
-      href: "/ferramentas/redirecionar",
+      href: "/ferramentas/extra",
       index: tools.homeOneIndex,
       title: tools.redirectTitle,
       ask: tools.homeOneAsk,
@@ -19,7 +19,7 @@ export default function ToolsHome() {
       accent: true,
     },
     {
-      href: "/ferramentas/alocacao",
+      href: "/ferramentas/orcamento",
       index: tools.homeTwoIndex,
       title: tools.allocationTitle,
       ask: tools.homeTwoAsk,
@@ -39,7 +39,7 @@ export default function ToolsHome() {
       accent: false,
     },
     {
-      href: "/ferramentas/mix",
+      href: "/ferramentas/divisao",
       index: tools.homeFourIndex,
       title: tools.mixTitle,
       ask: tools.homeFourAsk,
@@ -59,7 +59,7 @@ export default function ToolsHome() {
       accent: false,
     },
     {
-      href: "/ferramentas/folga",
+      href: "/ferramentas/renda",
       index: tools.homeSixIndex,
       title: tools.freedomTitle,
       ask: tools.homeSixAsk,
@@ -79,17 +79,21 @@ export default function ToolsHome() {
         {tools.homeSubtitle}
       </p>
 
-      <ol className="mt-10 space-y-10 sm:mt-14 sm:space-y-14">
+      <ol className="mt-10 grid gap-8 sm:mt-12 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10">
         {cards.map((card) => (
-          <li key={card.href}>
+          <li key={card.href} className={card.accent ? "sm:col-span-2" : undefined}>
             <figure>
               <a href={card.href} className="group block">
                 <div className="relative">
                   <ContentStill
                     src={card.still.src}
                     alt={card.alt}
-                    sizes={PHOTO_SIZES}
-                    imageClassName="h-52 w-full object-cover sm:h-64"
+                    sizes={card.accent ? "(max-width: 768px) 100vw, 768px" : PHOTO_SIZES}
+                    imageClassName={
+                      card.accent
+                        ? "h-44 w-full object-cover sm:h-56"
+                        : "h-36 w-full object-cover sm:h-40"
+                    }
                     priority={card.accent}
                   />
                   <span className="absolute left-3 top-3 rounded-full bg-[var(--surface-elevated)]/95 px-2.5 py-1 text-xs tracking-wide text-[var(--text)] shadow-[var(--elevation-sm)]">
@@ -97,13 +101,13 @@ export default function ToolsHome() {
                   </span>
                 </div>
                 <h2
-                  className={`mt-4 font-display leading-snug group-hover:text-[var(--primary)] ${
-                    card.accent ? "text-[1.45rem] sm:text-3xl" : "text-xl sm:text-2xl"
+                  className={`mt-3 font-display leading-snug group-hover:text-[var(--primary)] ${
+                    card.accent ? "text-[1.35rem] sm:text-3xl" : "text-lg sm:text-xl"
                   }`}
                 >
                   {card.title}
                 </h2>
-                <p className="mt-2 max-w-md text-sm leading-relaxed text-[var(--text-secondary)] sm:text-base">
+                <p className="mt-1.5 max-w-md text-sm leading-relaxed text-[var(--text-secondary)]">
                   {card.ask}
                 </p>
               </a>

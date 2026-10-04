@@ -19,7 +19,7 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: `${BRAND.name}. ${BRAND.tagline}`,
   description:
-    "Semeia. Ferramentas públicas em português: extra no tempo, renda, mix, comparar e folga com renda fixa.",
+    "Semeia. Contas públicas em português: extra, orçamento, projeção, divisão, comparar e renda com renda fixa.",
 };
 
 export const viewport: Viewport = {

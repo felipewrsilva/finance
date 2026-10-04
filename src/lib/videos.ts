@@ -8,8 +8,8 @@ export const VIDEOS = {
     href: "https://www.youtube.com/watch?v=F3kB5cfWJLA",
   },
   income: {
-    id: "BcjojHO5840",
-    href: "https://www.youtube.com/watch?v=BcjojHO5840",
+    id: "eesZ68jPuag",
+    href: "https://www.youtube.com/watch?v=eesZ68jPuag",
   },
   time: {
     id: "jbWIDBsNuMA",

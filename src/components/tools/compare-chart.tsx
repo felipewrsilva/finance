@@ -2,7 +2,7 @@ const STROKE: Record<string, string> = {
   poupanca: "var(--text)",
   tesouro: "var(--warning)",
   cdb: "var(--primary)",
-  chip: "var(--success)",
+  bova: "var(--success)",
 };
 
 const DASH: Record<string, string | undefined> = {

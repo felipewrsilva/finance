@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
+import { COMPARE_RATES } from "@/lib/compare-rates";
 import { projectInvestment } from "@/lib/tools-math";
 import { fill, tools } from "@/lib/copy";
 import { MoneyField, YearPicks, ResultAmount } from "@/components/tools/money-field";
@@ -11,7 +12,7 @@ export function ProjectionTool() {
   const [principal, setPrincipal] = useState(500);
   const [monthlyContribution, setMonthlyContribution] = useState(150);
   const [years, setYears] = useState(10);
-  const [annualRatePct, setAnnualRatePct] = useState(8);
+  const [annualRatePct, setAnnualRatePct] = useState<number>(COMPARE_RATES.selicPct);
 
   const result = useMemo(
     () =>
@@ -26,12 +27,19 @@ export function ProjectionTool() {
 
   return (
     <div className="space-y-8 sm:space-y-10">
-      <MoneyField label={tools.principal} value={principal} onChange={setPrincipal} step={50} />
+      <MoneyField
+        label={tools.principal}
+        value={principal}
+        onChange={setPrincipal}
+        step={50}
+        prefix="R$"
+      />
       <MoneyField
         label={tools.monthlyContribution}
         value={monthlyContribution}
         onChange={setMonthlyContribution}
         step={10}
+        prefix="R$"
       />
       <YearPicks label={tools.years} value={years} onChange={setYears} />
       <div>

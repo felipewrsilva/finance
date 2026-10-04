@@ -4,7 +4,7 @@ export const FREEDOM_RATES = {
   asOf: COMPARE_RATES.asOf,
   selicPct: COMPARE_RATES.selicPct,
   selicHref: COMPARE_RATES.selicHref,
-  irPct: 15,
+  irPct: COMPARE_RATES.irPct,
   ipcaPct: 4.99,
   ipcaSource: "Boletim Focus. Mediana do IPCA para 2026, leitura de setembro de 2026.",
   ipcaHref: "https://www.bcb.gov.br/publicacoes/focus",

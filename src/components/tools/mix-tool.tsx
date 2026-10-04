@@ -82,13 +82,20 @@ export function MixTool() {
 
   return (
     <div className="space-y-8 sm:space-y-10">
-      <MoneyField label={tools.principal} value={principal} onChange={setPrincipal} step={50} />
+      <MoneyField
+        label={tools.principal}
+        value={principal}
+        onChange={setPrincipal}
+        step={50}
+        prefix="R$"
+      />
       <MoneyField
         label={tools.monthlyContribution}
         hint={tools.mixMonthlyHint}
         value={monthly}
         onChange={setMonthly}
         step={10}
+        prefix="R$"
       />
       <YearPicks
         label={tools.mixHorizonHint}

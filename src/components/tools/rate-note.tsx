@@ -34,7 +34,11 @@ export function RateNote({
           />
         </div>
       ) : (
-        <p className="mt-2 text-sm text-[var(--text-muted)]">{fill(tools.rateQuiet, { rate })}</p>
+        <p className="mt-2 text-sm text-[var(--text-muted)]">
+          {fill(tools.rateQuiet, {
+            rate: rate.toLocaleString("pt-BR", { maximumFractionDigits: 2 }),
+          })}
+        </p>
       )}
     </div>
   );

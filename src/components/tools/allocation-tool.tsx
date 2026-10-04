@@ -47,7 +47,13 @@ export function AllocationTool() {
 
   return (
     <div className="space-y-8 sm:space-y-10">
-      <MoneyField label={tools.monthlyIncome} value={income} onChange={setIncome} step={50} />
+      <MoneyField
+        label={tools.monthlyIncome}
+        value={income}
+        onChange={setIncome}
+        step={50}
+        prefix="R$"
+      />
       <p className="max-w-md text-sm leading-relaxed text-[var(--text-secondary)]">{tools.allocHint}</p>
       <ul className="space-y-3">
         {rows.map((row) => {
