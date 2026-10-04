@@ -12,7 +12,7 @@ export function ToolsShell({ locale, children }: Props) {
     <div className="min-h-dvh text-[var(--text)]">
       <header className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-6">
         <a href={`/${locale}`} className="flex min-w-0 items-center gap-2 text-[var(--primary)]">
-          <SemeiaMark className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
+          <SemeiaMark className="h-8 w-8 shrink-0 sm:h-9 sm:w-9" />
           <span className="font-display truncate text-xl tracking-tight text-[var(--text)] sm:text-2xl">
             {BRAND.name}
           </span>

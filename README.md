@@ -2,7 +2,7 @@
 
 O tempo trabalha com o que você guarda.
 
-Ferramentas em **português (Brasil)**. Sem cadastro. Três perguntas: um extra que vira investimento, para onde vai a renda, o que o tempo faz com um valor.
+Três perguntas: um extra que vira investimento, para onde vai a renda, o que o tempo faz com um valor.
 
 **Live:** [finance-seven-plum.vercel.app](https://finance-seven-plum.vercel.app)
 
@@ -15,11 +15,8 @@ Ferramentas em **português (Brasil)**. Sem cadastro. Três perguntas: um extra 
 | Framework | Next.js 16 (App Router, Turbopack) |
 | Language | TypeScript |
 | Styling | Tailwind CSS v4 |
-| i18n | next-intl v4, somente `pt-BR` |
 | Math | Funções puras de projeção |
 | Deployment | Vercel |
-
-A UI pública não usa banco nem conta.
 
 ---
 
