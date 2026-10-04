@@ -3,10 +3,12 @@
 import { usePathname } from "next/navigation";
 import { nav } from "@/lib/copy";
 
-const NAV_ITEMS: { key: "redirect" | "allocation" | "projection"; path: string }[] = [
+const NAV_ITEMS: { key: "redirect" | "allocation" | "projection" | "mix" | "comparar"; path: string }[] = [
   { key: "redirect", path: "/ferramentas/redirecionar" },
   { key: "allocation", path: "/ferramentas/alocacao" },
   { key: "projection", path: "/ferramentas/projecao" },
+  { key: "mix", path: "/ferramentas/mix" },
+  { key: "comparar", path: "/ferramentas/comparar" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -18,7 +20,7 @@ export function ToolsNav() {
 
   return (
     <>
-      <nav className="hidden items-center gap-5 text-sm text-[var(--text-secondary)] md:flex">
+      <nav className="hidden items-center gap-3 text-sm text-[var(--text-secondary)] md:flex">
         {NAV_ITEMS.map(({ key, path }) => {
           const active = isActive(pathname, path);
           return (
@@ -42,7 +44,7 @@ export function ToolsNav() {
               <a
                 key={key}
                 href={path}
-                className={`flex min-h-12 flex-1 items-center justify-center px-1 text-center text-[11px] leading-tight ${
+                className={`flex min-h-12 flex-1 items-center justify-center px-0.5 text-center text-[10px] leading-tight sm:text-[11px] ${
                   active ? "text-[var(--primary)]" : "text-[var(--text-muted)]"
                 }`}
               >

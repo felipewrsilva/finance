@@ -15,4 +15,12 @@ export const VIDEOS = {
     id: "jbWIDBsNuMA",
     href: "https://www.youtube.com/watch?v=jbWIDBsNuMA",
   },
+  mix: {
+    id: "_2ofTSJX13Y",
+    href: "https://www.youtube.com/watch?v=_2ofTSJX13Y",
+  },
+  compare: {
+    id: "0iUuaJr9EdI",
+    href: "https://www.youtube.com/watch?v=0iUuaJr9EdI",
+  },
 } as const;

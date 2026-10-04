@@ -38,6 +38,26 @@ export default function ToolsHome() {
       credit: tools.homeThreePhotoCredit,
       accent: false,
     },
+    {
+      href: "/ferramentas/mix",
+      index: tools.homeFourIndex,
+      title: tools.mixTitle,
+      ask: tools.homeFourAsk,
+      still: STILLS.mix,
+      alt: tools.homeFourPhotoAlt,
+      credit: tools.homeFourPhotoCredit,
+      accent: false,
+    },
+    {
+      href: "/ferramentas/comparar",
+      index: tools.homeFiveIndex,
+      title: tools.compareTitle,
+      ask: tools.homeFiveAsk,
+      still: STILLS.compare,
+      alt: tools.homeFivePhotoAlt,
+      credit: tools.homeFivePhotoCredit,
+      accent: false,
+    },
   ];
 
   return (

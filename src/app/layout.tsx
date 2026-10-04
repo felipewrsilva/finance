@@ -19,7 +19,7 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: `${BRAND.name}. ${BRAND.tagline}`,
   description:
-    "Semeia. Veja o que um extra pode virar se for investimento, para onde vai a renda e o que o tempo faz com um valor.",
+    "Semeia. Ferramentas públicas em português: extra no tempo, renda, mix quieto e variável, e quatro caminhos no papel.",
 };
 
 export const viewport: Viewport = {

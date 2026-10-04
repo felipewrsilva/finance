@@ -95,3 +95,57 @@ export function projectInvestment(input: {
 export function spendHabitFuture(monthly: number, annualRatePct: number, years: number) {
   return totalProjectedValue(0, annualRatePct / 100, Math.max(1, years), monthly);
 }
+
+export const MIX_FIXED_MIN = 10;
+export const MIX_FIXED_MAX = 90;
+export const POUPANCA_SELIC_CUTOFF = 8.5;
+export const POUPANCA_HIGH_SELIC_MONTHLY = 0.005;
+export const DEFAULT_SELIC_PCT = 8;
+export const DEFAULT_CDB_CDI_PCT = 100;
+export const DEFAULT_WRLD_ANNUAL_PCT = 6;
+
+export function mixFixedPctFromYears(years: number): number {
+  const y = Math.max(0, years);
+  if (y <= 3) return 85;
+  if (y <= 6) return 70;
+  if (y <= 10) return 50;
+  return 35;
+}
+
+export function clampMixFixedPct(pct: number): number {
+  if (!Number.isFinite(pct)) return MIX_FIXED_MIN;
+  return Math.min(MIX_FIXED_MAX, Math.max(MIX_FIXED_MIN, Math.round(pct)));
+}
+
+export function mixSlices(amount: number, fixedPct: number) {
+  const total = Math.max(0, amount);
+  const fixed = clampMixFixedPct(fixedPct);
+  const variable = 100 - fixed;
+  return {
+    fixedPct: fixed,
+    variablePct: variable,
+    fixedAmount: (total * fixed) / 100,
+    variableAmount: (total * variable) / 100,
+  };
+}
+
+export function poupancaAnnualRatePct(selicPct: number): number {
+  const selic = Math.max(0, selicPct);
+  if (selic > POUPANCA_SELIC_CUTOFF) {
+    return (Math.pow(1 + POUPANCA_HIGH_SELIC_MONTHLY, 12) - 1) * 100;
+  }
+  return 0.7 * selic;
+}
+
+export function tesouroSelicAnnualRatePct(selicPct: number): number {
+  return Math.max(0, selicPct);
+}
+
+export function cdbAnnualRatePct(selicPct: number, cdiPct = DEFAULT_CDB_CDI_PCT): number {
+  return Math.max(0, selicPct) * (Math.max(0, cdiPct) / 100);
+}
+
+export function monthlyFromHorizon(atHorizon: number, years: number): number {
+  const months = Math.max(1, years) * 12;
+  return Math.max(0, atHorizon) / months;
+}

@@ -38,19 +38,22 @@ export function YearPicks({
   value,
   onChange,
   options = [5, 10, 20],
+  captions,
   label,
 }: {
   value: number;
   onChange: (n: number) => void;
   options?: number[];
+  captions?: string[];
   label: string;
 }) {
   return (
     <fieldset>
       <legend className="font-display text-base text-[var(--text)] sm:text-lg">{label}</legend>
       <div className="mt-3 grid grid-cols-3 gap-2">
-        {options.map((years) => {
+        {options.map((years, i) => {
           const active = years === value;
+          const caption = captions?.[i];
           return (
             <button
               key={years}
@@ -63,6 +66,7 @@ export function YearPicks({
               }`}
             >
               {years} anos
+              {caption ? <span className="mt-0.5 block text-[10px] opacity-80">{caption}</span> : null}
             </button>
           );
         })}
